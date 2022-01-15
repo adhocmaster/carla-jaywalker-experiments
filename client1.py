@@ -4,6 +4,8 @@ import logging
 import random
 import time
 
+from lib import SimulationVisualization, MapNames, MapManager
+
 SpawnActor = carla.command.SpawnActor
 
 argparser = argparse.ArgumentParser()
@@ -34,7 +36,21 @@ if client.get_client_version() != client.get_server_version():
     logging.warning("Client and server version mistmatch. May not work properly.")
 
 
-world = client.get_world()
+
+mapManager = MapManager(client)
+mapManager.load(MapNames.circle_t_junctions)
+
+world = mapManager.world
+
+visualizer = SimulationVisualization(client)
+visualizer.draw00()
+# world = client.load_world('circle_t_junctions')
+
+spectator = world.get_spectator()
+spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
+
+
+# world = client.get_world()
 
 # print(client.get_available_maps())
 
@@ -167,17 +183,26 @@ for i in range(0, len(all_id), 2):
 # print("first tick")
 
 # Debug
-debug = world.debug
+# debug = world.debug
 
 print(walkers_list)
+visualizer.trackOnTick(walkers_list[0]['id'], {"lifetime": 1})
+visualizer.trackOnTick(walkers_list[1]['id'], {"lifetime": 1})
 
-for i in range(1000):
+for i in range(500):
     world_snapshot = world.wait_for_tick()
     print("world ticks")
+    
 
     # for walker in walkers_list:
     #     actor_snapshot = world_snapshot.find(walker['id'])
-    #     debug.draw_box(carla.BoundingBox(actor_snapshot.get_transform().location,carla.Vector3D(0.5,0.5,2)),actor_snapshot.get_transform().rotation, 0.05, carla.Color(0,0,0,0),0)
+
+    #     # debug.draw_box(carla.BoundingBox(actor_snapshot.get_transform().location,carla.Vector3D(0.5,0.5,2)),
+    #     #             actor_snapshot.get_transform().rotation, 
+    #     #             0.05, 
+    #     #             carla.Color(0,0,0,0),
+    #     #             0)
+    #     visualizer.drawWalkerBB(actor_snapshot)
 
 
 # clean 
