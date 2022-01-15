@@ -66,11 +66,14 @@ world = client.get_world()
 
 
 # 1. take all the random locations to spawn
+
 spawn_points = []
+map = world.get_map()
 for i in range(5):
     spawn_point = carla.Transform()
     loc = world.get_random_location_from_navigation()
     # loc = world.get_random_location()
+    # loc = map.get_spawn_points()
     print(loc)
     if (loc != None):
         spawn_point.location = loc
@@ -78,10 +81,14 @@ for i in range(5):
 
 print(spawn_points)
 
+# spawn_points = map.get_spawn_points()
 
-spectator = world.get_spectator()
-# spectator.set_transform(carla.Transform(carla.Location(x=-70, y=0, z=150), carla.Rotation(pitch=-90)))
-spectator.set_transform(carla.Transform(spawn_points[4].location + carla.Location(z=50), carla.Rotation(pitch=-90)))
+actorIndex = 4
+
+
+# spectator = world.get_spectator()
+# # spectator.set_transform(carla.Transform(carla.Location(x=-70, y=0, z=150), carla.Rotation(pitch=-90)))
+# spectator.set_transform(carla.Transform(spawn_points[actorIndex].location + carla.Location(z=50), carla.Rotation(pitch=-90)))
 
 # spawn a walker
 bpLib = world.get_blueprint_library()
@@ -159,9 +166,19 @@ for i in range(0, len(all_id), 2):
 # world_snapshot = world.wait_for_tick()
 # print("first tick")
 
+# Debug
+debug = world.debug
+
+print(walkers_list)
+
 for i in range(1000):
     world_snapshot = world.wait_for_tick()
     print("world ticks")
+
+    # for walker in walkers_list:
+    #     actor_snapshot = world_snapshot.find(walker['id'])
+    #     debug.draw_box(carla.BoundingBox(actor_snapshot.get_transform().location,carla.Vector3D(0.5,0.5,2)),actor_snapshot.get_transform().rotation, 0.05, carla.Color(0,0,0,0),0)
+
 
 # clean 
 
