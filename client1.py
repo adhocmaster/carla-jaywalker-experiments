@@ -38,6 +38,7 @@ if client.get_client_version() != client.get_server_version():
 
 
 mapManager = MapManager(client)
+# mapManager.load(MapNames.t_junction)
 mapManager.load(MapNames.circle_t_junctions)
 
 world = mapManager.world
@@ -46,9 +47,18 @@ visualizer = SimulationVisualization(client)
 visualizer.draw00()
 # world = client.load_world('circle_t_junctions')
 
-spectator = world.get_spectator()
-spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
+map = mapManager.map
 
+
+visualizer.drawSpawnPoints()
+visualizer.drawSpectatorPoint()
+
+world.wait_for_tick()
+
+# spectator = world.get_spectator()
+# spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
+
+# exit(0)
 
 # world = client.get_world()
 
@@ -113,6 +123,8 @@ peds = bpLib.filter('walker.pedestrian.*')
 
 walker_speed = []
 batch = []
+
+client.set_timeout(10)
 for spawn_point in spawn_points:
     walker_bp = random.choice(peds)
     # set as not invincible

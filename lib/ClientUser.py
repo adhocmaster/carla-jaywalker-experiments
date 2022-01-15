@@ -2,10 +2,17 @@ class ClientUser:
     
     def __init__(self, client):
         self.client = client
-        self.world = client.get_world()
-        self.map = self.world.get_map()
 
+
+    @property
+    def world(self):
+        return self.client.get_world()
+
+    @property
+    def map(self):
+        return self.client.get_world().get_map()
+
+    @property
+    def debug(self):
+        return self.world.debug
     
-    def refreshClient(self):
-        self.world = self.client.get_world()
-        self.map = self.world.get_map()
