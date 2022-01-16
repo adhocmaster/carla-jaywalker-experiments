@@ -47,16 +47,25 @@ class SimulationVisualization(ClientUser):
                     carla.Color(*color),
                     lifetime)
 
-    def drawTextOnMap(self, location, text, life_time=0):
+    def drawTextOnMap(self, location, text, life_time=600):
         self.drawText(
             location=location, 
             text=text, 
             draw_shadow = True,
-            color=(0, 0, 0, 0),
+            color=(0, 0, 0),
             life_time=life_time
         )
 
-    def drawText(self, location, text, draw_shadow=False, color=(255,0,0), life_time=-1.0):
+    def drawText(self, location, text, draw_shadow=False, color=(255,0,0), life_time=600):
+        """[summary]
+
+        Args:
+            location ([type]): [description]
+            text ([type]): [description]
+            draw_shadow (bool, optional): [description]. Defaults to False.
+            color (tuple, optional): [description]. Defaults to (255,0,0).
+            life_time (float, optional): [description]. > 1. 0 or -1 has no effect.
+        """
         self.debug.draw_string(
             location, 
             text, 
@@ -64,6 +73,14 @@ class SimulationVisualization(ClientUser):
             carla.Color(*color),
             life_time
             )
+
+        # self.debug.draw_string(
+        #     location, 
+        #     "Where is my text", 
+        #     False,
+        #     carla.Color(0, 0, 0, 0),
+        #     life_time
+        #     )
 
 
 
@@ -107,6 +124,7 @@ class SimulationVisualization(ClientUser):
             location = point.location
             print(f"walker spawn position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=0.05, color=(0, 255, 0))
+            self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
     def drawSpawnPoints(self):
         spawn_points = self.map.get_spawn_points()
@@ -114,15 +132,16 @@ class SimulationVisualization(ClientUser):
             location = point.location
             print(f"spawn_point position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=0.05)
+            self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
 
     def drawSpectatorPoint(self):
         spectator = self.world.get_spectator()
         location = spectator.get_location()
-        print(f"spectator position ({location.x}, {location.y})")
+        print(f"spectator position ({location.x}, {location.y}, {location.z})")
         drawLocation = carla.Location(location.x, location.y, 0)
-        self.drawPoint(location=drawLocation, size=0.5, color=(0, 50, 200))
-        self.drawTextOnMap(location=carla.Location(location.x, location.y, 10), text=f"Center ({location.x}, {location.y})")
+        self.drawPoint(location=drawLocation, size=0.1, color=(0, 50, 200))
+        self.drawTextOnMap(location=carla.Location(location.x, location.y, 10), text=f"Center ({round(location.x)}, {round(location.y)})")
 
 
 

@@ -24,6 +24,12 @@ argparser.add_argument(
     default=2000,
     type=int,
     help='TCP port to listen to (default: 3000)')
+argparser.add_argument(
+    '--tm-port',
+    metavar='P',
+    default=8000,
+    type=int,
+    help='Port to communicate with TM (default: 8000)')
 
 args = argparser.parse_args()
 
@@ -42,8 +48,8 @@ if client.get_client_version() != client.get_server_version():
 # world = client.load_world('circle_t_junctions')
 
 mapManager = MapManager(client)
-# mapManager.load(MapNames.t_junction)
-mapManager.load(MapNames.circle_t_junctions)
+mapManager.load(MapNames.t_junction)
+# mapManager.load(MapNames.circle_t_junctions)
 
 world = mapManager.world
 
@@ -98,7 +104,7 @@ visualizer.drawSpectatorPoint()
 
 spawn_points = []
 map = world.get_map()
-for i in range(50):
+for i in range(20):
     spawn_point = carla.Transform()
     loc = world.get_random_location_from_navigation()
     # loc = world.get_random_location()
@@ -155,7 +161,7 @@ walkers_list = []
 walker_speed2 = []
 for i in range(len(results)):
     if results[i].error:
-        logging.error(results[i].error)
+        logging.error("walker:", results[i].error)
     else:
         walkers_list.append({"id": results[i].actor_id})
         walker_speed2.append(walker_speed[i])
@@ -202,17 +208,72 @@ for i in range(0, len(all_id), 2):
 
 # Debug
 # debug = world.debug
+# debug.draw_string(
+#             carla.Location(x=-120, y=0, z=0), 
+#             "Where is my text", 
+#             False,
+#             carla.Color(0, 0, 0, 0),
+#             -1
+#             )
 
 print(walkers_list)
+
+
 visualizer.trackOnTick(walkers_list[0]['id'], {"lifetime": 1})
 visualizer.trackOnTick(walkers_list[1]['id'], {"lifetime": 1})
 
-def destoryWalkers():
+
+# --------------
+# Spawn vehicles
+# --------------
+
+# @todo cannot import these directly.
+vehicles_list = []
+traffic_manager = client.get_trafficmanager(args.tm_port)
+traffic_manager.set_global_distance_to_leading_vehicle(2.5)
+SetAutopilot = carla.command.SetAutopilot
+FutureActor = carla.command.FutureActor
+batch = []
+vehicleBps = bpLib.filter('vehicle.*')
+
+spawn_points = mapManager.spawn_points
+
+for n, transform in enumerate(spawn_points):
+    if n >= 10:
+        break
+    blueprint = random.choice(vehicleBps)
+    if blueprint.has_attribute('color'):
+        color = random.choice(blueprint.get_attribute('color').recommended_values)
+        blueprint.set_attribute('color', color)
+    if blueprint.has_attribute('driver_id'):
+        driver_id = random.choice(blueprint.get_attribute('driver_id').recommended_values)
+        blueprint.set_attribute('driver_id', driver_id)
+    else:
+        blueprint.set_attribute('role_name', 'autopilot')
+
+    # spawn the cars and set their autopilot and light state all together
+    batch.append(SpawnActor(blueprint, transform)
+        .then(SetAutopilot(FutureActor, True, traffic_manager.get_port())))
+
+for response in client.apply_batch_sync(batch, True):
+    if response.error:
+        logging.error("vehicle", response.error)
+    else:
+        vehicles_list.append(response.actor_id)
+
+
+
+def destoryActors():
+    print('\ndestroying %d vehicles' % len(vehicles_list))
+    client.apply_batch([carla.command.DestroyActor(x) for x in vehicles_list])
+
     print('\ndestroying %d walkers' % len(walkers_list))
     client.apply_batch([carla.command.DestroyActor(x) for x in all_id])
 
+
+
 onTickers = [visualizer.onTick]
-onEnders = [destoryWalkers]
+onEnders = [destoryActors]
 simulator = Simulator(client, onTickers=onTickers, onEnders=onEnders)
 
 simulator.run(1000)
