@@ -4,7 +4,10 @@ import logging
 import random
 import time
 
-from lib import SimulationVisualization, MapNames, MapManager
+import eventlet
+eventlet.monkey_patch()
+
+from lib import SimulationVisualization, MapNames, MapManager, Simulator
 
 SpawnActor = carla.command.SpawnActor
 
@@ -36,6 +39,7 @@ if client.get_client_version() != client.get_server_version():
     logging.warning("Client and server version mistmatch. May not work properly.")
 
 
+# world = client.load_world('circle_t_junctions')
 
 mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
@@ -44,8 +48,7 @@ mapManager.load(MapNames.circle_t_junctions)
 world = mapManager.world
 
 visualizer = SimulationVisualization(client)
-visualizer.draw00()
-# world = client.load_world('circle_t_junctions')
+# visualizer.draw00()
 
 map = mapManager.map
 
@@ -53,7 +56,7 @@ map = mapManager.map
 visualizer.drawSpawnPoints()
 visualizer.drawSpectatorPoint()
 
-world.wait_for_tick()
+# world.wait_for_tick()
 
 # spectator = world.get_spectator()
 # spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
@@ -95,19 +98,21 @@ world.wait_for_tick()
 
 spawn_points = []
 map = world.get_map()
-for i in range(5):
+for i in range(50):
     spawn_point = carla.Transform()
     loc = world.get_random_location_from_navigation()
     # loc = world.get_random_location()
     # loc = map.get_spawn_points()
-    print(loc)
+    # print(loc)
     if (loc != None):
         spawn_point.location = loc
         spawn_points.append(spawn_point)
 
-print(spawn_points)
+# print(spawn_points)
 
 # spawn_points = map.get_spawn_points()
+
+visualizer.drawWalkerNavigationPoints(spawn_points)
 
 actorIndex = 4
 
@@ -126,6 +131,7 @@ batch = []
 
 client.set_timeout(10)
 for spawn_point in spawn_points:
+    print(f"Spawning walker at {spawn_point.location}")
     walker_bp = random.choice(peds)
     # set as not invincible
     if walker_bp.has_attribute('is_invincible'):
@@ -201,9 +207,20 @@ print(walkers_list)
 visualizer.trackOnTick(walkers_list[0]['id'], {"lifetime": 1})
 visualizer.trackOnTick(walkers_list[1]['id'], {"lifetime": 1})
 
-for i in range(500):
-    world_snapshot = world.wait_for_tick()
-    print("world ticks")
+def destoryWalkers():
+    print('\ndestroying %d walkers' % len(walkers_list))
+    client.apply_batch([carla.command.DestroyActor(x) for x in all_id])
+
+onTickers = [visualizer.onTick]
+onEnders = [destoryWalkers]
+simulator = Simulator(client, onTickers=onTickers, onEnders=onEnders)
+
+simulator.run(1000)
+
+# for i in range(500):
+#     world_snapshot = world.wait_for_tick()
+#     print("world ticks")
+    # visualizer.onTick(world_snapshot)
     
 
     # for walker in walkers_list:
@@ -219,8 +236,6 @@ for i in range(500):
 
 # clean 
 
-print('\ndestroying %d walkers' % len(walkers_list))
-client.apply_batch([carla.command.DestroyActor(x) for x in all_id])
 
-time.sleep(0.5)
+# time.sleep(0.5)
 

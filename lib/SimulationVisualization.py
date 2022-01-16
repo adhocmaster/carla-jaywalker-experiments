@@ -1,16 +1,19 @@
 import carla
 import numpy as np
 import random
+
 from .ClientUser import ClientUser
 
 class SimulationVisualization(ClientUser):
 
     def __init__(self, client):
         super().__init__(client)
+        # self.pool = eventlet.GreenPool()
 
         self.tracking = {} # actor id -> tracking config
 
-        self.world.on_tick(self.onTick)
+        # self.pool.spawn_n(self.world.on_tick, self.onTick)
+        # self.world.on_tick(self.onTick) # freezes. may need greenlets.
 
     
 
@@ -98,6 +101,13 @@ class SimulationVisualization(ClientUser):
     
 
     # some positional information
+
+    def drawWalkerNavigationPoints(self, navPoints):
+        for point in navPoints:
+            location = point.location
+            print(f"walker spawn position ({location.x}, {location.y})")
+            self.drawPoint(location=location, size=0.05, color=(0, 255, 0))
+
     def drawSpawnPoints(self):
         spawn_points = self.map.get_spawn_points()
         for point in spawn_points:
