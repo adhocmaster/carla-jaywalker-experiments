@@ -8,7 +8,6 @@ from .ClientUser import ClientUser
 class MapNames(Enum):
     circle_t_junctions = 'circle_t_junctions'
     t_junction = 't_junction'
-    default_t_junction = 'default_t_junction'
 
 
 class MapManager(ClientUser):

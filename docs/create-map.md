@@ -7,15 +7,15 @@
 7. Select all components are do File -> Carla Export
 8. move Unreal/CarlaUE4/Saved/<map_name>.obj -> Util/DockerUtils/dist
 9. run Util/DockerUtils/dist/build.bat <map_name> (without ext)
-10. copy <mapName>.bin to your-map-package/map_name/Nav folder (This is the actual map folder of a single map where you have TM and OpenDrive folders. Putting in the package where multiple maps reside is not working.)
+10. copy <map_name>.bin to your-map-package/map_name/Nav folder (This is the actual map folder of a single map where you have TM and OpenDrive folders. Putting in the package where multiple maps reside is not working.)
 
 ## make re-distributable package of maps
 
-1. make package ARGS="--packages=<mapPackage>". This command takes your edited map from the Unreal/CarlaUE4/Content folder. So, create navigation before packaging. This will produce the importable packages in /Build/UE4Carla. 
+1. In your carla source folder, run **make package ARGS="--packages=package_name"**. This command takes your edited map from the Unreal/CarlaUE4/Content folder. So, create navigation before packaging. This will produce the importable packages in /Build/UE4Carla. 
 
 2. Unpack the zipped folder if not already existing. Copy your package from CarlaUE4/Content/you-package-name to your carla Content folder (not the engine content folder)
 
-3. you will see a json file in CarlaUE4/Content/Carla/Config with your package name. Copy that to the same folder of your Carla distribution. Without this file, map may not load.
-
+3. You will see a json file in CarlaUE4/Content/Carla/Config with your package name. Copy that to the same folder of your Carla distribution. Without this file, map may not load.
+4. Ignore rest of the files/folders.
 
 
