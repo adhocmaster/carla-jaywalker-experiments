@@ -48,8 +48,8 @@ if client.get_client_version() != client.get_server_version():
 # world = client.load_world('circle_t_junctions')
 
 mapManager = MapManager(client)
-mapManager.load(MapNames.t_junction)
-# mapManager.load(MapNames.circle_t_junctions)
+# mapManager.load(MapNames.t_junction)
+mapManager.load(MapNames.circle_t_junctions)
 
 world = mapManager.world
 
@@ -65,7 +65,7 @@ visualizer.drawSpectatorPoint()
 # world.wait_for_tick()
 
 # spectator = world.get_spectator()
-# spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
+# spectator.set_transform(carla.Transform(carla.Location(x=0, y=0, z=200), carla.Rotation(pitch=-90)))
 
 # exit(0)
 
@@ -135,7 +135,7 @@ peds = bpLib.filter('walker.pedestrian.*')
 walker_speed = []
 batch = []
 
-client.set_timeout(10)
+# client.set_timeout(10)
 for spawn_point in spawn_points:
     print(f"Spawning walker at {spawn_point.location}")
     walker_bp = random.choice(peds)
@@ -239,7 +239,7 @@ vehicleBps = bpLib.filter('vehicle.*')
 spawn_points = mapManager.spawn_points
 
 for n, transform in enumerate(spawn_points):
-    if n >= 10:
+    if n >= 5:
         break
     blueprint = random.choice(vehicleBps)
     if blueprint.has_attribute('color'):
@@ -276,7 +276,7 @@ onTickers = [visualizer.onTick]
 onEnders = [destoryActors]
 simulator = Simulator(client, onTickers=onTickers, onEnders=onEnders)
 
-simulator.run(1000)
+simulator.run(100)
 
 # for i in range(500):
 #     world_snapshot = world.wait_for_tick()

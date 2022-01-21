@@ -1,3 +1,4 @@
+from msilib.schema import Error
 from re import X
 from turtle import distance
 import carla
@@ -15,19 +16,30 @@ class MapManager(ClientUser):
     def __init__(self, client):
         super().__init__(client)
         self.currentMapName = None
+        self._waypoints = None
 
     @property
     def spawn_points(self):
         return self.map.get_spawn_points()
+
+    @property
+    def waypoints(self):
+        if self._waypoints is None:
+            raise Error("waypoint accessed before loading a map")
+        return self._waypoints
+
     
     def load(self, mapName: MapNames):
         self.client.load_world(mapName.value)
 
         self.currentMapName = mapName
 
+        self.generateWaypoints()
         self.configureSpectator()
 
 
+    def generateWaypoints(self):
+        self._waypoints = self.map.generate_waypoints(distance=5.0)
 
 
     def configureSpectator(self):
@@ -54,11 +66,8 @@ class MapManager(ClientUser):
         minY = 9999999
         maxY = -9999999
 
-        
-        waypoints = self.map.generate_waypoints(distance=5.0)
-
         # for point in self.spawn_points:
-        for point in waypoints:
+        for point in self._waypoints:
             location = point.transform.location
             x = location.x
             y = location.y
