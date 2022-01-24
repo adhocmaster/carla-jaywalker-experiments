@@ -1,3 +1,5 @@
+import logging
+
 class ClientUser:
     
     def __init__(self, client):
@@ -15,4 +17,9 @@ class ClientUser:
     @property
     def debug(self):
         return self.world.debug
+
+    
+    def error(self, msg):
+        logging.error(msg)
+        raise Exception(msg)
     

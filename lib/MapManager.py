@@ -28,6 +28,15 @@ class MapManager(ClientUser):
             raise Error("waypoint accessed before loading a map")
         return self._waypoints
 
+    def generateNavPoints(self, count=20):
+        nav_points = []
+        for i in range(count):
+            loc = self.world.get_random_location_from_navigation()
+            if (loc != None):
+                point = carla.Transform(location=loc)
+                nav_points.append(point)
+        return nav_points
+
     
     def load(self, mapName: MapNames):
         self.client.load_world(mapName.value)

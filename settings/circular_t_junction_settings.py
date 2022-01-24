@@ -1,16 +1,16 @@
 circular_t_junction_settings = {
     "setting1": {
-        "vehicle_spawn": (-155.0, -31.0),
-        "walker_spawns": [
-            (-160.0, -24.0),
-            (-150.0, -4.0),
-            (-147.0, -4.0)
+        "ego_spawn_point": (-155.0, -31.0),
+        "walker_settings": [
+            (-160.0, -24.0, -151.0, 24.0),
+            (-150.0, -4.0, -147.0, -13.5),
+            (-147.0, -4.0, -147.0, -13.5)
         ]
     },
     
     "setting2": {
-        "vehicle_spawn": (-132.0, 3.0),
-        "walker_spawns": [
+        "ego_spawn_point": (-132.0, 3.0),
+        "walker_settings": [
             (-120.0, 23.0),
             (-113.0, 21.0),
             (-126.0, 8.0),
@@ -19,16 +19,16 @@ circular_t_junction_settings = {
     },
     
     "setting3": {
-        "vehicle_spawn": (-144.0, -7.0),
-        "walker_spawns": [
+        "ego_spawn_point": (-144.0, -7.0),
+        "walker_settings": [
             (-121.0, -4.0),
             (-124.0, -13.0)
         ]
     },
     
     "setting4": {
-        "vehicle_spawn": (-128.0, -9.0),
-        "walker_spawns": [
+        "ego_spawn_point": (-128.0, -9.0),
+        "walker_settings": [
             (-126.0, 8.0),
             (-121.0, -4.0)
 
@@ -36,8 +36,8 @@ circular_t_junction_settings = {
     },
     
     "setting5": {
-        "vehicle_spawn": (-150.0, -29.0),
-        "walker_spawns": [
+        "ego_spawn_point": (-150.0, -29.0),
+        "walker_settings": [
             (-142.0, -33.0),
             (-118.0, -37.0),
             (-110.0, -35.0),
@@ -45,8 +45,8 @@ circular_t_junction_settings = {
     },
     
     "setting6": {
-        "vehicle_spawn": (-111.0, -14.0),
-        "walker_spawns": [
+        "ego_spawn_point": (-111.0, -14.0),
+        "walker_settings": [
             (-108.0, 19.0),
             (-94.0, 1.0),
             (-94.0, -11.0),
@@ -55,8 +55,8 @@ circular_t_junction_settings = {
     },
     
     "setting7": {
-        "vehicle_spawn": (-135.0, -38.0),
-        "walker_spawns": [
+        "ego_spawn_point": (-135.0, -38.0),
+        "walker_settings": [
             (-118.0, -37.0),
             (-110.0, -35.0),
         ]

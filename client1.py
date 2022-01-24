@@ -219,8 +219,8 @@ for i in range(0, len(all_id), 2):
 print(walkers_list)
 
 
-visualizer.trackOnTick(walkers_list[0]['id'], {"lifetime": 1})
-visualizer.trackOnTick(walkers_list[1]['id'], {"lifetime": 1})
+visualizer.trackOnTick(walkers_list[0]['id'], {"life_time": 1})
+visualizer.trackOnTick(walkers_list[1]['id'], {"life_time": 1})
 
 
 # --------------
