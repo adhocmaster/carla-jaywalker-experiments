@@ -29,12 +29,12 @@ class SettingsManager(ClientUser):
     
     
     
-    def _pointToLocation(self, point):
+    def _pointToLocation(self, point, z=0.3):
         
         location = carla.Location(
             x = point[0],
             y = point[1],
-            z = 1.0
+            z = z
         )
 
         return location
@@ -64,14 +64,13 @@ class SettingsManager(ClientUser):
         if self._walkerSettings is None:
             self._walkerSettings = []
             for setting in self.currentSetting["walker_settings"]:
-                print(setting)
                 sourcePoint = (setting[0], setting[1])
                 destinationPoint = (setting[2], setting[3])
 
                 self._walkerSettings.append(
                     WalkerSetting(
                         source=self._pointToLocation(sourcePoint),
-                        destination=self._pointToLocation(destinationPoint)
+                        destination=self._pointToLocation(destinationPoint, z=0.1)
                     )
                 )
 

@@ -1,5 +1,8 @@
 from msilib.schema import Error
+import time
 import carla
+import logging
+from .PedestrianFactory import PedestrianFactory
 
 class PedestrianAgent:
     
@@ -13,6 +16,7 @@ class PedestrianAgent:
                 This also applies to parameters related to the LocalPlanner.
         """
         self._walker = walker
+        self.name = f"PedestrianAgent #{walker.id}"
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
 
@@ -22,6 +26,14 @@ class PedestrianAgent:
         self._acceleration = 1 #m/s^2
         self._target_speed = target_speed
         self._destination = None
+
+        self.onSideWalk = True
+        self._needJump = False
+        self._last_jumped = time.time_ns()
+
+        self.collisionSensor = None
+        self.obstacleDetector = None
+        self.initSensors()
 
     
     @property
@@ -45,6 +57,24 @@ class PedestrianAgent:
         
         self._destination = destination
 
+    def canJump(self):
+        if self.timeSinceLastJumpMS() < 1000:
+            return False
+
+        distance = self.distanceToNextSideWalk()
+        walkerSpeed = self.getOldSpeed()
+
+        if distance < walkerSpeed * 2 and distance > walkerSpeed:
+            return True
+        return False
+
+    def updateJumped(self):
+        self._last_jumped = time.time_ns()
+
+    def timeSinceLastJumpMS(self):
+        diff = (time.time_ns() - self._last_jumped) // 1_000_000 
+        return diff
+
 
     def done(self):
         if self.getDistanceToDestination() < 0.1:
@@ -63,9 +93,17 @@ class PedestrianAgent:
         self._walker.apply_control(self.calculateControl())
 
 
+    def printLocations(self):
+        print("Agent location", self._walker.get_location())
+        print("Collision location", self.collisionSensor.get_location())
+        print("Obstacle detector location", self.obstacleDetector.get_location())
+
     def calculateControl(self):
         if self._destination is None:
             raise Error("Destination is none")
+
+        # self.printLocations()
+        # self.distanceToNextSideWalk()
 
         print("Calculating control for Walker {self._walker.id}")
         direction = self.calculateDirectionToDestination()
@@ -73,11 +111,29 @@ class PedestrianAgent:
 
         print(f"Walker {self._walker.id}: distance to destination is {self.getDistanceToDestination()} meters, and next speed {speed}")
 
-        return carla.WalkerControl(
+
+        jump = False
+        
+        if self.canJump():
+            self.updateJumped()
+            jump = True
+            logging.info(f"{self.name} making a jump.")
+        # if self._needJump:
+        #     logging.info(f"{self.name} need a jump.")
+        #     if self.canJump():
+        #         self.updateJumped()
+        #         jump = True
+        #         logging.info(f"{self.name} making a jump.")
+
+        control = carla.WalkerControl(
             direction = direction,
             speed = speed,
-            jump = False
+            jump = jump
         )
+
+        self._needJump = False
+
+        return control
 
 
     def calculateDirectionToDestination(self) -> carla.Vector3D:
@@ -95,6 +151,11 @@ class PedestrianAgent:
     def getDistanceToDestination(self):
         return self._walker.get_location().distance(self._destination)
 
+
+    def getOldSpeed(self):
+        oldControl = self._walker.get_control()
+        return oldControl.speed
+
     def calculateNextSpeed(self, direction):
 
         # TODO make a smooth transition
@@ -104,5 +165,65 @@ class PedestrianAgent:
         return self._target_speed
 
 
+    #region sidewalk
 
 
+    def getObstaclesToDistance(self):
+        actorLocation = self._walker.get_location()
+        labeledObjects = self._world.cast_ray(actorLocation, self._destination)
+        # for lb in labeledObjects:
+        #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
+        return labeledObjects
+    
+    def distanceToNextSideWalk(self):
+        actorLocation = self._walker.get_location()
+        actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
+        labeledObjects = self.getObstaclesToDistance()
+        for lb in labeledObjects:
+            if lb.label == carla.CityObjectLabel.Sidewalks:
+                sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
+                print(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {actorXYLocation.distance(sidewalkXYLocation)}")
+                return actorLocation.distance(lb.location)
+
+    #endregion
+    #region sensors
+
+
+    def initSensors(self):
+        pedFactor = PedestrianFactory(self._world)
+        logging.info(f"{self.name}: adding collision detector")
+        self.collisionSensor = pedFactor.addCollisonSensor(self._walker)
+        self.collisionSensor.listen(lambda data: self.handleWalkerCollision(data))
+
+        # self.obstacleDetector = pedFactor.addObstacleDetector(self.walker)
+        # self.obstacleDetector.listen(lambda data: self.handWalkerObstacles(data))
+
+    def handleWalkerCollision(self, data):
+        if self.isSidewalk(data.other_actor):
+            logging.info(f"{self.name} hits a sidewalk")
+            self._needJump = True
+        else:
+            logging.info(f"{self.name} hits a non-sidewalk")
+
+
+    def handWalkerObstacles(self, data):
+        # logging.info(f"{self.name} sees a obstackle {data.distance}m away with semantic tag {data.other_actor.semantic_tags}")
+        # logging.info("semantic tag", data.other_actor.semantic_tags)
+        # if self.isSidewalk(data.other_actor):
+
+        #     if data.distance < 0.1:
+        #         logging.info(f"{self.name} is on a sidewalk {data.distance}m away")
+        #         self.onSideWalk = True
+        #     else:
+        #         logging.info(f"{self.name} sees a obstackle {data.distance}m away")
+        #         self.onSideWalk = False
+
+        #     # self._needJump = True
+        return
+    
+    def isSidewalk(self, actor):
+        if 8 in actor.semantic_tags:
+            return True
+        return False
+
+    

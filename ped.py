@@ -4,13 +4,15 @@ import logging
 import random
 import time
 import eventlet
-eventlet.monkey_patch()
+# eventlet.monkey_patch()
 
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
 from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings import SettingsManager
+
+from agents.pedestrians import PedestrianFactory
 
 from lib import SimulationVisualization, MapNames, MapManager, Simulator
 from lib.state import StateManager
@@ -85,26 +87,23 @@ settingsManager = SettingsManager(client, circular_t_junction_settings)
 settingsManager.load("setting1")
 walkerSettings = settingsManager.getWalkerSettings()
 
-for setting in walkerSettings:
-    print(setting)
-
-walkerSetting = random.choice(walkerSettings)
-
-# print(walkerSetting)
-# exit(0)
-
+walkerSetting = walkerSettings[1]
 walkerSpawnPoint = carla.Transform(location = walkerSetting.source)
-
-bpLib = world.get_blueprint_library()
-pedBps = bpLib.filter('walker.pedestrian.*')
-
-
+destination = walkerSetting.destination
 visualizer.drawWalkerNavigationPoints([walkerSpawnPoint])
 
-walkerBp = random.choice(pedBps)
+objectsInPath = world.cast_ray(walkerSetting.source, walkerSetting.destination)
+print(objectsInPath)
+for lb in objectsInPath:
+    print(f"Labeled point location {lb.location} and semantic {lb.label} distance {walkerSetting.source.distance(lb.location)}")
+
+# exit(0)
 
 
-walker = world.try_spawn_actor(walkerBp, walkerSpawnPoint)
+pedFactory = PedestrianFactory(world)
+walker = pedFactory.spawn(walkerSpawnPoint)
+
+
 world.wait_for_tick()
 
 
@@ -122,7 +121,6 @@ time.sleep(1)
 
 walkerAgent = PedestrianAgent(walker)
 
-destination = walkerSetting.destination
 walkerAgent.set_destination(destination)
 visualizer.drawDestinationPoint(destination)
 
@@ -133,11 +131,8 @@ def destoryActors():
     walker.destroy()
 
 def agentUpdate(world_snapshot):
+
     if walkerAgent.done():
-        # destination = random.choice(mapManager.navigation_points).location
-        # walkerAgent.set_destination(destination)
-        # print("The target has been reached, searching for another target")
-        # visualizer.drawDestinationPoint(destination, life_time=60.0)
         print(f"Walker {walkerAgent.walker.id} reached destination. Nothing to do")
         return
 
