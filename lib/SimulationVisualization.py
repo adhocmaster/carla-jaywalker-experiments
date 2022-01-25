@@ -170,6 +170,24 @@ class SimulationVisualization(ClientUser):
                 )
 
 
+    def drawDirection(self, location, direction, z=0.5, life_time=1.0):
+        """
+        Draw a list of waypoints at a certain height given in z.
+
+            :param world: carla.world object
+            :param waypoints: list or iterable container with the waypoints to draw
+            :param z: height in meters
+        """
+        begin = location + carla.Location(z=z)
+        angle = math.atan2(direction.y, direction.x)
+        end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
+        self.world.debug.draw_arrow(
+            begin, 
+            end, 
+            arrow_size=0.3, 
+            color=carla.Color(50, 25, 25), 
+            life_time=life_time
+            )
     def drawAllWaypoints(self, z=0.5, life_time=1.0):
         """
         Draw a list of waypoints at a certain height given in z.
@@ -185,7 +203,7 @@ class SimulationVisualization(ClientUser):
     def drawDestinationPoint(self, location, life_time=20.0):
         print(f"destinationSpawnPoint position ({location.x}, {location.y})")
         overlayLocation = carla.Location(location.x, location.y, 10)
-        self.drawPoint(location=overlayLocation, size=0.2, color=(0, 255, 0), life_time=life_time)
+        self.drawPoint(location=overlayLocation, size=0.1, color=(0, 255, 0), life_time=life_time)
         self.drawTextOnMap(location=overlayLocation, text=f"dest", life_time=life_time)
 
 

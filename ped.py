@@ -131,7 +131,13 @@ def destoryActors():
 def agentUpdate(world_snapshot):
 
     if walkerAgent.done():
-        print(f"Walker {walkerAgent.walker.id} reached destination. Nothing to do")
+        print(f"Walker {walkerAgent.walker.id} reached destination. Going back")
+        # if walkerAgent.destination == walkerSetting.destination:
+        #     walkerAgent.set_destination(walkerSetting.source)
+        #     visualizer.drawDestinationPoint(destination)
+        # else:
+        #     walkerAgent.set_destination(walkerSetting.destination)
+        #     visualizer.drawDestinationPoint(destination)
         return
 
     if walkerAgent.canUpdate():

@@ -31,8 +31,6 @@ class PedestrianAgent:
         self._target_speed = target_speed
         self._destination = None
 
-        self.onSideWalk = True
-        self._needJump = False
         self._last_jumped = time.time_ns()
 
         self.collisionSensor = None
@@ -43,6 +41,10 @@ class PedestrianAgent:
     @property
     def walker(self):
         return self._walker
+
+    @property
+    def destination(self):
+        return self._destination
 
 
     def set_target_speed(self, target_speed):
@@ -59,6 +61,8 @@ class PedestrianAgent:
             :param start_location (carla.Location): starting location of the route
         """
         
+        location = self._walker.get_location()
+        destination.z = location.z # agent z is in the center of mass, not on the road.
         self._destination = destination
 
     def canClimbSideWalk(self):
@@ -122,11 +126,15 @@ class PedestrianAgent:
         # self.printLocations()
         # self.distanceToNextSideWalk()
 
+        location = self._walker.get_location()
         logging.debug(f"Calculating control for Walker {self._walker.id}")
         direction = self.calculateDirectionToDestination()
+        self.visualizer.drawDirection(location, direction, life_time=0.1)
         speed = self.calculateNextSpeed(direction)
 
-        logging.debug(f"Walker {self._walker.id}: distance to destination is {self.getDistanceToDestination()} meters, and next speed {speed}")
+        logging.info(f"Walker {self._walker.id}: distance to destination is {self.getDistanceToDestination()} meters, and next speed {speed}")
+        logging.info(f"next speed {speed}")
+        logging.info(f"direction {direction}")
 
 
         jump = False
@@ -136,30 +144,16 @@ class PedestrianAgent:
             jump = False
             logging.info(f"{self.name} making a jump.")
             # self._walker.add_force(carla.Vector3D(0, 0, 10))
-            location = self._walker.get_location()
             # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
             
             velocity = self.speedToVelocity(self._target_speed)
-            print("velocity", velocity)
-            # self._walker.set_location(
-            #     carla.Location(
-            #         location.x + velocity.x * self.time_delta * 2,
-            #         location.y + velocity.y * self.time_delta * 2,
-            #         1.5
-            # ))
-            print("agent location", location)
+
             self._walker.set_location(
                 carla.Location(
                     location.x + velocity.x * self.time_delta * 5,
                     location.y + velocity.y * self.time_delta * 5,
-                    1.5
+                    location.z + 0.5
             ))
-        # if self._needJump:
-        #     logging.info(f"{self.name} need a jump.")
-        #     if self.canClimbSideWalk():
-        #         self.updateJumped()
-        #         jump = True
-        #         logging.info(f"{self.name} making a jump.")
 
         control = carla.WalkerControl(
             direction = direction,
@@ -222,7 +216,8 @@ class PedestrianAgent:
     def getObstaclesToDistance(self):
         actorLocation = self._walker.get_location()
         actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
-        labeledObjects = self._world.cast_ray(actorXYLocation, self._destination)
+        destinationXYLocation = carla.Location(x = self._destination.x, y = self._destination.y, z=0.05)
+        labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
         # for lb in labeledObjects:
         #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
         return labeledObjects
@@ -257,7 +252,6 @@ class PedestrianAgent:
     def handleWalkerCollision(self, data):
         if self.isSidewalk(data.other_actor):
             logging.info(f"{self.name} hits a sidewalk")
-            self._needJump = True
         else:
             logging.info(f"{self.name} hits a non-sidewalk")
 
@@ -269,10 +263,8 @@ class PedestrianAgent:
 
         #     if data.distance < 0.1:
         #         logging.info(f"{self.name} is on a sidewalk {data.distance}m away")
-        #         self.onSideWalk = True
         #     else:
         #         logging.info(f"{self.name} sees a obstackle {data.distance}m away")
-        #         self.onSideWalk = False
 
         #     # self._needJump = True
         return
