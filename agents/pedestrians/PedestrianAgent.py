@@ -3,10 +3,11 @@ import time
 import carla
 import logging
 from .PedestrianFactory import PedestrianFactory
+from lib import SimulationVisualization
 
 class PedestrianAgent:
     
-    def __init__(self, walker, target_speed=1.5, skip_ticks=10, opt_dict={}):
+    def __init__(self, walker, target_speed=1.5, skip_ticks=0, time_delta=0.1, visualizer=None, opt_dict={}):
         """
         Initialization the agent paramters, the local and the global planner.
 
@@ -21,7 +22,10 @@ class PedestrianAgent:
         self._map = self._world.get_map()
 
         self.skip_ticks = skip_ticks
+        self.time_delta = time_delta
         self.tickCounter = 0
+
+        self.visualizer = visualizer
 
         self._acceleration = 1 #m/s^2
         self._target_speed = target_speed
@@ -57,14 +61,25 @@ class PedestrianAgent:
         
         self._destination = destination
 
-    def canJump(self):
+    def canClimbSideWalk(self):
+
+        if self.done():
+            return False
         if self.timeSinceLastJumpMS() < 1000:
             return False
 
-        distance = self.distanceToNextSideWalk()
+        distance = self.distanceToNextSideWalk() 
+        if distance is None:
+            return False
+        print(f"current distance is {distance}")
+        distance -= self.getOldSpeed() * self.time_delta
+        
+        print(f"future distance is {distance}")
         walkerSpeed = self.getOldSpeed()
 
-        if distance < walkerSpeed * 2 and distance > walkerSpeed:
+        # if distance < walkerSpeed * 2 and distance > walkerSpeed:
+        if distance < 0.2 and distance > 0.1:
+            print(f"future distance is {distance}. Can jump")
             return True
         return False
 
@@ -82,6 +97,8 @@ class PedestrianAgent:
         return False
 
     def canUpdate(self):
+        if self.skip_ticks == 0:
+            return True
         self.tickCounter += 1
         if self.tickCounter >= self.skip_ticks:
             self.tickCounter = 0
@@ -105,22 +122,41 @@ class PedestrianAgent:
         # self.printLocations()
         # self.distanceToNextSideWalk()
 
-        print("Calculating control for Walker {self._walker.id}")
+        logging.debug(f"Calculating control for Walker {self._walker.id}")
         direction = self.calculateDirectionToDestination()
         speed = self.calculateNextSpeed(direction)
 
-        print(f"Walker {self._walker.id}: distance to destination is {self.getDistanceToDestination()} meters, and next speed {speed}")
+        logging.debug(f"Walker {self._walker.id}: distance to destination is {self.getDistanceToDestination()} meters, and next speed {speed}")
 
 
         jump = False
         
-        if self.canJump():
+        if self.canClimbSideWalk():
             self.updateJumped()
-            jump = True
+            jump = False
             logging.info(f"{self.name} making a jump.")
+            # self._walker.add_force(carla.Vector3D(0, 0, 10))
+            location = self._walker.get_location()
+            # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
+            
+            velocity = self.speedToVelocity(self._target_speed)
+            print("velocity", velocity)
+            # self._walker.set_location(
+            #     carla.Location(
+            #         location.x + velocity.x * self.time_delta * 2,
+            #         location.y + velocity.y * self.time_delta * 2,
+            #         1.5
+            # ))
+            print("agent location", location)
+            self._walker.set_location(
+                carla.Location(
+                    location.x + velocity.x * self.time_delta * 5,
+                    location.y + velocity.y * self.time_delta * 5,
+                    1.5
+            ))
         # if self._needJump:
         #     logging.info(f"{self.name} need a jump.")
-        #     if self.canJump():
+        #     if self.canClimbSideWalk():
         #         self.updateJumped()
         #         jump = True
         #         logging.info(f"{self.name} making a jump.")
@@ -143,6 +179,7 @@ class PedestrianAgent:
         direction = carla.Vector3D(
             x = (self._destination.x - currentLocation.x) / distance,
             y = (self._destination.y - currentLocation.y) / distance,
+            # z = (self._destination.z - currentLocation.z) / distance
             z = (self._destination.z - currentLocation.z) / distance
         )
         return direction
@@ -155,6 +192,20 @@ class PedestrianAgent:
     def getOldSpeed(self):
         oldControl = self._walker.get_control()
         return oldControl.speed
+
+    
+    def getOldVelocity(self):
+        oldControl = self._walker.get_control()
+        direction = oldControl.direction
+        speed = self.getOldSpeed()
+        return carla.Vector3D(direction.x * speed, direction.y * speed, direction.z * speed)
+
+    
+    def speedToVelocity(self, speed):
+        oldControl = self._walker.get_control()
+        direction = oldControl.direction
+        return carla.Vector3D(direction.x * speed, direction.y * speed, direction.z * speed)
+
 
     def calculateNextSpeed(self, direction):
 
@@ -170,7 +221,8 @@ class PedestrianAgent:
 
     def getObstaclesToDistance(self):
         actorLocation = self._walker.get_location()
-        labeledObjects = self._world.cast_ray(actorLocation, self._destination)
+        actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
+        labeledObjects = self._world.cast_ray(actorXYLocation, self._destination)
         # for lb in labeledObjects:
         #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
         return labeledObjects
@@ -181,9 +233,13 @@ class PedestrianAgent:
         labeledObjects = self.getObstaclesToDistance()
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
+                if self.visualizer is not None:
+                    self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
                 sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
-                print(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {actorXYLocation.distance(sidewalkXYLocation)}")
-                return actorLocation.distance(lb.location)
+                distance = actorXYLocation.distance(sidewalkXYLocation)
+                print(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
+                return distance
+        return None
 
     #endregion
     #region sensors
@@ -192,8 +248,8 @@ class PedestrianAgent:
     def initSensors(self):
         pedFactor = PedestrianFactory(self._world)
         logging.info(f"{self.name}: adding collision detector")
-        self.collisionSensor = pedFactor.addCollisonSensor(self._walker)
-        self.collisionSensor.listen(lambda data: self.handleWalkerCollision(data))
+        # self.collisionSensor = pedFactor.addCollisonSensor(self._walker)
+        # self.collisionSensor.listen(lambda data: self.handleWalkerCollision(data))
 
         # self.obstacleDetector = pedFactor.addObstacleDetector(self.walker)
         # self.obstacleDetector.listen(lambda data: self.handWalkerObstacles(data))

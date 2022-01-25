@@ -23,6 +23,7 @@ class PedestrianFactory:
     
     def spawn(self, spawnPoint):
         walkerBp = self.create()
+        # walkerBp.set_attribute('is_invincible', 'true')  
         walker = self.world.spawn_actor(walkerBp, spawnPoint)
         PedestrianFactory.walkers.append(walker)
         return walker

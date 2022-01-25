@@ -58,7 +58,12 @@ mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
 mapManager.load(MapNames.circle_t_junctions)
 
+time_delta = 0.01
 world = mapManager.world
+settings = world.get_settings()
+settings.substepping = False
+settings.fixed_delta_seconds = time_delta
+world.apply_settings(settings)
 
 visualizer = SimulationVisualization(client, mapManager)
 # visualizer.draw00()
@@ -73,15 +78,7 @@ visualizer.drawSpectatorPoint()
 visualizer.drawAllWaypoints(life_time=0.0)
 
 
-# setting = circular_t_junction_settings["setting1"]
 
-# walkerSpawnPoint = carla.Transform(
-#     location = carla.Location(
-#         x = setting["walker_spawn_points"][1][0],
-#         y = setting["walker_spawn_points"][1][1],
-#         z = 1.0
-#     )
-# ) 
 
 settingsManager = SettingsManager(client, circular_t_junction_settings)
 settingsManager.load("setting1")
@@ -96,6 +93,7 @@ objectsInPath = world.cast_ray(walkerSetting.source, walkerSetting.destination)
 print(objectsInPath)
 for lb in objectsInPath:
     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {walkerSetting.source.distance(lb.location)}")
+    visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 0), life_time=2.0)
 
 # exit(0)
 
@@ -119,7 +117,7 @@ else:
 
 time.sleep(1)
 
-walkerAgent = PedestrianAgent(walker)
+walkerAgent = PedestrianAgent(walker, visualizer=visualizer, time_delta=time_delta)
 
 walkerAgent.set_destination(destination)
 visualizer.drawDestinationPoint(destination)
