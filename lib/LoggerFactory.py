@@ -1,5 +1,5 @@
 import logging
-
+from logging.handlers import TimedRotatingFileHandler
 
 class LoggerFactory:
 
@@ -7,10 +7,12 @@ class LoggerFactory:
     streamHandler = None
     formatter = None
     defaultLevel = None
+    file = None
     
     @staticmethod
     def createBaseLogger(name, defaultLevel=logging.INFO, file=None):
         LoggerFactory.defaultLevel = defaultLevel
+        LoggerFactory.file = file
 
         logger = logging.getLogger(name)
         logger.setLevel(LoggerFactory.defaultLevel)
@@ -18,8 +20,12 @@ class LoggerFactory:
         LoggerFactory.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
         if file is not None:
+            with open(file, "w") as f:
+                f.truncate(0)
+
             # create file handler for logger.
             LoggerFactory.fileHandler = logging.FileHandler(file)
+            # LoggerFactory.fileHandler = TimedRotatingFileHandler(filename=file, when='midnight', backupCount=5)
             LoggerFactory.fileHandler.setLevel(level=LoggerFactory.defaultLevel)
             LoggerFactory.fileHandler.setFormatter(LoggerFactory.formatter)
 
@@ -40,25 +46,38 @@ class LoggerFactory:
     @staticmethod
     def create(name, config=None) -> logging.Logger:
 
-        print(f"creating {name} logger")
-
         logger = logging.getLogger(name)
+        level = None
 
         if config is not None and "LOG_LEVEL" in config:
+            print(f"setting log level {config['LOG_LEVEL']} for {name}")
             logger.setLevel(config["LOG_LEVEL"])
+            level = config["LOG_LEVEL"]
 
         elif LoggerFactory.defaultLevel is not None:
+            print(f"setting log level {LoggerFactory.defaultLevel} for {name}")
             logger.setLevel(LoggerFactory.defaultLevel)
+            level = LoggerFactory.defaultLevel
 
         else:
+            print(f"setting log level {logging.INFO} for {name}")
             logger.setLevel(logging.INFO)
+            level = logging.INFO
 
-        if LoggerFactory.fileHandler is not None:
-            logger.addHandler(LoggerFactory.fileHandler)
+        if LoggerFactory.file is not None:
 
-        if LoggerFactory.streamHandler is not None:
-            print("Setting console logger")
-            logger.addHandler(LoggerFactory.streamHandler)
+            # create file handler for logger.
+            fileHandler = logging.FileHandler(LoggerFactory.file)
+            # LoggerFactory.fileHandler = TimedRotatingFileHandler(filename=file, when='midnight', backupCount=5)
+            fileHandler.setLevel(level=level)
+            fileHandler.setFormatter(LoggerFactory.formatter)
+            logger.addHandler(fileHandler)
+
+        # create console handler for logger.
+        streamHandler = logging.StreamHandler()
+        streamHandler.setLevel(level=level)
+        streamHandler.setFormatter(LoggerFactory.formatter)
+        logger.addHandler(streamHandler)
 
         
         return logger

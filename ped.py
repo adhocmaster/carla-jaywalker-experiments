@@ -41,7 +41,7 @@ argparser.add_argument(
 
 args = argparser.parse_args()
 
-logger = LoggerFactory.createBaseLogger("ped.py", defaultLevel=logging.INFO, file="ped.py.log")
+logger = LoggerFactory.createBaseLogger("ped.py", defaultLevel=logging.INFO, file="logs/ped.py.log")
 
 # logger.basicConfig(format='%(levelname)s: %(message)s', level=logger.INFO)
 
@@ -119,9 +119,9 @@ else:
 
 time.sleep(1)
 
-walkerAgent = PedestrianAgent(walker, visualizer=visualizer, time_delta=time_delta)
+walkerAgent = PedestrianAgent(walker, visualizer=visualizer, time_delta=time_delta, config={"LOG_LEVEL": logging.DEBUG})
 
-exit(0)
+# exit(0)
 
 walkerAgent.set_destination(destination)
 visualizer.drawDestinationPoint(destination)
