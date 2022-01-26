@@ -100,7 +100,7 @@ for lb in objectsInPath:
 # exit(0)
 
 
-pedFactory = PedestrianFactory(world)
+pedFactory = PedestrianFactory(world, visualizer=visualizer)
 walker = pedFactory.spawn(walkerSpawnPoint)
 
 
@@ -119,7 +119,8 @@ else:
 
 time.sleep(1)
 
-walkerAgent = PedestrianAgent(walker, visualizer=visualizer, time_delta=time_delta, config={"LOG_LEVEL": logging.DEBUG})
+# walkerAgent = PedestrianAgent(walker, visualizer=visualizer, time_delta=time_delta, config={"LOG_LEVEL": logging.DEBUG})
+walkerAgent = pedFactory.createAgent(walker=walker, logLevel=logging.DEBUG)
 
 # exit(0)
 

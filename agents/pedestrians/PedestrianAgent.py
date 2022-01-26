@@ -2,13 +2,12 @@ from msilib.schema import Error
 import time
 import carla
 import logging
-from .PedestrianFactory import PedestrianFactory
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
 
 class PedestrianAgent(InfoAgent):
     
-    def __init__(self, walker, desired_speed=1.5, skip_ticks=0, time_delta=0.1, visualizer=None, config=None):
+    def __init__(self, walker, desired_speed=1.5, time_delta=0.1, visualizer=None, config=None):
         """
         Initialization the agent paramters, the local and the global planner.
 
@@ -23,7 +22,7 @@ class PedestrianAgent(InfoAgent):
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
 
-        self.skip_ticks = skip_ticks
+        self.skip_ticks = 0
         self.time_delta = time_delta
         self.tickCounter = 0
 
@@ -185,7 +184,6 @@ class PedestrianAgent(InfoAgent):
 
 
     def initSensors(self):
-        pedFactor = PedestrianFactory(self._world)
         self.logger.info(f"{self.name}: adding collision detector")
         # self.collisionSensor = pedFactor.addCollisonSensor(self._walker)
         # self.collisionSensor.listen(lambda data: self.handleWalkerCollision(data))
