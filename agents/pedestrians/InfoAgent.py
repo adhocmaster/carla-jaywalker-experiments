@@ -1,5 +1,5 @@
 import carla
-from lib import LogProducer, LoggerFactory
+from lib import LoggerFactory
 
 class InfoAgent:
     def __init__(self, name, walker, desired_speed=1.5, config=None):

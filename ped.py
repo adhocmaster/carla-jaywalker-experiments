@@ -14,7 +14,7 @@ from settings import SettingsManager
 
 from agents.pedestrians import PedestrianFactory
 
-from lib import SimulationVisualization, MapNames, MapManager, Simulator
+from lib import SimulationVisualization, MapNames, MapManager, Simulator, LoggerFactory
 from lib.state import StateManager
 
 SpawnActor = carla.command.SpawnActor
@@ -41,16 +41,18 @@ argparser.add_argument(
 
 args = argparser.parse_args()
 
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+logger = LoggerFactory.createBaseLogger("ped.py", defaultLevel=logging.INFO, file="ped.py.log")
+
+# logger.basicConfig(format='%(levelname)s: %(message)s', level=logger.INFO)
 
 client = carla.Client(args.host, args.port)
 client.set_timeout(5.0)
 
-logging.info(f"Client carla version: {client.get_client_version()}")
-logging.info(f"Server carla version: {client.get_server_version()}")
+logger.info(f"Client carla version: {client.get_client_version()}")
+logger.info(f"Server carla version: {client.get_server_version()}")
 
 if client.get_client_version() != client.get_server_version():
-    logging.warning("Client and server version mistmatch. May not work properly.")
+    logger.warning("Client and server version mistmatch. May not work properly.")
 
 SpawnActor = carla.command.SpawnActor
 
@@ -90,9 +92,9 @@ destination = walkerSetting.destination
 visualizer.drawWalkerNavigationPoints([walkerSpawnPoint])
 
 objectsInPath = world.cast_ray(walkerSetting.source, walkerSetting.destination)
-print(objectsInPath)
+logger.info(objectsInPath)
 for lb in objectsInPath:
-    print(f"Labeled point location {lb.location} and semantic {lb.label} distance {walkerSetting.source.distance(lb.location)}")
+    logger.info(f"Labeled point location {lb.location} and semantic {lb.label} distance {walkerSetting.source.distance(lb.location)}")
     visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 0), life_time=2.0)
 
 # exit(0)
@@ -106,11 +108,11 @@ world.wait_for_tick()
 
 
 if walker is None:
+    logger.error("Cannot spawn walker")
     exit("Cannot spawn walker")
 else:
-    print(f"successfully spawn walker at {walkerSpawnPoint.location.x, walkerSpawnPoint.location.y, walkerSpawnPoint.location.z}")
-    print(walker.get_control())
-    print(walker.id)
+    logger.info(f"successfully spawn walker {walker.id} at {walkerSpawnPoint.location.x, walkerSpawnPoint.location.y, walkerSpawnPoint.location.z}")
+    logger.info(walker.get_control())
     
     # visualizer.trackOnTick(walker.id, {"life_time": 1})      
 
@@ -118,6 +120,8 @@ else:
 time.sleep(1)
 
 walkerAgent = PedestrianAgent(walker, visualizer=visualizer, time_delta=time_delta)
+
+exit(0)
 
 walkerAgent.set_destination(destination)
 visualizer.drawDestinationPoint(destination)

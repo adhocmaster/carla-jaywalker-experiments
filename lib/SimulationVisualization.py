@@ -4,13 +4,18 @@ import numpy as np
 import random
 import math
 
+from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
 from .MapManager import MapManager
 
 class SimulationVisualization(ClientUser):
 
     def __init__(self, client: carla.Client, mapManager: MapManager):
+        self.name = "SimulationVisualization"
         super().__init__(client)
+
+        self.logger = LoggerFactory.create(self.name)
+
         self.mapManager = mapManager
         # self.pool = eventlet.GreenPool()
 
@@ -126,7 +131,7 @@ class SimulationVisualization(ClientUser):
     def drawWalkerNavigationPoints(self, navPoints):
         for point in navPoints:
             location = point.location
-            print(f"walker spawn position ({location.x}, {location.y})")
+            self.logger.debug(f"walker spawn position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=0.05, color=(0, 255, 0))
             self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
@@ -134,7 +139,7 @@ class SimulationVisualization(ClientUser):
         spawn_points = self.map.get_spawn_points()
         for point in spawn_points:
             location = point.location
-            print(f"spawn_point position ({location.x}, {location.y})")
+            self.logger.debug(f"spawn_point position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=0.05)
             self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
@@ -142,7 +147,7 @@ class SimulationVisualization(ClientUser):
     def drawSpectatorPoint(self):
         spectator = self.world.get_spectator()
         location = spectator.get_location()
-        print(f"spectator position ({location.x}, {location.y}, {location.z})")
+        self.logger.debug(f"spectator position ({location.x}, {location.y}, {location.z})")
         drawLocation = carla.Location(location.x, location.y, 0)
         self.drawPoint(location=drawLocation, size=0.1, color=(0, 50, 200))
         self.drawTextOnMap(location=carla.Location(location.x, location.y, 10), text=f"Center ({round(location.x)}, {round(location.y)})")
@@ -201,7 +206,7 @@ class SimulationVisualization(ClientUser):
 
 
     def drawDestinationPoint(self, location, life_time=20.0):
-        print(f"destinationSpawnPoint position ({location.x}, {location.y})")
+        self.logger.debug(f"destinationSpawnPoint position ({location.x}, {location.y})")
         overlayLocation = carla.Location(location.x, location.y, 10)
         self.drawPoint(location=overlayLocation, size=0.1, color=(0, 255, 0), life_time=life_time)
         self.drawTextOnMap(location=overlayLocation, text=f"dest", life_time=life_time)
