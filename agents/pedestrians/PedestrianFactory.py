@@ -3,6 +3,7 @@ import random
 
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from charset_normalizer import logging
+from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
 
 class PedestrianFactory:
 
@@ -14,6 +15,7 @@ class PedestrianFactory:
         self.world = world
         self.visualizer = visualizer
         self.time_delta = time_delta
+
         self.bpLib = self.world.get_blueprint_library()
         self.pedBps = self.bpLib.filter('walker.pedestrian.*')
         self.collisionBp = self.bpLib.find('sensor.other.collision')
@@ -55,8 +57,8 @@ class PedestrianFactory:
         return PedestrianFactory.obstacleDetectors[walker]
 
     
-    def createAgent(self, walker: carla.Walker, desired_speed=1.5, logLevel=logging.INFO):
-        return PedestrianAgent(
+    def createAgent(self, walker: carla.Walker, desired_speed=1.5, logLevel=logging.INFO) -> PedestrianAgent:
+        agent = PedestrianAgent(
             walker, 
             desired_speed=desired_speed,
             visualizer=self.visualizer, 
@@ -64,6 +66,27 @@ class PedestrianFactory:
             config={"LOG_LEVEL": logLevel}
             )
 
+        self.addPlanners(agent)
+        self.initSensors(agent)
+
+
+        
+        return agent
+
+    def addPlanners(self, agent: PedestrianAgent):
+        localPlanner = SingleOncomingVehicleLocalPlanner()
+        agent.setLocalPlanner(localPlanner)
+        pass
+
+
+    def initSensors(self, agent: PedestrianAgent):
+        self.logger.info(f"{self.name}: adding sensors")
+        # self.logger.info(f"{self.name}: adding collision detector")
+        # agent.collisionSensor = pedFactor.addCollisonSensor(self._walker)
+        # agent.collisionSensor.listen(lambda data: agent.handleWalkerCollision(data))
+
+        # agent.obstacleDetector = pedFactor.addObstacleDetector(self.walker)
+        # agent.obstacleDetector.listen(lambda data: agent.handWalkerObstacles(data))
 
 
     

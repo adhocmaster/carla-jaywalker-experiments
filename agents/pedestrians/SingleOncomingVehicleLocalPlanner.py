@@ -4,7 +4,7 @@ from .PedestrianPlanner import PedestrianPlanner
 class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
 
-    def __init__(self, vehicle: carla.Vehicle) -> None:
+    def __init__(self, vehicle: carla.Vehicle = None) -> None:
         self._vehicle = vehicle
         pass
     
@@ -25,6 +25,8 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
 
     def getOncomingVehicles(self):
+        if self.vehicle is None:
+            return []
         return [self.vehicle]
 
 

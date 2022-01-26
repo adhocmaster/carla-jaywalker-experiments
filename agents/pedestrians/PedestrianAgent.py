@@ -33,7 +33,6 @@ class PedestrianAgent(InfoAgent):
 
         self.collisionSensor = None
         self.obstacleDetector = None
-        self.initSensors()
 
         self._localPlanner = None
 
@@ -180,16 +179,7 @@ class PedestrianAgent(InfoAgent):
         return None
 
     #endregion
-    #region sensors
-
-
-    def initSensors(self):
-        self.logger.info(f"{self.name}: adding collision detector")
-        # self.collisionSensor = pedFactor.addCollisonSensor(self._walker)
-        # self.collisionSensor.listen(lambda data: self.handleWalkerCollision(data))
-
-        # self.obstacleDetector = pedFactor.addObstacleDetector(self.walker)
-        # self.obstacleDetector.listen(lambda data: self.handWalkerObstacles(data))
+    #region sensor handlers
 
     def handleWalkerCollision(self, data):
         if self.isSidewalk(data.other_actor):
