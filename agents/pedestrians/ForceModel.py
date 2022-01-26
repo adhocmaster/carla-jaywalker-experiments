@@ -21,4 +21,5 @@ class ForceModel:
     @abstractmethod
     def calculateForce(self):
         raise Exception("called abstract method")
+
     

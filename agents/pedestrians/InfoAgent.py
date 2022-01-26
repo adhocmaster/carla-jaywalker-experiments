@@ -1,12 +1,18 @@
 import carla
+from lib import LogProducer, LoggerFactory
 
 class InfoAgent:
-    def __init__(self, walker, desired_speed=1.5):
+    def __init__(self, name, walker, desired_speed=1.5, config=None):
         self._walker = walker
         self.desired_speed = desired_speed
         # self._acceleration = 1 #m/s^2
         self._destination = None
 
+        self._logger = LoggerFactory.create(name, config)
+
+    @property
+    def logger(self):
+        return self._logger
     
     @property
     def walker(self):
@@ -14,12 +20,12 @@ class InfoAgent:
 
         
     @property
-    def getLocation(self):
+    def location(self):
         return self._walker.get_location()
 
     @property
-    def getFeetLocation(self):
-        actorLocation = self.getLocation()
+    def feetLocation(self):
+        actorLocation = self.location
         return carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
 
     @property
@@ -45,13 +51,13 @@ class InfoAgent:
             :param start_location (carla.Location): starting location of the route
         """
         
-        location = self._walker.get_location()
+        location = self.location
         destination.z = location.z # agent z is in the center of mass, not on the road.
         self._destination = destination
         
         
     def directionToDestination(self) -> carla.Vector3D:
-        currentLocation = self.getFeetLocation()
+        currentLocation = self.feetLocation
         distance = self.getDistanceToDestination()
 
         direction = carla.Vector3D(
