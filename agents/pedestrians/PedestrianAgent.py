@@ -3,9 +3,10 @@ import time
 import carla
 import logging
 from .PedestrianFactory import PedestrianFactory
+from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
 
-class PedestrianAgent:
+class PedestrianAgent(InfoAgent):
     
     def __init__(self, walker, target_speed=1.5, skip_ticks=0, time_delta=0.1, visualizer=None, opt_dict={}):
         """
@@ -16,7 +17,8 @@ class PedestrianAgent:
             :param opt_dict: dictionary in case some of its parameters want to be changed.
                 This also applies to parameters related to the LocalPlanner.
         """
-        self._walker = walker
+
+        super().__init__(walker, target_speed=target_speed)
         self.name = f"PedestrianAgent #{walker.id}"
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
@@ -27,9 +29,6 @@ class PedestrianAgent:
 
         self.visualizer = visualizer
 
-        self._acceleration = 1 #m/s^2
-        self._target_speed = target_speed
-        self._destination = None
 
         self._last_jumped = time.time_ns()
 
@@ -38,32 +37,6 @@ class PedestrianAgent:
         self.initSensors()
 
     
-    @property
-    def walker(self):
-        return self._walker
-
-    @property
-    def destination(self):
-        return self._destination
-
-
-    def set_target_speed(self, target_speed):
-        self._target_speed = target_speed
-    
-    def set_destination(self, destination):
-        """
-        This method creates a list of waypoints between a starting and ending location,
-        based on the route returned by the global router, and adds it to the local planner.
-        If no starting location is passed, the vehicle local planner's target location is chosen,
-        which corresponds (by default), to a location about 5 meters in front of the vehicle.
-
-            :param end_location (carla.Location): final location of the route
-            :param start_location (carla.Location): starting location of the route
-        """
-        
-        location = self._walker.get_location()
-        destination.z = location.z # agent z is in the center of mass, not on the road.
-        self._destination = destination
 
     def canClimbSideWalk(self):
 
@@ -109,9 +82,9 @@ class PedestrianAgent:
             return True
         return False
     
-    def updateControl(self):
-        "we should not call this. apply batch control"
-        self._walker.apply_control(self.calculateControl())
+    # def updateControl(self):
+    #     "we should not call this. apply batch control"
+    #     self._walker.apply_control(self.calculateControl())
 
 
     def printLocations(self):
@@ -128,7 +101,7 @@ class PedestrianAgent:
 
         location = self._walker.get_location()
         logging.debug(f"Calculating control for Walker {self._walker.id}")
-        direction = self.calculateDirectionToDestination()
+        direction = self.directionToDestination()
         self.visualizer.drawDirection(location, direction, life_time=0.1)
         speed = self.calculateNextSpeed(direction)
 
@@ -164,41 +137,6 @@ class PedestrianAgent:
         self._needJump = False
 
         return control
-
-
-    def calculateDirectionToDestination(self) -> carla.Vector3D:
-        currentLocation = self._walker.get_location()
-        distance = self.getDistanceToDestination()
-
-        direction = carla.Vector3D(
-            x = (self._destination.x - currentLocation.x) / distance,
-            y = (self._destination.y - currentLocation.y) / distance,
-            # z = (self._destination.z - currentLocation.z) / distance
-            z = (self._destination.z - currentLocation.z) / distance
-        )
-        return direction
-
-    
-    def getDistanceToDestination(self):
-        return self._walker.get_location().distance(self._destination)
-
-
-    def getOldSpeed(self):
-        oldControl = self._walker.get_control()
-        return oldControl.speed
-
-    
-    def getOldVelocity(self):
-        oldControl = self._walker.get_control()
-        direction = oldControl.direction
-        speed = self.getOldSpeed()
-        return carla.Vector3D(direction.x * speed, direction.y * speed, direction.z * speed)
-
-    
-    def speedToVelocity(self, speed):
-        oldControl = self._walker.get_control()
-        direction = oldControl.direction
-        return carla.Vector3D(direction.x * speed, direction.y * speed, direction.z * speed)
 
 
     def calculateNextSpeed(self, direction):
