@@ -20,7 +20,7 @@ class BaseResearch(ClientUser):
 
 
     def initWorldSettings(self):
-        time_delta = 0.01
+        time_delta = 0.007
         settings = self.world.get_settings()
         settings.substepping = False
         settings.fixed_delta_seconds = time_delta
@@ -31,7 +31,7 @@ class BaseResearch(ClientUser):
     def initVisualizer(self):
         self.visualizer.drawSpawnPoints()
         self.visualizer.drawSpectatorPoint()
-        self.visualizer.drawAllWaypoints(life_time=0.0)
+        self.visualizer.drawAllWaypoints(life_time=1.0)
         pass
 
     

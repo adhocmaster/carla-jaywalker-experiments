@@ -23,7 +23,7 @@ class VehicleFactory:
         self.time_delta = time_delta
         
         self.bpLib = self.world.get_blueprint_library()
-        self.vehicleBps = self.bpLib.filter('vehicle.*')
+        self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
 
         
     def create(self):
@@ -38,5 +38,5 @@ class VehicleFactory:
 
     
     def createAgent(self, vehicle: carla.Vehicle, target_speed=20, logLevel=logging.INFO) -> BasicAgent:
-        agent = BasicAgent(vehicle, target_speed=20)
+        agent = BasicAgent(vehicle, target_speed=20, opt_dict={"debug": True})
         return agent

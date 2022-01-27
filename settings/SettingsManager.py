@@ -49,7 +49,7 @@ class SettingsManager(ClientUser):
         if waypoint is None:
             msg = f"{self.name}: Cannot create way point near {location}"
             self.error(msg)
-        transform = carla.Transform(location = waypoint.transform.location + carla.Location(z=10), rotation = waypoint.transform.rotation)
+        transform = carla.Transform(location = waypoint.transform.location + carla.Location(z=1), rotation = waypoint.transform.rotation)
         # print(waypoint.transform)
         # print(transform)
         # exit(1)

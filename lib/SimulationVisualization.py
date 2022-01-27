@@ -153,7 +153,7 @@ class SimulationVisualization(ClientUser):
         self.drawTextOnMap(location=carla.Location(location.x, location.y, 10), text=f"Center ({round(location.x)}, {round(location.y)})")
 
         
-    def drawWaypoints(self, waypoints, z=0.5, life_time=1.0):
+    def drawWaypoints(self, waypoints, color=(25, 25, 25), z=0.5, life_time=1.0):
         """
         Draw a list of waypoints at a certain height given in z.
 
@@ -170,7 +170,7 @@ class SimulationVisualization(ClientUser):
                 begin, 
                 end, 
                 arrow_size=0.3, 
-                color=carla.Color(25, 25, 25), 
+                color=carla.Color(*color), 
                 life_time=life_time
                 )
 
@@ -207,9 +207,9 @@ class SimulationVisualization(ClientUser):
 
     def drawDestinationPoint(self, location, life_time=20.0):
         self.logger.debug(f"destinationSpawnPoint position ({location.x}, {location.y})")
-        overlayLocation = carla.Location(location.x, location.y, 10)
-        self.drawPoint(location=overlayLocation, size=0.1, color=(0, 255, 0), life_time=life_time)
-        self.drawTextOnMap(location=overlayLocation, text=f"dest", life_time=life_time)
+        overlayLocation = carla.Location(location.x, location.y, 1.5)
+        self.drawPoint(location=overlayLocation, size=0.13, color=(0, 255, 0), life_time=life_time)
+        self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D", life_time=life_time/2)
 
 
 

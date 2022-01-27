@@ -10,8 +10,11 @@ from collections import deque
 import random
 
 import carla
+from charset_normalizer import logging
 from agents.navigation.controller import VehiclePIDController
 from agents.tools.misc import draw_waypoints, get_speed
+
+from lib import Utils, LoggerFactory
 
 
 class RoadOption(Enum):
@@ -54,6 +57,8 @@ class LocalPlanner(object):
             max_steering: maximum steering applied to the vehicle
             offset: distance between the route waypoints and the center of the lane
         """
+
+        self.logger = LoggerFactory.create("Vehicle-LocalPlanner")
         self._vehicle = vehicle
         self._world = self._vehicle.get_world()
         self._map = self._world.get_map()
@@ -154,12 +159,15 @@ class LocalPlanner(object):
         :param k: how many waypoints to compute
         :return:
         """
+        self.logger.info(f"_compute_next_waypoints")
         # check we do not overflow the queue
         available_entries = self._waypoints_queue.maxlen - len(self._waypoints_queue)
         k = min(available_entries, k)
 
         for _ in range(k):
             last_waypoint = self._waypoints_queue[-1][0]
+
+            self.logger.info(f"Calculating waypoint from location {last_waypoint.transform.location}")
             next_waypoints = list(last_waypoint.next(self._sampling_radius))
 
             if len(next_waypoints) == 0:
@@ -202,6 +210,13 @@ class LocalPlanner(object):
 
         for elem in current_plan:
             self._waypoints_queue.append(elem)
+
+        if len(self._waypoints_queue) < 1:
+            raise Exception(f"No waypoints")
+
+        firsWp = self._waypoints_queue[0][0]
+
+        self.logger.info(f"set_global_plan first waypoint after update {firsWp.transform.location}")
 
         self._stop_waypoint_creation = stop_waypoint_creation
 
@@ -250,11 +265,20 @@ class LocalPlanner(object):
             control.brake = 1.0
             control.hand_brake = False
             control.manual_gear_shift = False
+            self.logger.warn("Vehicle cannot find waypoint")
         else:
             self.target_waypoint, self.target_road_option = self._waypoints_queue[0]
+            self.logger.info(self._vehicle.get_location())
+            self.logger.info(self.target_waypoint)
             control = self._vehicle_controller.run_step(self._target_speed, self.target_waypoint)
 
         if debug:
+            wps = []
+            for wp, ro in self._waypoints_queue:
+                # self.logger.info(wp.transform.location)
+                # print(wp.transform.location)
+                wps.append(wp)
+            draw_waypoints(self._vehicle.get_world(), wps, 1.0)
             draw_waypoints(self._vehicle.get_world(), [self.target_waypoint], 1.0)
 
         return control

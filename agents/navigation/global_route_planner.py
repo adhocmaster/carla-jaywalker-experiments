@@ -78,7 +78,9 @@ class GlobalRoutePlanner(object):
                         destination_index = self._find_closest_in_list(destination_waypoint, path)
                         if closest_index > destination_index:
                             break
-
+        
+        if len(route_trace) == 0:
+            raise Exception(f"Global route planner: Empty route from {origin} to {destination}")
         return route_trace
 
     def _build_topology(self):

@@ -16,6 +16,7 @@ from shapely.geometry import Polygon
 from agents.navigation.local_planner import LocalPlanner
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 from agents.tools.misc import get_speed, is_within_distance, get_trafficlight_trigger_location, compute_distance
+from lib import Utils, LoggerFactory
 
 
 class BasicAgent(object):
@@ -35,6 +36,7 @@ class BasicAgent(object):
             :param opt_dict: dictionary in case some of its parameters want to be changed.
                 This also applies to parameters related to the LocalPlanner.
         """
+        self.logger = LoggerFactory.create("Vehicle-BasicAgent")
         self._vehicle = vehicle
         self._world = self._vehicle.get_world()
         self._map = self._world.get_map()
@@ -70,6 +72,11 @@ class BasicAgent(object):
         # Initialize the planners
         self._local_planner = LocalPlanner(self._vehicle, opt_dict=opt_dict)
         self._global_planner = GlobalRoutePlanner(self._map, self._sampling_resolution)
+
+        self.debug = False
+        if "debug" in opt_dict:
+            self.debug = opt_dict['debug']
+
 
     def add_emergency_stop(self, control):
         """
@@ -123,11 +130,15 @@ class BasicAgent(object):
             start_location = self._vehicle.get_location()
             clean_queue = False
 
+        self.logger.warn(f"set_destination start_location {start_location} clean_queue {clean_queue}")
+
         start_waypoint = self._map.get_waypoint(start_location)
         end_waypoint = self._map.get_waypoint(end_location)
 
         route_trace = self.trace_route(start_waypoint, end_waypoint)
         self._local_planner.set_global_plan(route_trace, clean_queue=clean_queue)
+
+        self.logger.info(f"Destination successfully added.")
 
     def set_global_plan(self, plan, stop_waypoint_creation=True, clean_queue=True):
         """
@@ -152,7 +163,9 @@ class BasicAgent(object):
         """
         start_location = start_waypoint.transform.location
         end_location = end_waypoint.transform.location
-        return self._global_planner.trace_route(start_location, end_location)
+        route =  self._global_planner.trace_route(start_location, end_location)
+        self.logger.info(f"traced route from {start_location} to {end_location}")
+        return route
 
     def run_step(self):
         """Execute one step of navigation."""
@@ -177,7 +190,7 @@ class BasicAgent(object):
         if affected_by_tlight:
             hazard_detected = True
 
-        control = self._local_planner.run_step()
+        control = self._local_planner.run_step(debug=self.debug)
         if hazard_detected:
             control = self.add_emergency_stop(control)
 

@@ -55,6 +55,12 @@ mapManager.load(MapNames.circle_t_junctions)
 
 world = mapManager.world
 
+time_delta = 0.01
+settings = world.get_settings()
+settings.substepping = False
+settings.fixed_delta_seconds = time_delta
+world.apply_settings(settings)
+
 visualizer = SimulationVisualization(client, mapManager)
 # visualizer.draw00()
 
@@ -102,7 +108,7 @@ else:
 
 time.sleep(1)
 
-agent = BasicAgent(vehicle, target_speed=20)
+agent = BasicAgent(vehicle, target_speed=20, opt_dict={"debug": True})
 destination = random.choice(mapManager.spawn_points).location
 agent.set_destination(destination)
 visualizer.drawDestinationPoint(destination)
@@ -133,7 +139,7 @@ onTickers = [visualizer.onTick, stateManager.onTick, agentUpdate]
 onEnders = [destoryActors]
 simulator = Simulator(client, onTickers=onTickers, onEnders=onEnders)
 
-simulator.run(10000)
+simulator.run(100)
 
 
 

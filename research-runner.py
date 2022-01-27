@@ -51,7 +51,7 @@ def r1v1(host, port, log, output_dir):
     logger = LoggerFactory.getBaseLogger(name, defaultLevel=log, file=logPath)
     client = Utils.createClient(logger, host, port)
     research = Research1v1(client, log, output_dir)
-    research.run(maxTicks=1000)
+    research.run(maxTicks=500)
 
 
 

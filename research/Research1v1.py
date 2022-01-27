@@ -24,7 +24,8 @@ class Research1v1(BaseResearch):
 
     def destoryActors(self):
         self.logger.info('\ndestroying  walkers')
-        self.walker.destroy()
+        if self.walker is not None:
+            self.walker.destroy()
         self.logger.info('\ndestroying  vehicles')
         self.vehicle.destroy()
 
@@ -73,23 +74,46 @@ class Research1v1(BaseResearch):
 
     
     def createVehicle(self):
-        self.vehicle = self.vehicleFactory.spawn(self.vehicleSpawnPoint)       
+        vehicleSpawnPoint = self.vehicleSpawnPoint
+        # vehicleSpawnPoint = random.choice(self.mapManager.spawn_points)
+        self.vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)       
         if self.vehicle is None:
             self.logger.error("Cannot spawn vehicle")
             exit("Cannot spawn vehicle")
         else:
-            self.logger.info(f"successfully spawn vehicle at {self.vehicleSpawnPoint.location.x, self.vehicleSpawnPoint.location.y, self.vehicleSpawnPoint.location.z}")
+            self.logger.info(f"successfully spawn vehicle at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")
 
         self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
-        destination = random.choice(self.mapManager.spawn_points).location
-        self.vehicleAgent.set_destination(destination)
+
+        spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
+        destination = self.getNextDestination(spawnXYLocation)
+        self.vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
         self.visualizer.drawDestinationPoint(destination)
 
         pass
 
 
+    def getNextDestination(self, currentLocation):
+
+        return carla.Location(x=-132.862671, y=3, z=0.0)
+
+        destination = random.choice(self.mapManager.spawn_points).location
+        count = 1
+        while destination.distance(currentLocation) < 5:
+            destination = random.choice(self.mapManager.spawn_points).location
+            count += 1
+            if count > 5:
+                self.logger.error(f"Cannot find a destination from {currentLocation}")
+                raise Exception("Cannot find a destination")
+        return destination
+
+
     #region simulation
     def run(self, maxTicks=1000):
+
+        self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
+        self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
+        # return
 
         self.createWalker()
         self.createVehicle()
@@ -100,7 +124,11 @@ class Research1v1(BaseResearch):
         onEnders = [self.onEnd]
         simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 
-        simulator.run(maxTicks)
+        try: 
+            simulator.run(maxTicks)
+        except Exception as e:
+            self.logger.error(e)
+
 
     
     def onEnd(self):
@@ -112,6 +140,9 @@ class Research1v1(BaseResearch):
     
     
     def updateWalker(self, world_snapshot):
+
+        if self.walkerAgent is None:
+            return
 
         if self.walkerAgent.done():
             print(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
@@ -130,6 +161,7 @@ class Research1v1(BaseResearch):
     def updateVehicle(self, world_snapshot):
         if self.vehicleAgent.done():
             destination = random.choice(self.mapManager.spawn_points).location
+            # self.vehicleAgent.set_destination(destination, self.vehicle.get_location())
             self.vehicleAgent.set_destination(destination)
             self.logger.info("The target has been reached, searching for another target")
             self.visualizer.drawDestinationPoint(destination)
@@ -137,6 +169,7 @@ class Research1v1(BaseResearch):
         
         control = self.vehicleAgent.run_step()
         control.manual_gear_shift = False
+        self.logger.info(control)
         self.vehicle.apply_control(control)
         pass
 
