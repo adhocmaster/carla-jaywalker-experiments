@@ -1,8 +1,8 @@
 import carla
 import random
+import logging
 
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
-from charset_normalizer import logging
 from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
 from lib import LoggerFactory
 
@@ -73,9 +73,7 @@ class PedestrianFactory:
             )
 
         self.addPlanners(agent)
-        self.initSensors(agent)
-
-
+        # self.initSensors(agent)
         
         return agent
 

@@ -1,5 +1,7 @@
 import carla
 import logging
+
+from matplotlib import transforms
 from lib.ClientUser import ClientUser
 from .WalkerSetting import WalkerSetting
 from typing import List
@@ -22,7 +24,7 @@ class SettingsManager(ClientUser):
         self._walkerSettings = None
         self._walkerTransforms = None
 
-    def assertCurrentSetting(self):
+    def _assertCurrentSetting(self):
         if self.currentSetting is None:
             msg = f"{self.name}:currentSetting is None"
             self.error(msg)
@@ -47,11 +49,15 @@ class SettingsManager(ClientUser):
         if waypoint is None:
             msg = f"{self.name}: Cannot create way point near {location}"
             self.error(msg)
-        return waypoint
+        transform = carla.Transform(location = waypoint.transform.location + carla.Location(z=10), rotation = waypoint.transform.rotation)
+        # print(waypoint.transform)
+        # print(transform)
+        # exit(1)
+        return transform
 
 
     def getEgoSpawnpoint(self) -> carla.Transform:
-        self.assertCurrentSetting()
+        self._assertCurrentSetting()
         
         point = self.currentSetting["ego_spawn_point"]
         location = self._pointToLocation(point)
@@ -59,7 +65,7 @@ class SettingsManager(ClientUser):
 
     
     def getWalkerSettings(self):
-        self.assertCurrentSetting()
+        self._assertCurrentSetting()
 
         if self._walkerSettings is None:
             self._walkerSettings = []

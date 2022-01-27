@@ -99,17 +99,12 @@ class PedestrianAgent(InfoAgent):
             raise Error("Destination is none")
 
         # self.printLocations()
-        # self.distanceToNextSideWalk()
-
         location = self.feetLocation
-        self.logger.debug(f"Calculating control for Walker {self._walker.id}")
         direction = self.directionToDestination()
         self.visualizer.drawDirection(location, direction, life_time=0.1)
         speed = self.calculateNextSpeed(direction)
 
-        self.logger.info(f"Walker {self._walker.id}: distance to destination is {self.getDistanceToDestination()} meters, and next speed {speed}")
-        self.logger.info(f"next speed {speed}")
-        self.logger.info(f"direction {direction}")
+        self.logger.debug(f"Calculating controlDistance to destination is {self.getDistanceToDestination()} meters, next speed: {speed} direction: {direction}")
 
 
         self.climbSidewalkIfNeeded()

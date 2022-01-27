@@ -3,6 +3,7 @@ from re import X
 from turtle import distance
 import carla
 import math
+from typing import List
 from enum import Enum
 from .ClientUser import ClientUser
 
@@ -19,7 +20,7 @@ class MapManager(ClientUser):
         self._waypoints = None
 
     @property
-    def spawn_points(self):
+    def spawn_points(self) -> List[carla.Transform]:
         return self.map.get_spawn_points()
 
     @property
