@@ -4,14 +4,20 @@ import random
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from charset_normalizer import logging
 from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
+from lib import LoggerFactory
 
 class PedestrianFactory:
+
 
     walkers = []
     collisionSensors = {}
     obstacleDetectors = {}
 
     def __init__(self, world, time_delta=0.1, visualizer=None):
+        
+        self.name = "PedestrianFactory"
+        self.logger = LoggerFactory.create(self.name)
+
         self.world = world
         self.visualizer = visualizer
         self.time_delta = time_delta

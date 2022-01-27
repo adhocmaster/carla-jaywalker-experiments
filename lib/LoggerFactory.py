@@ -8,9 +8,14 @@ class LoggerFactory:
     formatter = None
     defaultLevel = None
     file = None
+    baseLogger = None
     
     @staticmethod
-    def createBaseLogger(name, defaultLevel=logging.INFO, file=None):
+    def getBaseLogger(name, defaultLevel=logging.INFO, file=None):
+
+        if LoggerFactory.baseLogger is not None:
+            return LoggerFactory.baseLogger
+
         LoggerFactory.defaultLevel = defaultLevel
         LoggerFactory.file = file
 
@@ -38,7 +43,8 @@ class LoggerFactory:
             logger.addHandler(LoggerFactory.fileHandler)
         logger.addHandler(LoggerFactory.streamHandler)
 
-        return logger
+        LoggerFactory.baseLogger = logger
+        return LoggerFactory.baseLogger
 
 
 
