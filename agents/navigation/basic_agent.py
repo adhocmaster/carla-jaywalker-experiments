@@ -130,15 +130,22 @@ class BasicAgent(object):
             start_location = self._vehicle.get_location()
             clean_queue = False
 
-        self.logger.warn(f"set_destination start_location {start_location} clean_queue {clean_queue}")
+        self.logger.debug(f"set_destination start_location {start_location} clean_queue {clean_queue}")
 
         start_waypoint = self._map.get_waypoint(start_location)
         end_waypoint = self._map.get_waypoint(end_location)
 
+        self.logger.debug(f"Calling trace_route")
         route_trace = self.trace_route(start_waypoint, end_waypoint)
+        
+        Utils.draw_trace_route(self._vehicle.get_world().debug, route_trace)
+
+        # exit(0)
+
+        self.logger.debug(f"Calling set_global_plan")
         self._local_planner.set_global_plan(route_trace, clean_queue=clean_queue)
 
-        self.logger.info(f"Destination successfully added.")
+        self.logger.debug(f"Destination successfully added.")
 
     def set_global_plan(self, plan, stop_waypoint_creation=True, clean_queue=True):
         """
@@ -163,6 +170,7 @@ class BasicAgent(object):
         """
         start_location = start_waypoint.transform.location
         end_location = end_waypoint.transform.location
+        self.logger.warn(f"Calling _global_planner trace_route")
         route =  self._global_planner.trace_route(start_location, end_location)
         self.logger.info(f"traced route from {start_location} to {end_location}")
         return route

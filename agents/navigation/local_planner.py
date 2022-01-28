@@ -15,6 +15,7 @@ from agents.navigation.controller import VehiclePIDController
 from agents.tools.misc import draw_waypoints, get_speed
 
 from lib import Utils, LoggerFactory
+from lib import WaypointTooFar
 
 
 class RoadOption(Enum):
@@ -118,6 +119,9 @@ class LocalPlanner(object):
 
     def _init_controller(self):
         """Controller initialization"""
+
+        self.logger.warn(f"Len of waypoint queue at _init_controller = {len(self._waypoints_queue)}")
+
         self._vehicle_controller = VehiclePIDController(self._vehicle,
                                                         args_lateral=self._args_lateral_dict,
                                                         args_longitudinal=self._args_longitudinal_dict,
@@ -130,6 +134,18 @@ class LocalPlanner(object):
         current_waypoint = self._map.get_waypoint(self._vehicle.get_location())
         self.target_waypoint, self.target_road_option = (current_waypoint, RoadOption.LANEFOLLOW)
         self._waypoints_queue.append((self.target_waypoint, self.target_road_option))
+        
+
+        firsWp = self._waypoints_queue[0][0]
+
+        if firsWp.transform.location.distance(carla.Location(x=-96.050758, y=-4.759546, z=0.000015)) < 1 or firsWp.transform.location.distance(self._vehicle.get_location()) > 15:
+            self.logger.warn("Initial waypoints current waypoint {current_waypoint.transform.location} from vehicle's location {self._vehicle.get_location()}")
+            Utils.draw_trace_route(self._world.debug, self._waypoints_queue, color=(0, 0, 200), life_time=0.0)
+            Utils.log_route(self.logger, self._waypoints_queue)
+            self.logger.warn("Initial waypoints queue")
+            Utils.log_route(self.logger, self._waypoints_queue)
+            raise WaypointTooFar("Initial waypoints current waypoint {current_waypoint.transform.location} from vehicle's location {self._vehicle.get_location()}")
+
 
     def set_speed(self, speed):
         """
@@ -201,6 +217,18 @@ class LocalPlanner(object):
             self._waypoints_queue.clear()
 
         # Remake the waypoints queue if the new plan has a higher length than the queue
+
+        firsWp = self._waypoints_queue[0][0]
+
+        self.logger.debug(f"set_global_plan first waypoint before update {firsWp.transform.location}")
+        if firsWp.transform.location.distance(carla.Location(x=-96.050758, y=-4.759546, z=0.000015)) < 1:
+            Utils.draw_trace_route(self._world.debug, self._waypoints_queue, color=(0, 0, 200), life_time=0.0)
+            self.logger.warn("Old waypoints queue")
+            Utils.log_route(self.logger, self._waypoints_queue)
+            self.logger.warn("current_plan")
+            Utils.log_route(self.logger, current_plan)
+            exit(-1)
+
         new_plan_length = len(current_plan) + len(self._waypoints_queue)
         if new_plan_length > self._waypoints_queue.maxlen:
             new_waypoint_queue = deque(maxlen=new_plan_length)
@@ -216,7 +244,15 @@ class LocalPlanner(object):
 
         firsWp = self._waypoints_queue[0][0]
 
-        self.logger.info(f"set_global_plan first waypoint after update {firsWp.transform.location}")
+        self.logger.debug(f"set_global_plan first waypoint after update {firsWp.transform.location}")
+        if firsWp.transform.location.distance(carla.Location(x=-96.050758, y=-4.759546, z=0.000015)) < 1:
+            Utils.draw_trace_route(self._world.debug, self._waypoints_queue, color=(0, 0, 200), life_time=0.0)
+            self.logger.warn("New waypoints queue")
+            Utils.log_route(self.logger, self._waypoints_queue)
+            self.logger.warn("current_plan")
+            Utils.log_route(self.logger, current_plan)
+            exit(-1)
+
 
         self._stop_waypoint_creation = stop_waypoint_creation
 
@@ -257,6 +293,7 @@ class LocalPlanner(object):
             for _ in range(num_waypoint_removed):
                 self._waypoints_queue.popleft()
 
+        self.logger.info(f"Vehilce location: {self._vehicle.get_location()}")
         # Get the target waypoint and move using the PID controllers. Stop if no target waypoint
         if len(self._waypoints_queue) == 0:
             control = carla.VehicleControl()
@@ -268,17 +305,16 @@ class LocalPlanner(object):
             self.logger.warn("Vehicle cannot find waypoint")
         else:
             self.target_waypoint, self.target_road_option = self._waypoints_queue[0]
-            self.logger.info(self._vehicle.get_location())
-            self.logger.info(self.target_waypoint)
+            self.logger.info(f"Vehilce target_waypoint: {self.target_waypoint}")
             control = self._vehicle_controller.run_step(self._target_speed, self.target_waypoint)
 
         if debug:
-            wps = []
-            for wp, ro in self._waypoints_queue:
-                # self.logger.info(wp.transform.location)
-                # print(wp.transform.location)
-                wps.append(wp)
-            draw_waypoints(self._vehicle.get_world(), wps, 1.0)
+            # wps = []
+            # for wp, ro in self._waypoints_queue:
+            #     # self.logger.info(wp.transform.location)
+            #     # print(wp.transform.location)
+            #     wps.append(wp)
+            # draw_waypoints(self._vehicle.get_world(), wps, 1.0)
             draw_waypoints(self._vehicle.get_world(), [self.target_waypoint], 1.0)
 
         return control

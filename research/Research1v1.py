@@ -8,6 +8,7 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.vehicles import VehicleFactory
 from lib import Simulator
+from lib import Utils
 
 class Research1v1(BaseResearch):
     
@@ -113,6 +114,14 @@ class Research1v1(BaseResearch):
 
         self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
         self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
+
+        problemOrigin = carla.Location(x=-155.0, y=-30.0, z=0)
+        problemWp = self.map.get_waypoint(problemOrigin, project_to_road=True, lane_type=carla.LaneType.Driving)
+        self.logger.info(f"Problem WP {problemWp}")
+        wps = [problemWp]
+        wps += problemWp.next(2.0)
+        self.logger.info(f"Number of waypoinst {len(wps)}")
+        Utils.draw_waypoints(self.debug, wps, life_time=5.0)
         # return
 
         self.createWalker()
