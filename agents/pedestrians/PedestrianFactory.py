@@ -78,7 +78,7 @@ class PedestrianFactory:
         return agent
 
     def addPlanners(self, agent: PedestrianAgent):
-        localPlanner = SingleOncomingVehicleLocalPlanner()
+        localPlanner = SingleOncomingVehicleLocalPlanner(agent)
         agent.setLocalPlanner(localPlanner)
         pass
 

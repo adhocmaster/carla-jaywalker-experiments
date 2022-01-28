@@ -1,12 +1,13 @@
 import carla
 from lib import LoggerFactory
+from .PedestrianPlanner import PedestrianPlanner
 
 class InfoAgent:
     def __init__(self, name, walker, desired_speed=1.5, config=None):
         self._walker = walker
         self.desired_speed = desired_speed
         # self._acceleration = 1 #m/s^2
-        self._destination = None
+        self._localPlanner:PedestrianPlanner = None
 
         self._logger = LoggerFactory.create(name, config)
 
@@ -15,8 +16,13 @@ class InfoAgent:
         return self._logger
     
     @property
+    def actor(self):
+        return self._walker
+        
+    @property
     def walker(self):
         return self._walker
+        
 
         
     @property
@@ -33,43 +39,55 @@ class InfoAgent:
         raise Exception("Not implemented yet")
 
 
+    # region planning
+
+    def setLocalPlanner(self, planner: PedestrianPlanner):
+        self._localPlanner = planner
 
         
     @property
     def destination(self):
-        return self._destination
+        return self._localPlanner.destination
+
+    def setDestination(self, destination: carla.Location):
+        self._localPlanner.setDestination(destination)
 
     
-    def set_destination(self, destination):
-        """
-        This method creates a list of waypoints between a starting and ending location,
-        based on the route returned by the global router, and adds it to the local planner.
-        If no starting location is passed, the vehicle local planner's target location is chosen,
-        which corresponds (by default), to a location about 5 meters in front of the vehicle.
+    # def set_destination(self, destination):
+    #     """
+    #     This method creates a list of waypoints between a starting and ending location,
+    #     based on the route returned by the global router, and adds it to the local planner.
+    #     If no starting location is passed, the vehicle local planner's target location is chosen,
+    #     which corresponds (by default), to a location about 5 meters in front of the vehicle.
 
-            :param end_location (carla.Location): final location of the route
-            :param start_location (carla.Location): starting location of the route
-        """
+    #         :param end_location (carla.Location): final location of the route
+    #         :param start_location (carla.Location): starting location of the route
+    #     """
         
-        location = self.location
-        destination.z = location.z # agent z is in the center of mass, not on the road.
-        self._destination = destination
+    #     location = self.location
+    #     destination.z = location.z # agent z is in the center of mass, not on the road.
+    #     self._destination = destination
         
         
-    def directionToDestination(self) -> carla.Vector3D:
-        currentLocation = self.feetLocation
-        distance = self.getDistanceToDestination()
+    # def directionToDestination(self) -> carla.Vector3D:
+    #     """Calculates direction from the feet of the pedestrians
 
-        direction = carla.Vector3D(
-            x = (self._destination.x - currentLocation.x) / distance,
-            y = (self._destination.y - currentLocation.y) / distance,
-            z = (self._destination.z - currentLocation.z) / distance
-        )
-        return direction
+    #     Returns:
+    #         carla.Vector3D: [description]
+    #     """
+    #     currentLocation = self.feetLocation
+    #     distance = self.getDistanceToDestination()
+
+    #     direction = carla.Vector3D(
+    #         x = (self._destination.x - currentLocation.x) / distance,
+    #         y = (self._destination.y - currentLocation.y) / distance,
+    #         z = (self._destination.z - currentLocation.z) / distance
+    #     )
+    #     return direction
 
     
-    def getDistanceToDestination(self):
-        return self._walker.get_location().distance(self._destination)
+    # def getDistanceToDestination(self):
+    #     return self._walker.get_location().distance(self._destination)
 
 
     def getOldSpeed(self):

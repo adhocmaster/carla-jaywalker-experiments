@@ -26,8 +26,36 @@ class Utils:
 
         return client
 
+    #region geometries
+
+    @staticmethod
+    def getDirection(fromLocation, toLocation, ignoreZ=False):
+        diff = toLocation - fromLocation
+        if ignoreZ:
+            diff.z = 0
+        mag = Utils.getMagnitude(diff)
+        direction =  diff / mag
+        return direction
+
+    
+    @staticmethod
+    def getDistance(fromLocation, toLocation, ignoreZ=False):
+        diff = toLocation - fromLocation
+        if ignoreZ:
+            diff.z = 0
+        
+        return Utils.getMagnitude(diff)
+
+        
+    @staticmethod
+    def getMagnitude(vector):
+        return math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2)
 
 
+
+    #endregion
+
+    #region drawing
     @staticmethod
     def draw_transform(debug, trans, col=carla.Color(255, 0, 0), lt=-1):
         debug.draw_arrow(
@@ -117,3 +145,4 @@ class Utils:
             debug.draw_line(
                 pair_w[0].transform.location + carla.Location(z=0.75),
                 pair_w[1].transform.location + carla.Location(z=0.75), 0.1, white, l_time, False)
+    #endregion

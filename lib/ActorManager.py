@@ -2,14 +2,27 @@
 import carla
 from typing import Dict
 
-from pyparsing import Word
-from .OnTicker import OnTicker
 
-class ActorManager(OnTicker):
+class ActorManager:
 
-    def __init__(self, client):
-        super().__init__(client)
+    def __init__(self, actor: carla.Actor):
+        
+        self._actor = actor
+        self._world = actor.get_world()
+        self._map = self.world.get_map()
         self._cache = {}
+
+    @property
+    def actor(self):
+        return self._actor
+
+    @property
+    def map(self):
+        return self._map
+
+    @property
+    def world(self):
+        return self._world
 
 
     @property

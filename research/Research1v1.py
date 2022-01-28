@@ -68,7 +68,7 @@ class Research1v1(BaseResearch):
 
         self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG)
 
-        self.walkerAgent.set_destination(self.walkerDestination)
+        self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)
 
         pass
@@ -112,16 +112,9 @@ class Research1v1(BaseResearch):
     #region simulation
     def run(self, maxTicks=1000):
 
-        self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
-        self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
+        # self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
+        # self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
 
-        problemOrigin = carla.Location(x=-155.0, y=-30.0, z=0)
-        problemWp = self.map.get_waypoint(problemOrigin, project_to_road=True, lane_type=carla.LaneType.Driving)
-        self.logger.info(f"Problem WP {problemWp}")
-        wps = [problemWp]
-        wps += problemWp.next(2.0)
-        self.logger.info(f"Number of waypoinst {len(wps)}")
-        Utils.draw_waypoints(self.debug, wps, life_time=5.0)
         # return
 
         self.createWalker()
@@ -150,6 +143,8 @@ class Research1v1(BaseResearch):
     
     def updateWalker(self, world_snapshot):
 
+        # print("updateWalker")
+
         if self.walkerAgent is None:
             return
 
@@ -163,8 +158,10 @@ class Research1v1(BaseResearch):
             #     visualizer.drawDestinationPoint(destination)
             return
 
+        print("canUpdate")
         if self.walkerAgent.canUpdate():
             control = self.walkerAgent.calculateControl()
+            # print("apply_control")
             self.walker.apply_control(control)
             
     def updateVehicle(self, world_snapshot):

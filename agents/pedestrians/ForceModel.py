@@ -16,7 +16,7 @@ class ForceModel:
 
     @property
     def agent(self):
-        return self.agent
+        return self._agent
 
     @abstractmethod
     def calculateForce(self):

@@ -170,7 +170,7 @@ class BasicAgent(object):
         """
         start_location = start_waypoint.transform.location
         end_location = end_waypoint.transform.location
-        self.logger.warn(f"Calling _global_planner trace_route")
+        self.logger.debug(f"Calling _global_planner trace_route")
         route =  self._global_planner.trace_route(start_location, end_location)
         self.logger.info(f"traced route from {start_location} to {end_location}")
         return route

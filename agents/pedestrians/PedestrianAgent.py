@@ -4,6 +4,7 @@ import carla
 import logging
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
+from .PedestrianPlanner import PedestrianPlanner
 
 class PedestrianAgent(InfoAgent):
     
@@ -34,46 +35,13 @@ class PedestrianAgent(InfoAgent):
         self.collisionSensor = None
         self.obstacleDetector = None
 
-        self._localPlanner = None
 
         # config parameters
 
     
 
-    def canClimbSideWalk(self):
-
-        if self.done():
-            return False
-        if self.timeSinceLastJumpMS() < 1000:
-            return False
-
-        distance = self.distanceToNextSideWalk() 
-        if distance is None:
-            return False
-        self.logger.debug(f"current distance is {distance}")
-        distance -= self.getOldSpeed() * self.time_delta
-        
-        self.logger.debug(f"future distance is {distance}")
-        walkerSpeed = self.getOldSpeed()
-
-        # if distance < walkerSpeed * 2 and distance > walkerSpeed:
-        if distance < 0.2 and distance > 0.1:
-            self.logger.debug(f"future distance is {distance}. Can jump")
-            return True
-        return False
-
-    def updateJumped(self):
-        self._last_jumped = time.time_ns()
-
-    def timeSinceLastJumpMS(self):
-        diff = (time.time_ns() - self._last_jumped) // 1_000_000 
-        return diff
-
-
     def done(self):
-        if self.getDistanceToDestination() < 0.1:
-            return True
-        return False
+        return self._localPlanner.done()
 
     def canUpdate(self):
         if self.skip_ticks == 0:
@@ -95,27 +63,25 @@ class PedestrianAgent(InfoAgent):
         print("Obstacle detector location", self.obstacleDetector.get_location())
 
     def calculateControl(self):
-        if self._destination is None:
+        if self.destination is None:
             raise Error("Destination is none")
+
 
         # self.printLocations()
         location = self.feetLocation
-        direction = self.directionToDestination()
+        direction = self._localPlanner.getDesiredDirection()
         self.visualizer.drawDirection(location, direction, life_time=0.1)
-        speed = self.calculateNextSpeed(direction)
-
-        self.logger.debug(f"Calculating controlDistance to destination is {self.getDistanceToDestination()} meters, next speed: {speed} direction: {direction}")
+        # speed = self.calculateNextSpeed(direction)
 
 
         self.climbSidewalkIfNeeded()
 
-        control = carla.WalkerControl(
-            direction = direction,
-            speed = speed,
-            jump = False
-        )
-
-        self._needJump = False
+        # control = carla.WalkerControl(
+        #     direction = direction,
+        #     speed = speed,
+        #     jump = False
+        # )
+        control = self._localPlanner.calculateNextControl()
 
         return control
 
@@ -127,6 +93,40 @@ class PedestrianAgent(InfoAgent):
         # currentSpeed = oldControl.speed
         # nextSpeed = max()
         return self.desired_speed
+
+
+
+    #region sidewalk
+
+    def canClimbSideWalk(self):
+
+        if self.done():
+            return False
+        if self.timeSinceLastJumpMS() < 1000:
+            return False
+
+        distance = self.distanceToNextSideWalk() 
+        if distance is None:
+            return False
+
+        # self.logger.debug(f"current distance to sidewalk is {distance}")
+        distance -= self.getOldSpeed() * self.time_delta
+        
+        # self.logger.debug(f"future distance to sidewalk is {distance}")
+        walkerSpeed = self.getOldSpeed()
+
+        # if distance < walkerSpeed * 2 and distance > walkerSpeed:
+        if distance < 0.2 and distance > 0.1:
+            self.logger.debug(f"future distance to sidewalk is {distance}. Can jump")
+            return True
+        return False
+
+    def updateJumped(self):
+        self._last_jumped = time.time_ns()
+
+    def timeSinceLastJumpMS(self):
+        diff = (time.time_ns() - self._last_jumped) // 1_000_000 
+        return diff
 
     def climbSidewalkIfNeeded(self):
 
@@ -147,13 +147,10 @@ class PedestrianAgent(InfoAgent):
                     location.z + 0.5
             ))
 
-    #region sidewalk
-
-
     def getObstaclesToDistance(self):
         actorLocation = self._walker.get_location()
         actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
-        destinationXYLocation = carla.Location(x = self._destination.x, y = self._destination.y, z=0.05)
+        destinationXYLocation = carla.Location(x = self.destination.x, y = self.destination.y, z=0.05)
         labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
         # for lb in labeledObjects:
         #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
@@ -202,9 +199,7 @@ class PedestrianAgent(InfoAgent):
         return False
 
     #endregion
-    # region planning
 
-    def setLocalPlanner(self, planner):
-        self._localPlanner = planner
+
 
     
