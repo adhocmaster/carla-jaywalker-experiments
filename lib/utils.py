@@ -1,5 +1,6 @@
 import carla
 import math
+import random
 
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
@@ -33,7 +34,7 @@ class Utils:
         settings = world.get_settings()
         return settings.fixed_delta_seconds 
 
-    #region geometries
+    #region geometries and vector ops
 
     @staticmethod
     def getDirection(fromLocation, toLocation, ignoreZ=False):
@@ -55,8 +56,25 @@ class Utils:
 
         
     @staticmethod
-    def getMagnitude(vector):
+    def getMagnitude(vector: carla.Vector3D):
         return math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2)
+
+
+    @staticmethod
+    def multiplyNumber(vector: carla.Vector3D, number):
+        return carla.Vector3D(
+            x=vector.x * number,
+            y=vector.y * number,
+            z=vector.z * number
+        )
+
+    @staticmethod
+    def createRandomVector(min, max) -> carla.Vector3D:
+        return carla.Vector3D(
+            x=random.uniform(min, max),
+            y=random.uniform(min, max),
+            z=random.uniform(min, max)
+        )
 
 
 

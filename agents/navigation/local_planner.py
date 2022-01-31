@@ -10,7 +10,6 @@ from collections import deque
 import random
 
 import carla
-from charset_normalizer import logging
 from agents.navigation.controller import VehiclePIDController
 from agents.tools.misc import draw_waypoints, get_speed
 

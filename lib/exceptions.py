@@ -12,3 +12,6 @@ class InvalidParameter(Exception):
 
 class UndefinedProperty(Exception):
     pass
+
+class TooManyNewStates(Exception):
+    pass

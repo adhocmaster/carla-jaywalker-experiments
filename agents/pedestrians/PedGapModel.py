@@ -1,10 +1,10 @@
 import carla
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
-from .ForceModel import ForceModel
+from .GapModel import GapModel
 from .PedestrianAgent import PedestrianAgent
 import random
 
-class PedGapModel(ForceModel):
+class PedGapModel(GapModel):
 
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, factors = None) -> None:
 
@@ -15,6 +15,9 @@ class PedGapModel(ForceModel):
         self.factors = factors
         self.initFactors()
 
+        self.previousVehicleDistances = {} # stores distance to every vehicle on the last tick
+        self.currentVehicleDistances = {} # stores distance to every vehicle in this tick
+
         pass
 
     
@@ -23,7 +26,7 @@ class PedGapModel(ForceModel):
             self.factors = {}
         
         if "desired_gap" not in self.factors:
-            self.factors["desired_gap"] = 20 
+            self.factors["desired_gap"] = 10 
         
         pass
 
@@ -34,7 +37,9 @@ class PedGapModel(ForceModel):
     def calculateForce(self):
 
         if self.agent.isCrossing():
-            return carla.Vector3D() + random.randint(0, 2) # TODO implement force based on distance
+            # random will not work. The force should be off while pedestrian is not on road
+            # idea: if nearest waypoint is too far, that means pedestrian is not worried about on coming vehicle. But carla waypoint calculation is not reliable
+            return Utils.createRandomVector(0, 0.5) # TODO implement force based on distance
         return carla.Vector3D() # in othe states this model does not produce force
 
     
@@ -57,6 +62,18 @@ class PedGapModel(ForceModel):
         minD = 999999
         for vehicle in vehicles:
             d = vehicle.get_location().distance_2d(self.agent.location)
-            if d < minD:
-                minD = d
+            if self.isVehicleOncoming(vehicle, d):
+                if d < minD:
+                    minD = d
+            self.currentVehicleDistances[vehicle] = d
         return minD
+
+    
+    def isVehicleOncoming(self, vehicle, currentDistance):
+        if vehicle not in self.previousVehicleDistances:
+            return False
+        
+        if self.previousVehicleDistances[vehicle] > currentDistance:
+            return True
+        
+        return False

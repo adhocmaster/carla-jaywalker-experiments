@@ -11,6 +11,8 @@ class ActorManager:
         self._world = actor.get_world()
         self._map = self.world.get_map()
         self._cache = {}
+        self._currentDistances = {}
+        self._previousDistances = {}
 
     @property
     def actor(self):
@@ -41,7 +43,12 @@ class ActorManager:
         return types
     
     def onTick(self, world_snapshot):
-        # cache results of all the function calls every tick.
+        # # cache results of all the function calls every tick.
+        # self._previousPositions = self._currentPositions
+        # self._currentPositions = {} # new dict
+        # for actor in self.getDynamicActors():
+        #     self._currentPositions[actor] = actor.get_location()
+            
         raise Exception("Not implemented yet")
 
 

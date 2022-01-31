@@ -27,6 +27,9 @@ class ObstacleManager:
         return self._world
 
     
+    def onTick(self, world_snapshot):
+        pass
+    
     def obstacleIn(self, obstacles: List[carla.LabelledPoint], obstacle: carla.LabelledPoint):
         if obstacle in obstacles:
             return True

@@ -2,7 +2,7 @@ from ast import walk
 import carla
 from abc import abstractmethod
 
-from lib import ActorManager, ObstacleManager
+from lib import ActorManager, ObstacleManager, NotImplementedInterface
 from .PedestrianAgent import PedestrianAgent
 
 class ForceModel:
@@ -20,6 +20,12 @@ class ForceModel:
 
     @abstractmethod
     def calculateForce(self):
-        raise Exception("called abstract method")
+        raise NotImplementedInterface("called calculateForce method")
+
+    @abstractmethod
+    def getNewState(self):
+        raise NotImplementedInterface("getNewState")
+
+        
 
     

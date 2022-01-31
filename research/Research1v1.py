@@ -71,6 +71,8 @@ class Research1v1(BaseResearch):
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)
 
+        # attach actor manager
+
         pass
 
     
@@ -122,7 +124,7 @@ class Research1v1(BaseResearch):
 
         self.world.wait_for_tick()
 
-        onTickers = [self.visualizer.onTick, self.onTick]
+        onTickers = [self.visualizer.onTick, self.onTick, self.walkerAgent.actorManager.onTick, self.walkerAgent.obstacleManager.onTick]
         onEnders = [self.onEnd]
         simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 

@@ -4,21 +4,23 @@ import logging
 
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
-from lib import LoggerFactory
+from lib import LoggerFactory, ClientUser
+from lib.ActorManager import ActorManager
+from lib.ObstacleManager import ObstacleManager
 
-class PedestrianFactory:
+class PedestrianFactory(ClientUser):
 
 
     walkers = []
     collisionSensors = {}
     obstacleDetectors = {}
 
-    def __init__(self, world, time_delta=0.1, visualizer=None):
+    def __init__(self, client, time_delta=0.1, visualizer=None):
         
         self.name = "PedestrianFactory"
         self.logger = LoggerFactory.create(self.name)
+        super().__init__(client)
 
-        self.world = world
         self.visualizer = visualizer
         self.time_delta = time_delta
 
@@ -78,8 +80,13 @@ class PedestrianFactory:
         return agent
 
     def addPlanners(self, agent: PedestrianAgent):
-        localPlanner = SingleOncomingVehicleLocalPlanner(agent)
+        
+        actorManager = ActorManager(agent.walker)
+        obstacleManager = ObstacleManager(agent.walker)
+        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager)
         agent.setLocalPlanner(localPlanner)
+
+        
         pass
 
 

@@ -41,12 +41,29 @@ class PedestrianAgent(InfoAgent):
         StateTransitionManager.changeAgentState("self.__init__", self, PedState.WAITING)
         # config parameters
 
+    @property
+    def actorManager(self):
+        return self._localPlanner.actorManager
+    @property
+    def obstacleManager(self):
+        return self._localPlanner.obstacleManager
 
     #region states
 
     def isCrossing(self):
         if self.state == PedState.CROSSING:
             return True
+        return False
+
+    def isWaiting(self):
+        if self.state == PedState.WAITING:
+            return True
+        return False
+
+    def isFinished(self):
+        if self.state == PedState.FINISHED:
+            return True
+        return False
 
     def visualiseState(self):
         self.visualizer.drawPedState(self.state, self.walker)
@@ -55,8 +72,9 @@ class PedestrianAgent(InfoAgent):
 
     def done(self):
         done = self._localPlanner.done()
-        if done:
-            self.state = PedState.FINISHED
+        # if done:
+        #     # StateTransitionManager.changeAgentState(self.name, self, )
+        #     self.state = PedState.FINISHED
         return done
 
     def canUpdate(self):
@@ -83,6 +101,16 @@ class PedestrianAgent(InfoAgent):
             raise Error("Destination is none")
 
         
+        if self.done():
+            oldControl = self.agent.getOldControl()
+            control = carla.WalkerControl(
+                direction = oldControl.direction,
+                speed = 0,
+                jump = False
+            )
+
+            self.logger.info(f"Pedestrian is finished.")
+            return control
 
         # self.printLocations()
         location = self.feetLocation
