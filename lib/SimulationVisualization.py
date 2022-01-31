@@ -7,6 +7,7 @@ import math
 from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
 from .MapManager import MapManager
+# import agents.pedestrians.PedState as PedState
 
 class SimulationVisualization(ClientUser):
 
@@ -56,12 +57,12 @@ class SimulationVisualization(ClientUser):
                     carla.Color(*color),
                     life_time)
 
-    def drawTextOnMap(self, location, text, life_time=600):
+    def drawTextOnMap(self, location, text, color=(0, 0, 0), life_time=600):
         self.drawText(
             location=location, 
             text=text, 
             draw_shadow = True,
-            color=(0, 0, 0),
+            color=color,
             life_time=life_time
         )
 
@@ -211,7 +212,21 @@ class SimulationVisualization(ClientUser):
         self.drawPoint(location=overlayLocation, size=0.13, color=(0, 255, 0), life_time=life_time)
         self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D", life_time=life_time/2)
 
+    
+    def drawPedState(self, state, walker, life_time=1.0):
 
+        from agents.pedestrians.PedState import PedState
+        color = (0, 0, 0)
+        if state == PedState.CROSSING:
+            color = (0, 150, 50)
+        if state == PedState.WAITING:
+            color = (200, 180, 0)
+        if state == PedState.FROZEN:
+            color = (255, 0, 0)
+
+        # self.drawWalkerBB(walker, color = color, life_time=0.1)
+        overlayLocation = walker.get_location() + carla.Location(z=1)
+        self.drawTextOnMap(location=overlayLocation, text=state.value, color=color, life_time=life_time/10)
 
     
 

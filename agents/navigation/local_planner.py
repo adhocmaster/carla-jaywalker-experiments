@@ -139,7 +139,7 @@ class LocalPlanner(object):
         firsWp = self._waypoints_queue[0][0]
 
         if firsWp.transform.location.distance(carla.Location(x=-96.050758, y=-4.759546, z=0.000015)) < 1 or firsWp.transform.location.distance(self._vehicle.get_location()) > 15:
-            self.logger.warn("Initial waypoints current waypoint {current_waypoint.transform.location} from vehicle's location {self._vehicle.get_location()}")
+            self.logger.warn(f"Initial waypoints current waypoint {current_waypoint.transform.location} from vehicle's location {self._vehicle.get_location()}")
             Utils.draw_trace_route(self._world.debug, self._waypoints_queue, color=(0, 0, 200), life_time=0.0)
             Utils.log_route(self.logger, self._waypoints_queue)
             self.logger.warn("Initial waypoints queue")
@@ -217,17 +217,17 @@ class LocalPlanner(object):
             self._waypoints_queue.clear()
 
         # Remake the waypoints queue if the new plan has a higher length than the queue
+        if len(self._waypoints_queue) > 0:
+            firsWp = self._waypoints_queue[0][0]
 
-        firsWp = self._waypoints_queue[0][0]
-
-        self.logger.debug(f"set_global_plan first waypoint before update {firsWp.transform.location}")
-        if firsWp.transform.location.distance(carla.Location(x=-96.050758, y=-4.759546, z=0.000015)) < 1:
-            Utils.draw_trace_route(self._world.debug, self._waypoints_queue, color=(0, 0, 200), life_time=0.0)
-            self.logger.warn("Old waypoints queue")
-            Utils.log_route(self.logger, self._waypoints_queue)
-            self.logger.warn("current_plan")
-            Utils.log_route(self.logger, current_plan)
-            exit(-1)
+            self.logger.debug(f"set_global_plan first waypoint before update {firsWp.transform.location}")
+            if firsWp.transform.location.distance(carla.Location(x=-96.050758, y=-4.759546, z=0.000015)) < 1:
+                Utils.draw_trace_route(self._world.debug, self._waypoints_queue, color=(0, 0, 200), life_time=0.0)
+                self.logger.warn("Old waypoints queue")
+                Utils.log_route(self.logger, self._waypoints_queue)
+                self.logger.warn("current_plan")
+                Utils.log_route(self.logger, current_plan)
+                exit(-1)
 
         new_plan_length = len(current_plan) + len(self._waypoints_queue)
         if new_plan_length > self._waypoints_queue.maxlen:

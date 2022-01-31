@@ -126,10 +126,11 @@ class Research1v1(BaseResearch):
         onEnders = [self.onEnd]
         simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 
-        try: 
-            simulator.run(maxTicks)
-        except Exception as e:
-            self.logger.error(e)
+        simulator.run(maxTicks)
+
+        # try: 
+        # except Exception as e:
+        #     self.logger.exception(e)
 
 
     

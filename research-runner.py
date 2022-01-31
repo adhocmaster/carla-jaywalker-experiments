@@ -1,6 +1,5 @@
 from email.policy import default
 from pydoc import cli
-from charset_normalizer import logging
 import click
 import os
 from lib import LoggerFactory, Utils

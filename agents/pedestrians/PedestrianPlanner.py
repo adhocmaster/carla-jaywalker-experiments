@@ -1,6 +1,6 @@
 import carla
 from abc import abstractmethod
-from lib import ActorManager, ObstacleManager, Utils
+from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
 
 class PedestrianPlanner:
     """A planner has the state of the world, state of the pedestrian, and factors of the pedestrian. It does not plan any path or trajectory. 
@@ -28,6 +28,11 @@ class PedestrianPlanner:
     def map(self):
         return self._map
 
+    @property
+    @abstractmethod
+    def logger(self):
+        pass
+
     
     @property
     def destination(self):
@@ -48,35 +53,67 @@ class PedestrianPlanner:
     def getDesiredDirection(self):
         return Utils.getDirection(self.agent.feetLocation, self._destination, ignoreZ=True)
 
+    def getNewControl(self):
+        """Calculates new control by multiplying the resultant force by time delta
+        """
+        newVelocity = self.getNewVelocity()
+        speed = newVelocity.length()
+        direction = newVelocity.make_unit_vector()
+        return carla.WalkerControl(
+                direction = direction,
+                speed = speed,
+                jump = False
+            )
+
+    def getNewVelocity(self):
+        oldVelocity = self.agent.getOldVelocity()
+        dv = self.getRequiredChangeInVelocity()
+        return oldVelocity + dv
+
+    def getRequiredChangeInVelocity(self):
+        timeDelta = Utils.getTimeDelta(self.world)
+        if timeDelta < 0.001:
+            raise InvalidParameter("Time delta too low for Pedestrian Planner")
+
+        force = self.getResultantForce() # unit mass, so force == acceleration
+        self.logger.info(f"Resultant force is {force}")
+        self.logger.info(f"timeDelta is {timeDelta}")
+        dv = force * timeDelta
+        return dv
+
     @abstractmethod
-    def calculateNextPedestrianState(self):
-        raise Exception("calculateNextPedestrianState")
+    def getResultantForce(self):
+        raise NotImplementedInterface("getResultantForce")
 
     @abstractmethod
     def calculateNextPedestrianState(self):
-        raise Exception("calculateNextPedestrianState")
+        raise NotImplementedInterface("calculateNextPedestrianState")
+
+    @abstractmethod
+    def calculateNextPedestrianState(self):
+        raise NotImplementedInterface("calculateNextPedestrianState")
 
     @abstractmethod
     def calculateNextControl(self):
-        raise Exception("calculateNextControl")
+        raise NotImplementedInterface("calculateNextControl")
 
     @abstractmethod
     def calculateResultantForce(self):
-        raise Exception("calculateResultantForce")
+        raise NotImplementedInterface("calculateResultantForce")
 
     @abstractmethod
     def getOncomingVehicles(self):
-        raise Exception("getOncomingVehicles")
+        raise NotImplementedInterface("getOncomingVehicles")
 
     @abstractmethod
     def getOncomingPedestrians(self):
-        raise Exception("getOncomingPedestrians")
+        raise NotImplementedInterface("getOncomingPedestrians")
 
         
     @abstractmethod
     def getPrecedingPedestrians(self):
-        raise Exception("getPrecedingPedestrians")
+        raise NotImplementedInterface("getPrecedingPedestrians")
 
     @abstractmethod
     def getFollowingPedestrians(self):
-        raise Exception("getFollowingPedestrians")
+        raise NotImplementedInterface("getFollowingPedestrians")

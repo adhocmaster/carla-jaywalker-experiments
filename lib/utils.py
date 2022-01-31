@@ -13,6 +13,8 @@ trail_life_time = 10
 waypoint_separation = 4
 
 class Utils:
+
+    #region simulation setup
     @staticmethod
     def createClient(logger, host, port, timeout=5.0):
         client = carla.Client(host, port)
@@ -25,6 +27,11 @@ class Utils:
             logger.warning("Client and server version mistmatch. May not work properly.")
 
         return client
+
+    @staticmethod
+    def getTimeDelta(world):
+        settings = world.get_settings()
+        return settings.fixed_delta_seconds 
 
     #region geometries
 

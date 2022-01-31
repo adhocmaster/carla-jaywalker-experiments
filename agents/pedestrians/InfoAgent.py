@@ -12,6 +12,10 @@ class InfoAgent:
         self._logger = LoggerFactory.create(name, config)
 
     @property
+    def id(self):
+        return self.walker.id
+
+    @property
     def logger(self):
         return self._logger
     
@@ -94,9 +98,11 @@ class InfoAgent:
         oldControl = self._walker.get_control()
         return oldControl.speed
 
-    
+    def getOldControl(self) -> carla.WalkerControl:
+        return self._walker.get_control()
+
     def getOldVelocity(self) -> carla.Vector3D:
-        oldControl = self._walker.get_control()
+        oldControl = self.getOldControl()
         direction = oldControl.direction
         speed = self.getOldSpeed()
         return carla.Vector3D(direction.x * speed, direction.y * speed, direction.z * speed)

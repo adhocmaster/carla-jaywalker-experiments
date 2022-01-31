@@ -5,6 +5,8 @@ import logging
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
 from .PedestrianPlanner import PedestrianPlanner
+from .PedState import PedState
+from .StateTransitionManager import StateTransitionManager
 
 class PedestrianAgent(InfoAgent):
     
@@ -19,6 +21,7 @@ class PedestrianAgent(InfoAgent):
         """
 
         self.name = f"PedestrianAgent #{walker.id}"
+        self.state = PedState.INITALIZING
         super().__init__(self.name, walker, desired_speed=desired_speed, config=config)
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
@@ -35,13 +38,26 @@ class PedestrianAgent(InfoAgent):
         self.collisionSensor = None
         self.obstacleDetector = None
 
-
+        StateTransitionManager.changeAgentState("self.__init__", self, PedState.WAITING)
         # config parameters
 
+
+    #region states
+
+    def isCrossing(self):
+        if self.state == PedState.CROSSING:
+            return True
+
+    def visualiseState(self):
+        self.visualizer.drawPedState(self.state, self.walker)
+    #endregion
     
 
     def done(self):
-        return self._localPlanner.done()
+        done = self._localPlanner.done()
+        if done:
+            self.state = PedState.FINISHED
+        return done
 
     def canUpdate(self):
         if self.skip_ticks == 0:
@@ -66,6 +82,7 @@ class PedestrianAgent(InfoAgent):
         if self.destination is None:
             raise Error("Destination is none")
 
+        
 
         # self.printLocations()
         location = self.feetLocation
@@ -82,6 +99,8 @@ class PedestrianAgent(InfoAgent):
         #     jump = False
         # )
         control = self._localPlanner.calculateNextControl()
+
+        self.visualiseState()
 
         return control
 
