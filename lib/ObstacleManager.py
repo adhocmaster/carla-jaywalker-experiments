@@ -1,6 +1,7 @@
 
 import carla
-from typing import List
+from typing import Dict, List
+from lib.LoggerFactory import LoggerFactory
 
 class ObstacleManager:
 
@@ -9,6 +10,9 @@ class ObstacleManager:
 
     def __init__(self, actor: carla.Actor):
         
+        self.name = f"ObstacleManager #{actor.id}"
+        self.logger = LoggerFactory.create(self.name)
+
         self._actor = actor
         self._world = actor.get_world()
         self._map = self.world.get_map()

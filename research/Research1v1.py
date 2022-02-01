@@ -17,8 +17,8 @@ class Research1v1(BaseResearch):
         super().__init__(name=self.name, client=client, logLevel=logLevel, outputDir=outputDir)
 
         self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
-        self.pedFactory = PedestrianFactory(self.world, visualizer=self.visualizer)
-        self.vehicleFactory = VehicleFactory(self.world, visualizer=self.visualizer)
+        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer)
+        self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
         self.setup()
 
@@ -161,11 +161,11 @@ class Research1v1(BaseResearch):
             #     visualizer.drawDestinationPoint(destination)
             return
 
-        print("canUpdate")
-        if self.walkerAgent.canUpdate():
-            control = self.walkerAgent.calculateControl()
-            # print("apply_control")
-            self.walker.apply_control(control)
+        # print("canUpdate")
+        # if self.walkerAgent.canUpdate():
+        control = self.walkerAgent.calculateControl()
+        # print("apply_control")
+        self.walker.apply_control(control)
             
     def updateVehicle(self, world_snapshot):
         if self.vehicleAgent.done():

@@ -56,6 +56,16 @@ class PedestrianPlanner:
     def getDesiredDirection(self):
         return Utils.getDirection(self.agent.feetLocation, self._destination, ignoreZ=True)
 
+    def getStopControl(self):
+        oldControl = self.agent.getOldControl()
+        
+        control = carla.WalkerControl(
+            direction = oldControl.direction,
+            speed = 0,
+            jump = False
+        )
+        return control
+
     def getNewControl(self):
         """Calculates new control by multiplying the resultant force by time delta
         """

@@ -15,7 +15,7 @@ class PedestrianFactory(ClientUser):
     collisionSensors = {}
     obstacleDetectors = {}
 
-    def __init__(self, client, time_delta=0.1, visualizer=None):
+    def __init__(self, client: carla.Client, time_delta=0.1, visualizer=None):
         
         self.name = "PedestrianFactory"
         self.logger = LoggerFactory.create(self.name)

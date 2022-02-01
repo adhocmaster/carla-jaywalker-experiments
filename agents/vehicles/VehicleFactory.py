@@ -5,20 +5,21 @@ import logging
 
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
 from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
+from lib import LoggerFactory, ClientUser
 
 
 from lib import LoggerFactory
 
-class VehicleFactory:
+class VehicleFactory(ClientUser):
 
     vehicles = []
     
-    def __init__(self, world, time_delta=0.1, visualizer=None):
+    def __init__(self, client: carla.Client, time_delta=0.1, visualizer=None):
         
-        self.name = "PedestrianFactory"
+        self.name = "VehicleFactory"
         self.logger = LoggerFactory.create(self.name)
+        super().__init__(client)
 
-        self.world = world
         self.visualizer = visualizer
         self.time_delta = time_delta
         

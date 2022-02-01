@@ -15,9 +15,6 @@ class PedGapModel(GapModel):
         self.factors = factors
         self.initFactors()
 
-        self.previousVehicleDistances = {} # stores distance to every vehicle on the last tick
-        self.currentVehicleDistances = {} # stores distance to every vehicle in this tick
-
         pass
 
     
@@ -26,7 +23,7 @@ class PedGapModel(GapModel):
             self.factors = {}
         
         if "desired_gap" not in self.factors:
-            self.factors["desired_gap"] = 10 
+            self.factors["desired_gap"] = 15 
         
         pass
 
@@ -49,31 +46,23 @@ class PedGapModel(GapModel):
             True
         
         d = self.distanceFromOncomingVehicle()
+        if d is None:
+            return True
+
         # TODO implement the actual gap model. This is very straight forward
-        self.logger.info(f"Min distance to any vehicle is {d}")
         if d > self.desiredGap:
             return True
+
+        self.logger.info(f"Cannot cross as distance distance to oncoming vehicle {d} <= {self.desiredGap}")
         return False
 
     
     def distanceFromOncomingVehicle(self):
         # TODO we are now just measuring distance from all actors
-        vehicles = self.actorManager.getVehicles()
-        minD = 999999
-        for vehicle in vehicles:
-            d = vehicle.get_location().distance_2d(self.agent.location)
-            if self.isVehicleOncoming(vehicle, d):
-                if d < minD:
-                    minD = d
-            self.currentVehicleDistances[vehicle] = d
-        return minD
-
-    
-    def isVehicleOncoming(self, vehicle, currentDistance):
-        if vehicle not in self.previousVehicleDistances:
-            return False
-        
-        if self.previousVehicleDistances[vehicle] > currentDistance:
-            return True
-        
-        return False
+        vehicle = self.actorManager.getNearestOnComingVehicle()
+        if vehicle is None:
+            self.logger.info(f"No oncoming vehicle")
+            return None
+        distance = self.actorManager.getCurrentDistance(vehicle)
+        self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
+        return distance

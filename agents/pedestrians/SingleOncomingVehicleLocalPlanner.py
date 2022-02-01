@@ -14,14 +14,13 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
     def __init__(self, 
                     agent: PedestrianAgent, 
-                    vehicle: carla.Vehicle,
                     actorManager: ActorManager, obstacleManager: ObstacleManager
                     ) -> None:
 
         self.name = f"SingleOncomingVehicleLocalPlanner {agent.id}"
         self._logger = LoggerFactory.create(self.name)
         super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager)
-        self._vehicle = vehicle
+        # self._vehicle = vehicle
         self.models = []
         self.stateTransitionModels = []
         self.initModels()
@@ -36,17 +35,17 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         self.stateTransitionModels = [self.stopGoModel]
 
     
-    @property
-    def vehicle(self):
-        return self._vehicle
+    # @property
+    # def vehicle(self):
+    #     return self._vehicle
     
     @property
     def logger(self):
         return self._logger
 
-    def setVehicle(self, vehicle: carla.Vehicle) -> None:
-        self._vehicle = vehicle
-        pass
+    # def setVehicle(self, vehicle: carla.Vehicle) -> None:
+        # self._vehicle = vehicle
+        # pass
 
     def setDestination(self, destination: carla.Location):
         super().setDestination(destination)
@@ -79,16 +78,6 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         newState = self.calculateNextPedestrianState()
         if newState is not None:
             StateTransitionManager.changeAgentState(self.name, self.agent, newState)
-
-    def getStopControl(self):
-        oldControl = self.agent.getOldControl()
-        
-        control = carla.WalkerControl(
-            direction = oldControl.direction,
-            speed = 0,
-            jump = False
-        )
-        return control
 
 
     def calculateNextControl(self):
@@ -123,10 +112,10 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         self.logger.info(f"Force from ped gap model {onComingVehicleForce}")
         return destForce + onComingVehicleForce
 
-    def getOncomingVehicles(self):
-        if self.vehicle is None:
-            return []
-        return [self.vehicle]
+    # def getOncomingVehicles(self):
+    #     if self.vehicle is None:
+    #         return []
+    #     return [self.vehicle]
 
 
     def getOncomingPedestrians(self):

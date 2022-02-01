@@ -26,7 +26,7 @@ class PedestrianAgent(InfoAgent):
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
 
-        self.skip_ticks = 0
+        self.skip_ticks = 20 # takes about 10 ticks for the vehicle to start
         self.time_delta = time_delta
         self.tickCounter = 0
 
@@ -37,8 +37,6 @@ class PedestrianAgent(InfoAgent):
 
         self.collisionSensor = None
         self.obstacleDetector = None
-
-        StateTransitionManager.changeAgentState("self.__init__", self, PedState.WAITING)
         # config parameters
 
     @property
@@ -66,7 +64,7 @@ class PedestrianAgent(InfoAgent):
         return False
 
     def visualiseState(self):
-        self.visualizer.drawPedState(self.state, self.walker)
+        self.visualizer.drawPedState(self.state, self.walker, life_time=0.1)
     #endregion
     
 
@@ -77,14 +75,19 @@ class PedestrianAgent(InfoAgent):
         #     self.state = PedState.FINISHED
         return done
 
-    def canUpdate(self):
+    def isInitializing(self): 
         if self.skip_ticks == 0:
-            return True
+            return False
+
         self.tickCounter += 1
+        if self.tickCounter == self.skip_ticks:
+            # time to wait
+            StateTransitionManager.changeAgentState(f"{self.name}.isInitializing", self, PedState.WAITING)
+
         if self.tickCounter >= self.skip_ticks:
-            self.tickCounter = 0
-            return True
-        return False
+            return False
+
+        return True
     
     # def updateControl(self):
     #     "we should not call this. apply batch control"
@@ -100,17 +103,15 @@ class PedestrianAgent(InfoAgent):
         if self.destination is None:
             raise Error("Destination is none")
 
+        if self.isInitializing():
+            self.logger.info(f"Pedestrian is initializing.")
+            self.visualiseState()
+            return self._localPlanner.getStopControl()
         
         if self.done():
-            oldControl = self.agent.getOldControl()
-            control = carla.WalkerControl(
-                direction = oldControl.direction,
-                speed = 0,
-                jump = False
-            )
-
             self.logger.info(f"Pedestrian is finished.")
-            return control
+            self.visualiseState()
+            return self._localPlanner.getStopControl()
 
         # self.printLocations()
         location = self.feetLocation

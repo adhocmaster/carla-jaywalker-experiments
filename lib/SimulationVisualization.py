@@ -213,7 +213,7 @@ class SimulationVisualization(ClientUser):
         self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D", life_time=life_time/2)
 
     
-    def drawPedState(self, state, walker, life_time=1.0):
+    def drawPedState(self, state, walker, life_time=0.1):
 
         from agents.pedestrians.PedState import PedState
         color = (0, 0, 0)
@@ -226,7 +226,7 @@ class SimulationVisualization(ClientUser):
 
         # self.drawWalkerBB(walker, color = color, life_time=0.1)
         overlayLocation = walker.get_location() + carla.Location(z=1)
-        self.drawTextOnMap(location=overlayLocation, text=state.value, color=color, life_time=life_time/10)
+        self.drawTextOnMap(location=overlayLocation, text=state.value, color=color, life_time=life_time)
 
     
 
