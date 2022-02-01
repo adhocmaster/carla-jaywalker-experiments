@@ -151,7 +151,7 @@ class Research1v1(BaseResearch):
         if self.walkerAgent is None:
             return
 
-        if self.walkerAgent.done():
+        if self.walkerAgent.isFinished():
             print(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
             # if walkerAgent.destination == walkerSetting.destination:
             #     walkerAgent.set_destination(walkerSetting.source)
@@ -159,7 +159,7 @@ class Research1v1(BaseResearch):
             # else:
             #     walkerAgent.set_destination(walkerSetting.destination)
             #     visualizer.drawDestinationPoint(destination)
-            return
+            # return
 
         # print("canUpdate")
         # if self.walkerAgent.canUpdate():

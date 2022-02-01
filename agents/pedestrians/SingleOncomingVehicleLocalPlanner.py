@@ -71,10 +71,13 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         # raise Exception("calculateNextPedestrianState")
 
     def transitionStateIfNeeded(self):
+        self.logger.info(f"transitionStateIfNeeded")
         if self.done():
+            self.logger.warn(f"changing agent state to finished")
             StateTransitionManager.changeAgentState(self.name, self.agent, PedState.FINISHED)
             return
 
+        self.logger.warn(f"changing agent state from models")
         newState = self.calculateNextPedestrianState()
         if newState is not None:
             StateTransitionManager.changeAgentState(self.name, self.agent, newState)
@@ -84,6 +87,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         
         # All the state transition should be contained here.
 
+        self.logger.info(f"calculateNextControl")
         # StateTransitionManager.changeAgentState(self.name, self.agent, PedState.WAITING) # may also be frozen or other states which we will need to extend later.
         self.transitionStateIfNeeded()
 

@@ -68,13 +68,6 @@ class PedestrianAgent(InfoAgent):
     #endregion
     
 
-    def done(self):
-        done = self._localPlanner.done()
-        # if done:
-        #     # StateTransitionManager.changeAgentState(self.name, self, )
-        #     self.state = PedState.FINISHED
-        return done
-
     def isInitializing(self): 
         if self.skip_ticks == 0:
             return False
@@ -108,10 +101,10 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
             return self._localPlanner.getStopControl()
         
-        if self.done():
-            self.logger.info(f"Pedestrian is finished.")
-            self.visualiseState()
-            return self._localPlanner.getStopControl()
+        # if self.done():
+        #     self.logger.info(f"Pedestrian is finished.")
+        #     self.visualiseState()
+        #     return self._localPlanner.getStopControl()
 
         # self.printLocations()
         location = self.feetLocation
@@ -134,13 +127,13 @@ class PedestrianAgent(InfoAgent):
         return control
 
 
-    def calculateNextSpeed(self, direction):
+    # def calculateNextSpeed(self, direction):
 
-        # TODO make a smooth transition
-        # oldControl = self._walker.get_control()
-        # currentSpeed = oldControl.speed
-        # nextSpeed = max()
-        return self.desired_speed
+    #     # TODO make a smooth transition
+    #     # oldControl = self._walker.get_control()
+    #     # currentSpeed = oldControl.speed
+    #     # nextSpeed = max()
+    #     return self.desired_speed
 
 
 
@@ -148,8 +141,9 @@ class PedestrianAgent(InfoAgent):
 
     def canClimbSideWalk(self):
 
-        if self.done():
+        if self.isFinished():
             return False
+
         if self.timeSinceLastJumpMS() < 1000:
             return False
 

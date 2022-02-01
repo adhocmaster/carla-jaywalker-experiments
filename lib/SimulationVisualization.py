@@ -208,7 +208,7 @@ class SimulationVisualization(ClientUser):
 
     def drawDestinationPoint(self, location, life_time=20.0):
         self.logger.debug(f"destinationSpawnPoint position ({location.x}, {location.y})")
-        overlayLocation = carla.Location(location.x, location.y, 1.5)
+        overlayLocation = carla.Location(location.x, location.y, 0.5)
         self.drawPoint(location=overlayLocation, size=0.13, color=(0, 255, 0), life_time=life_time)
         self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D", life_time=life_time/2)
 
