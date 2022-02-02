@@ -46,8 +46,9 @@ class DestinationModel(ForceModel):
         """
         
         self._finalDestination = destination
-        if self._nextDestination is None:
-            self._nextDestination = destination
+        # if self._nextDestination is None:
+        #     self._nextDestination = destination
+        self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
         
             
     def getDistanceToDestination(self):

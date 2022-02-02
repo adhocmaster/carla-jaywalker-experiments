@@ -153,6 +153,7 @@ class Research1v1(BaseResearch):
     def recreateVehicle(self):
         # destroy current one
         # self.simulator.removeOnTicker()
+        self.logger.warn(f"Recreating vehicle")
         self.vehicle.destroy()
         self.vehicleAgent = None
         self.vehicle = None
