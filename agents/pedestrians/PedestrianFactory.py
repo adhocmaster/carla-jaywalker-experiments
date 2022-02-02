@@ -4,12 +4,14 @@ import logging
 
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
+from agents.pedestrians.factors import InternalFactors
 from lib import LoggerFactory, ClientUser
 from lib.ActorManager import ActorManager
 from lib.ObstacleManager import ObstacleManager
 
 class PedestrianFactory(ClientUser):
 
+    internalFactorPath = "settings/internal_factors_default.yaml"
 
     walkers = []
     collisionSensors = {}
@@ -79,11 +81,18 @@ class PedestrianFactory(ClientUser):
         
         return agent
 
-    def addPlanners(self, agent: PedestrianAgent):
+    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None):
         
         actorManager = ActorManager(agent.walker)
         obstacleManager = ObstacleManager(agent.walker)
-        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager)
+
+        if internalFactorsPath is None:
+            internalFactorsPath = PedestrianFactory.internalFactorPath
+        
+        internalFactors = InternalFactors(internalFactorsPath)
+
+
+        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors)
         agent.setLocalPlanner(localPlanner)
 
         

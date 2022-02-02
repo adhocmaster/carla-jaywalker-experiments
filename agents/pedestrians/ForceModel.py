@@ -4,14 +4,17 @@ from abc import abstractmethod
 
 from lib import ActorManager, ObstacleManager, NotImplementedInterface
 from .PedestrianAgent import PedestrianAgent
+from agents.pedestrians.factors import InternalFactors
 
 class ForceModel:
 
-    def __init__(self, agent: PedestrianAgent,  actorManager: ActorManager, obstacleManager: ObstacleManager) -> None:
+    def __init__(self, agent: PedestrianAgent,  actorManager: ActorManager, obstacleManager: ObstacleManager,
+                    internalFactors: InternalFactors) -> None:
 
         self._agent = agent
         self.actorManager = actorManager
         self.obstacleManager = obstacleManager
+        self.internalFactors = internalFactors
         pass
 
     @property

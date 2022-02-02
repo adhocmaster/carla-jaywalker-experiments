@@ -4,27 +4,25 @@ from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from .ForceModel import ForceModel
 from .GapModel import GapModel
 from .PedestrianAgent import PedestrianAgent
+from agents.pedestrians.factors import InternalFactors
 
 
 class StopGoModel(ForceModel):
     
-    def __init__(self, gapModel:GapModel, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, factors = None) -> None:
+    def __init__(self, gapModel:GapModel, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, 
+                    internalFactors: InternalFactors) -> None:
 
-        super().__init__(agent, actorManager, obstacleManager)
+        super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
         self.name = f"StopGoModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
 
         self.gapModel = gapModel # it will use this model to decide whether to stop or go
 
-        self.factors = factors
         self.initFactors()
 
         pass
     
-    def initFactors(self):
-        if self.factors is None:
-            self.factors = {}
-        
+    def initFactors(self):        
         pass
 
     def calculateForce(self):

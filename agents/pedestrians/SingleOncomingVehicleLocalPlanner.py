@@ -1,6 +1,7 @@
 import carla
 from agents.pedestrians.PedState import PedState
 from agents.pedestrians.StopGoModel import StopGoModel
+from agents.pedestrians.factors import InternalFactors
 from lib import Utils
 from .PedestrianAgent import PedestrianAgent
 from .PedestrianPlanner import PedestrianPlanner
@@ -14,12 +15,13 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
     def __init__(self, 
                     agent: PedestrianAgent, 
-                    actorManager: ActorManager, obstacleManager: ObstacleManager
+                    actorManager: ActorManager, obstacleManager: ObstacleManager,
+                    internalFactors: InternalFactors
                     ) -> None:
 
         self.name = f"SingleOncomingVehicleLocalPlanner {agent.id}"
         self._logger = LoggerFactory.create(self.name)
-        super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager)
+        super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors)
         # self._vehicle = vehicle
         self.models = []
         self.stateTransitionModels = []
@@ -27,9 +29,9 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         pass
 
     def initModels(self):
-        self.destinationModel = DestinationModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager)
-        pedGapModel = PedGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager)
-        self.stopGoModel = StopGoModel(pedGapModel, self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager)
+        self.destinationModel = DestinationModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        pedGapModel = PedGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        self.stopGoModel = StopGoModel(pedGapModel, self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
 
         self.models = [self.destinationModel, self.stopGoModel]
         self.stateTransitionModels = [self.stopGoModel]

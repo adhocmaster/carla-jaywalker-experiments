@@ -1,0 +1,11 @@
+
+relaxation_time: 0.1
+desired_speed: 2
+desired_distance_gap: 2
+desired_time_gap: 2
+
+min_crossing_speed: 0.5
+max_crossing_speed: 3
+median_crossing_speed: 1.5
+
+

@@ -1,4 +1,5 @@
 import carla
+from agents.pedestrians.factors import InternalFactors
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from .GapModel import GapModel
 from .PedestrianAgent import PedestrianAgent
@@ -6,30 +7,23 @@ import random
 
 class PedGapModel(GapModel):
 
-    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, factors = None) -> None:
+    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 
-        super().__init__(agent, actorManager, obstacleManager)
+        super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
         self.name = f"PedGapModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
-
-        self.factors = factors
         self.initFactors()
 
         pass
 
     
     def initFactors(self):
-        if self.factors is None:
-            self.factors = {}
-        
-        if "desired_gap" not in self.factors:
-            self.factors["desired_gap"] = 5 
-        
+                
         pass
 
     @property
     def desiredGap(self):
-        return self.factors["desired_gap"]
+        return self.internalFactors["desired_distance_gap"]
 
     def calculateForce(self):
 

@@ -8,4 +8,7 @@ def factorPath():
 
 def test_factorLoad(factorPath):
     factors = InternalFactors(factorPath)
-    assert False
+    print(factors.props)
+    assert "relaxation_time" in factors.props
+    assert factors.relaxation_time > 0.0
+    assert factors["relaxation_time"] > 0.0

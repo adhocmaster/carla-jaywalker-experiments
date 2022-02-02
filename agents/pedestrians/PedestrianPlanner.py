@@ -1,19 +1,22 @@
 import carla
 from abc import abstractmethod
 from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
+from agents.pedestrians.factors import InternalFactors
 
 class PedestrianPlanner:
     """A planner has the state of the world, state of the pedestrian, and factors of the pedestrian. It does not plan any path or trajectory. 
     It's whole job is to send required states to factor models, get the force and state of the pedestrian. Apply the force and state in the world.
     """
 
-    def __init__(self, agent, actorManager: ActorManager, obstacleManager: ObstacleManager) -> None:
+    def __init__(self, agent, actorManager: ActorManager, obstacleManager: ObstacleManager,
+                    internalFactors: InternalFactors) -> None:
         self._agent = agent
         self._world = agent.walker.get_world()
         self._map = self.world.get_map()
         self.actorManager = actorManager
         self.obstacleManager = obstacleManager
         self._destination = None
+        self.internalFactors = internalFactors
         pass
 
     @property

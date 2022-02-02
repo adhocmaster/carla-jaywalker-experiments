@@ -2,19 +2,18 @@ import carla
 from lib import ActorManager, ObstacleManager, Utils
 from .ForceModel import ForceModel
 from .PedestrianAgent import PedestrianAgent
+from agents.pedestrians.factors import InternalFactors
 
 
 class DestinationModel(ForceModel):
 
-    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, final_destination=None, factors = None) -> None:
+    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors, final_destination=None) -> None:
 
-        super().__init__(agent, actorManager, obstacleManager)
+        super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
 
         # self._source = source # source may not be current agent location
         self._finalDestination = final_destination
         self._nextDestination = final_destination
-
-        self.factors = factors
 
         self.initFactors()
 
@@ -22,14 +21,11 @@ class DestinationModel(ForceModel):
 
     
     def initFactors(self):
-        if self.factors is None:
-            self.factors = {}
-        
-        if "desired_speed" not in self.factors:
-            self.factors["desired_speed"] = 2 
+        if "desired_speed" not in self.internalFactors:
+            self.internalFactors["desired_speed"] = 2 
 
-        if "relaxation_time" not in self.factors:
-            self.factors["relaxation_time"] = 0.1 
+        if "relaxation_time" not in self.internalFactors:
+            self.internalFactors["relaxation_time"] = 0.1 
         
         pass
 
@@ -56,10 +52,10 @@ class DestinationModel(ForceModel):
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:
-        return self.getDesiredDirection() * self.factors["desired_speed"] 
+        return self.getDesiredDirection() * self.internalFactors["desired_speed"] 
 
     def getDesiredSpeed(self) -> carla.Vector3D:
-        return self.factors["desired_speed"] 
+        return self.internalFactors["desired_speed"] 
 
 
     def getDesiredDirection(self) -> carla.Vector3D:
@@ -79,7 +75,7 @@ class DestinationModel(ForceModel):
         desiredVelocity = self.getDesiredVelocity()
         oldVelocity = self.agent.getOldVelocity()
 
-        return (desiredVelocity - oldVelocity) / self.factors["relaxation_time"]
+        return (desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"]
 
     
 
