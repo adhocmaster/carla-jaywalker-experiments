@@ -81,10 +81,15 @@ class PedestrianAgent(InfoAgent):
             return False
 
         return True
-    
-    # def updateControl(self):
-    #     "we should not call this. apply batch control"
-    #     self._walker.apply_control(self.calculateControl())
+
+    def reset(self, newStartPoint:carla.Location=None):
+        self.logger.info(f"Resetting")
+        if newStartPoint is not None:
+            self._walker.set_location(newStartPoint)
+
+        self.tickCounter = 0
+        StateTransitionManager.changeAgentState(f"{self.name}.isInitializing", self, PedState.INITALIZING)
+        pass
 
 
     def printLocations(self):
@@ -101,12 +106,7 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
             return self._localPlanner.getStopControl()
         
-        # if self.done():
-        #     self.logger.info(f"Pedestrian is finished.")
-        #     self.visualiseState()
-        #     return self._localPlanner.getStopControl()
-
-        # self.printLocations()
+ 
         location = self.feetLocation
         direction = self._localPlanner.getDesiredDirection()
         self.visualizer.drawDirection(location, direction, life_time=0.1)
@@ -115,11 +115,6 @@ class PedestrianAgent(InfoAgent):
 
         self.climbSidewalkIfNeeded()
 
-        # control = carla.WalkerControl(
-        #     direction = direction,
-        #     speed = speed,
-        #     jump = False
-        # )
         control = self._localPlanner.calculateNextControl()
 
         self.visualiseState()
