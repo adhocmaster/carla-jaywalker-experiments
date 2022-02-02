@@ -144,17 +144,20 @@ class PedestrianAgent(InfoAgent):
 
         distance = self.distanceToNextSideWalk() 
         if distance is None:
+            self.logger.warn(f"Distance to sidewalk is none!")
+
             return False
 
-        # self.logger.debug(f"current distance to sidewalk is {distance}")
+        self.logger.info(f"current distance to sidewalk is {distance}")
         distance -= self.getOldSpeed() * self.time_delta
-        
-        # self.logger.debug(f"future distance to sidewalk is {distance}")
+        self.logger.info(f"after tick distance to sidewalk is {distance}")
+
         walkerSpeed = self.getOldSpeed()
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
-        if distance < 0.2 and distance > 0.1:
-            self.logger.debug(f"future distance to sidewalk is {distance}. Can jump")
+        # if distance < 0.2 and distance > 0.1:
+        if distance < 0.2:
+            self.logger.info(f"after tick distance to sidewalk is {distance}. Can jump")
             return True
         return False
 
@@ -195,15 +198,16 @@ class PedestrianAgent(InfoAgent):
     
     def distanceToNextSideWalk(self):
         actorLocation = self._walker.get_location()
-        actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
+        # actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
         labeledObjects = self.getObstaclesToDistance()
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
                 if self.visualizer is not None:
                     self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
-                sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
-                distance = actorXYLocation.distance(sidewalkXYLocation)
-                print(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
+                # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
+                # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
+                distance = actorLocation.distance_2d(lb.location)
+                self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
                 return distance
         return None
 

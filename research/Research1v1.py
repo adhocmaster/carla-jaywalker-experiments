@@ -92,7 +92,8 @@ class Research1v1(BaseResearch):
 
         self.world.wait_for_tick() # otherwise we can get wrong vehicle location!
 
-        self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
+        # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
+        self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
         destination = self.getNextDestination(spawnXYLocation)

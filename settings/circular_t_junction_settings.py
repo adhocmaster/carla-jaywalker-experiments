@@ -1,6 +1,6 @@
 circular_t_junction_settings = {
     "setting1": {
-        "ego_spawn_point": (-160.0, -15.0),
+        "ego_spawn_point": (-160.0, -30.0),
         "walker_settings": [
             (-160.0, -24.0, -147.0, -24.0),
             (-150.0, -4.0, -147.0, -13.5),

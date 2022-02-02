@@ -29,7 +29,7 @@ class DestinationModel(ForceModel):
             self.factors["desired_speed"] = 2 
 
         if "relaxation_time" not in self.factors:
-            self.factors["relaxation_time"] = 1 
+            self.factors["relaxation_time"] = 0.1 
         
         pass
 
