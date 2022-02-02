@@ -21,6 +21,21 @@ class Simulator(ClientUser):
         if onEnders is not None:
             self.onEnders = onEnders
 
+    
+    def addOnticker(self, onTicker):
+        self.onTickers.append(onTicker)
+    
+    def removeOnTicker(self, onTicker):
+        self.onTickers.remove(onTicker)
+
+    def addOnEnder(self, onEnder):
+        self.onEnders.append(onEnder)
+
+    def removeOnEnder(self, onEnder):
+        self.onEnders.remove(onEnder)
+
+    
+
     def run(self, maxTicks):
         if self.useThreads:
             self.pool.spawn_n(self.loop, maxTicks)

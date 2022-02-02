@@ -43,6 +43,8 @@ class Research1v1(BaseResearch):
         self.vehicleAgent = None
         self.vehicleSpawnPoint = self.settingsManager.getEgoSpawnpoint()
 
+        self.simulator = None # populated when run
+
     
     def getWalkerSetting(self):
         walkerSettings = self.settingsManager.getWalkerSettings()
@@ -65,6 +67,8 @@ class Research1v1(BaseResearch):
             self.logger.info(self.walker.get_control())
             
             # visualizer.trackOnTick(walker.id, {"life_time": 1})      
+        
+        self.world.wait_for_tick() # otherwise we can get wrong agent location!
 
         self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG)
 
@@ -86,7 +90,10 @@ class Research1v1(BaseResearch):
         else:
             self.logger.info(f"successfully spawn vehicle at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")
 
-        self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
+        self.world.wait_for_tick() # otherwise we can get wrong vehicle location!
+
+        # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
+        self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
         destination = self.getNextDestination(spawnXYLocation)
@@ -124,17 +131,49 @@ class Research1v1(BaseResearch):
 
         self.world.wait_for_tick()
 
-        onTickers = [self.visualizer.onTick, self.onTick, self.walkerAgent.actorManager.onTick, self.walkerAgent.obstacleManager.onTick]
+        onTickers = [self.visualizer.onTick, self.onTick, self.walkerAgent.actorManager.onTick, self.walkerAgent.obstacleManager.onTick, self.restart]
         onEnders = [self.onEnd]
-        simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
+        self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 
-        simulator.run(maxTicks)
+        self.simulator.run(maxTicks)
 
         # try: 
         # except Exception as e:
         #     self.logger.exception(e)
 
 
+    def restart(self, world_snapshot):
+        
+        if self.walkerAgent.isFinished():
+            # 1. recreated vehicle
+            self.recreateVehicle()
+            # 2. reset walker
+            self.resetWalker(reverse=False)
+
+    
+    def recreateVehicle(self):
+        # destroy current one
+        # self.simulator.removeOnTicker()
+        self.logger.warn(f"Recreating vehicle")
+        self.vehicle.destroy()
+        self.vehicleAgent = None
+        self.vehicle = None
+        self.createVehicle()
+
+    def resetWalker(self, reverse=False):
+
+        # default keeps the same start and end as the first episode
+        source = self.walkerSetting.source
+        newDest = self.walkerSetting.destination
+
+        if reverse:
+            source =  self.walkerAgent.destination
+            if self.walkerAgent.destination == newDest: # get back to source
+                newDest = source
+                
+
+        self.walkerAgent.reset()
+        self.walkerAgent.setDestination(self.walkerSetting.source)
     
     def onEnd(self):
         self.destoryActors()
@@ -149,6 +188,7 @@ class Research1v1(BaseResearch):
         # print("updateWalker")
 
         if self.walkerAgent is None:
+            self.logger.warn(f"No walker to update")
             return
 
         if self.walkerAgent.isFinished():
@@ -168,6 +208,11 @@ class Research1v1(BaseResearch):
         self.walker.apply_control(control)
             
     def updateVehicle(self, world_snapshot):
+
+        if self.vehicleAgent is None:
+            self.logger.warn(f"No vehicle to update")
+            return 
+
         if self.vehicleAgent.done():
             destination = random.choice(self.mapManager.spawn_points).location
             # self.vehicleAgent.set_destination(destination, self.vehicle.get_location())

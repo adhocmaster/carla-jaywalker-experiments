@@ -23,7 +23,7 @@ class PedGapModel(GapModel):
             self.factors = {}
         
         if "desired_gap" not in self.factors:
-            self.factors["desired_gap"] = 15 
+            self.factors["desired_gap"] = 5 
         
         pass
 
