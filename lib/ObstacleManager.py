@@ -31,7 +31,7 @@ class ObstacleManager:
         return self._world
 
     
-    def onTick(self, world_snapshot):
+    def onTickStart(self, world_snapshot):
         pass
     
     def obstacleIn(self, obstacles: List[carla.LabelledPoint], obstacle: carla.LabelledPoint):

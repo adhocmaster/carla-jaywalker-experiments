@@ -42,6 +42,8 @@ class InfoAgent:
     def getHeadLocation(self):
         raise Exception("Not implemented yet")
 
+    def onTickStart(self, world_snapshot):
+        self._localPlanner.onTickStart(world_snapshot)
 
     # region planning
 

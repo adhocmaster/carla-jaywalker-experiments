@@ -22,6 +22,8 @@ class ActorManager:
         self._currentActorDistances = {}
         self._previousActorDistances = {}
 
+        self._nearestOncomingVehicle = None
+
     @property
     def actor(self):
         return self._actor
@@ -33,6 +35,10 @@ class ActorManager:
     @property
     def world(self):
         return self._world
+
+    @property
+    def nearestOncomingVehicle(self):
+        return self._nearestOncomingVehicle
 
 
     @property
@@ -50,7 +56,7 @@ class ActorManager:
             types.add(actor.type_id)
         return types
     
-    def onTick(self, world_snapshot):
+    def onTickStart(self, world_snapshot):
         # # cache results of all the function calls every tick.
         actorLocation = self.actor.get_location()
 
@@ -64,8 +70,10 @@ class ActorManager:
                 continue
             self._currentActorDistances[otherActor.id] = actorLocation.distance_2d(otherActor.get_location())
         
-        self.logger.debug(f"previous distances {self._previousActorDistances}")
-        self.logger.debug(f"current distances {self._currentActorDistances}")
+        self.logger.info(f"previous distances {self._previousActorDistances}")
+        self.logger.info(f"current distances {self._currentActorDistances}")
+
+        self._nearestOncomingVehicle = self.calculateNearestOnComingVehicle()
         pass
         # raise Exception("Not implemented yet")
 
@@ -78,10 +86,10 @@ class ActorManager:
     # region Oncoming
     def isOncoming(self, otherActor):
 
-        self.logger.debug(f"actor previous distance {self._previousActorDistances[otherActor.id]} and current distance {self._currentActorDistances[otherActor.id]}")
         if otherActor.id not in self._previousActorDistances:
             self.logger.debug(f"actor not oncoming as previous distance is unknown")
             return False # in the first tick there will not be any previous distance
+        self.logger.debug(f"actor previous distance {self._previousActorDistances[otherActor.id]} and current distance {self._currentActorDistances[otherActor.id]}")
         if self._previousActorDistances[otherActor.id] > self._currentActorDistances[otherActor.id]: # TODO improve this algorithm
             # self.logger.info(f"actor oncoming")
             return True
@@ -97,7 +105,7 @@ class ActorManager:
         self.logger.warn("Oncoming vehicles", oncomingVs)
         return oncomingVs
     
-    def getNearestOnComingVehicle(self):
+    def calculateNearestOnComingVehicle(self):
         oncomingVs = self.getOncomingVehicles()
         minD = 999999
         minVehicle = None
@@ -107,6 +115,16 @@ class ActorManager:
                 minD = currentDistance
                 minVehicle = vehicle
         return minVehicle
+    
+    def distanceFromNearestOncomingVehicle(self):
+        # TODO we are now just measuring distance from all actors
+        vehicle = self.nearestOncomingVehicle
+        if vehicle is None:
+            self.logger.info(f"No oncoming vehicle")
+            return None
+        distance = self.getCurrentDistance(vehicle)
+        self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
+        return distance
 
     #endregion
     def getDynamicActors(self) -> List[carla.Actor]:

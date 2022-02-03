@@ -131,7 +131,7 @@ class Research1v1(BaseResearch):
 
         self.world.wait_for_tick()
 
-        onTickers = [self.visualizer.onTick, self.onTick, self.walkerAgent.actorManager.onTick, self.walkerAgent.obstacleManager.onTick, self.restart]
+        onTickers = [self.visualizer.onTick, self.onTick, self.restart]
         onEnders = [self.onEnd]
         self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 
@@ -179,6 +179,9 @@ class Research1v1(BaseResearch):
         self.destoryActors()
 
     def onTick(self, world_snapshot):
+
+        self.walkerAgent.onTickStart(world_snapshot)
+
         self.updateWalker(world_snapshot)
         self.updateVehicle(world_snapshot)
     

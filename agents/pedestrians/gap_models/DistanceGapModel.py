@@ -2,14 +2,14 @@ import carla
 from agents.pedestrians.factors import InternalFactors
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from .GapModel import GapModel
-from ..PedestrianAgent import PedestrianAgent
+from agents.pedestrians.PedestrianAgent import PedestrianAgent
 
 class DistanceGapModel(GapModel):
 
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
-        self.name = f"PedGapModel #{agent.id}"
+        self.name = f"DistanceGapModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
         self.initFactors()
 
@@ -17,7 +17,6 @@ class DistanceGapModel(GapModel):
 
     
     def initFactors(self):
-                
         pass
 
     @property
@@ -55,11 +54,4 @@ class DistanceGapModel(GapModel):
 
     
     def distanceFromOncomingVehicle(self):
-        # TODO we are now just measuring distance from all actors
-        vehicle = self.actorManager.getNearestOnComingVehicle()
-        if vehicle is None:
-            self.logger.info(f"No oncoming vehicle")
-            return None
-        distance = self.actorManager.getCurrentDistance(vehicle)
-        self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
-        return distance
+        return self.actorManager.distanceFromNearestOncomingVehicle()

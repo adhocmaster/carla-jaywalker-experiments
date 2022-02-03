@@ -41,6 +41,10 @@ class PedestrianPlanner:
     def destination(self):
         return self._destination
 
+    def onTickStart(self, world_snapshot):
+        self.actorManager.onTickStart(world_snapshot)
+        self.obstacleManager.onTickStart(world_snapshot)
+
     def setDestination(self, destination):
         self._destination = destination
 

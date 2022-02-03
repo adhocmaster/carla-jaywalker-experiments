@@ -3,7 +3,7 @@ import carla
 from abc import abstractmethod
 
 from lib import ActorManager, ObstacleManager, NotImplementedInterface
-from .PedestrianAgent import PedestrianAgent
+from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
 
 class ForceModel:
