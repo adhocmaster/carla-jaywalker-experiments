@@ -10,6 +10,7 @@ class BaseResearch(ClientUser):
 
         self.mapManager = MapManager(client)
         self.mapManager.load(MapNames.circle_t_junctions)
+        self.time_delta = 0.007
 
         self.visualizer = SimulationVisualization(self.client, self.mapManager)
 
@@ -20,10 +21,9 @@ class BaseResearch(ClientUser):
 
 
     def initWorldSettings(self):
-        time_delta = 0.007
         settings = self.world.get_settings()
         settings.substepping = False
-        settings.fixed_delta_seconds = time_delta
+        settings.fixed_delta_seconds = self.time_delta
         self.world.apply_settings(settings)
         pass
 

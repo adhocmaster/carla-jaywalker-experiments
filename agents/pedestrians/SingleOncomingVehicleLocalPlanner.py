@@ -1,3 +1,4 @@
+from datetime import timedelta
 import carla
 from agents.pedestrians.PedState import PedState
 from agents.pedestrians.StopGoModel import StopGoModel
@@ -6,7 +7,7 @@ from lib import Utils
 from .PedestrianAgent import PedestrianAgent
 from .PedestrianPlanner import PedestrianPlanner
 from .DestinationModel import DestinationModel
-from .gap_models.DistanceGapModel import DistanceGapModel
+from .gap_models import *
 from .StateTransitionManager import StateTransitionManager
 from lib import ActorManager, ObstacleManager, LoggerFactory, TooManyNewStates
 
@@ -16,12 +17,13 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
     def __init__(self, 
                     agent: PedestrianAgent, 
                     actorManager: ActorManager, obstacleManager: ObstacleManager,
-                    internalFactors: InternalFactors
+                    internalFactors: InternalFactors, 
+                    time_delta
                     ) -> None:
 
         self.name = f"SingleOncomingVehicleLocalPlanner {agent.id}"
         self._logger = LoggerFactory.create(self.name)
-        super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors)
+        super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=time_delta)
         # self._vehicle = vehicle
         self.models = []
         self.stateTransitionModels = []
@@ -30,7 +32,8 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
     def initModels(self):
         self.destinationModel = DestinationModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
-        pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        # pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        pedGapModel = BrewerGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
         self.stopGoModel = StopGoModel(pedGapModel, self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
 
         self.models = [self.destinationModel, self.stopGoModel]

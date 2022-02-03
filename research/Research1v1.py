@@ -17,7 +17,7 @@ class Research1v1(BaseResearch):
         super().__init__(name=self.name, client=client, logLevel=logLevel, outputDir=outputDir)
 
         self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
-        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer)
+        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
         self.setup()

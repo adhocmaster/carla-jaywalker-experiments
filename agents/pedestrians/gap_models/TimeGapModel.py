@@ -19,30 +19,38 @@ class TimeGapModel(GapModel):
 
         pass
 
+    
+    def initFactors(self):
+
+        pass
 
     def canCross(self):
         timeGap = self.getAvailableGap()
-        p_go = self.getGoProbability()
+        if timeGap is None:
+            return True
+            
+        p_go = self.p_go(timeGap)
         agressionLevel = self.internalFactors["aggression_level"]
 
-        if agressionLevel == "normal":
-            return np.random.choice([True, False], p_go)
-
         if agressionLevel == "cautious":
-            return np.random.choice([True, False], 0.8 * p_go)
+            p_go = 0.8 * p_go
 
         if agressionLevel == "risky":
-            return np.random.choice([True, False], p_go * 2)
+            p_go = p_go * 2
+
+        return np.random.choice([True, False], p=[p_go, 1-p_go])
 
 
 
     def getAvailableGap(self):
-        distance = self.actorManager.distanceFromNearestOncomingVehicle()
-        # time gap = time taken for the oncoming vehicle to reach
+        # distance = self.actorManager.distanceFromNearestOncomingVehicle()
+        # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
+        # TODO add 
+        return self.actorManager.TTCNearestOncomingVehicle()
 
 
     @abstractmethod
-    def p_go(self):
+    def p_go(self, gap):
         raise NotImplementedInterface("getGoProbability")
 
     # @abstractmethod

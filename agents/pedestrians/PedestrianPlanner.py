@@ -9,9 +9,11 @@ class PedestrianPlanner:
     """
 
     def __init__(self, agent, actorManager: ActorManager, obstacleManager: ObstacleManager,
-                    internalFactors: InternalFactors) -> None:
+                    internalFactors: InternalFactors, time_delta) -> None:
         self._agent = agent
         self._world = agent.walker.get_world()
+        self.time_delta = time_delta
+        
         self._map = self.world.get_map()
         self.actorManager = actorManager
         self.obstacleManager = obstacleManager

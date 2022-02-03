@@ -10,7 +10,7 @@ from .StateTransitionManager import StateTransitionManager
 
 class PedestrianAgent(InfoAgent):
     
-    def __init__(self, walker, desired_speed=1.5, time_delta=0.1, visualizer=None, config=None):
+    def __init__(self, walker, time_delta, desired_speed=1.5, visualizer=None, config=None):
         """
         Initialization the agent paramters, the local and the global planner.
 

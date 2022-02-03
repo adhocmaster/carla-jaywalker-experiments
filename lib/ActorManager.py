@@ -1,4 +1,5 @@
 
+from turtle import distance
 import carla
 from typing import Dict, List
 from lib.LoggerFactory import LoggerFactory
@@ -10,10 +11,11 @@ class ActorManager:
     Each actor has their own instance of ActorManager
     """
 
-    def __init__(self, actor: carla.Actor):
+    def __init__(self, actor: carla.Actor, time_delta):
         
         self.name = f"ActorManager #{actor.id}"
         self.logger = LoggerFactory.create(self.name)
+        self.time_delta = time_delta
 
         self._actor = actor
         self._world = actor.get_world()
@@ -102,7 +104,7 @@ class ActorManager:
         for vehicle in self.getVehicles():
             if self.isOncoming(vehicle):
                 oncomingVs.append(vehicle)
-        self.logger.warn("Oncoming vehicles", oncomingVs)
+        self.logger.debug("Oncoming vehicles", oncomingVs)
         return oncomingVs
     
     def calculateNearestOnComingVehicle(self):
@@ -125,6 +127,26 @@ class ActorManager:
         distance = self.getCurrentDistance(vehicle)
         self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
         return distance
+
+    def TTCNearestOncomingVehicle(self):
+        if self.nearestOncomingVehicle is None:
+            return None
+
+        distance = self.distanceFromNearestOncomingVehicle()
+        speed = self.getLinearSpeed(self.nearestOncomingVehicle)
+        return distance / speed
+
+        
+
+
+    #endregion
+
+    #region dynamic actor ops
+    def getLinearSpeed(self, actor):
+        distanceTraveled = abs(self._currentActorDistances[actor.id] - self._previousActorDistances[actor.id])
+        speed = distanceTraveled / self.time_delta
+        self.logger.info(f"Actor linear speed {speed}")
+        return speed
 
     #endregion
     def getDynamicActors(self) -> List[carla.Actor]:

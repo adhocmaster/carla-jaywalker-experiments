@@ -17,7 +17,7 @@ class PedestrianFactory(ClientUser):
     collisionSensors = {}
     obstacleDetectors = {}
 
-    def __init__(self, client: carla.Client, time_delta=0.1, visualizer=None):
+    def __init__(self, client: carla.Client, time_delta, visualizer=None):
         
         self.name = "PedestrianFactory"
         self.logger = LoggerFactory.create(self.name)
@@ -83,8 +83,8 @@ class PedestrianFactory(ClientUser):
 
     def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None):
         
-        actorManager = ActorManager(agent.walker)
-        obstacleManager = ObstacleManager(agent.walker)
+        actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
+        obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)
 
         if internalFactorsPath is None:
             internalFactorsPath = PedestrianFactory.internalFactorPath
@@ -92,7 +92,7 @@ class PedestrianFactory(ClientUser):
         internalFactors = InternalFactors(internalFactorsPath)
 
 
-        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors)
+        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=self.time_delta)
         agent.setLocalPlanner(localPlanner)
 
         

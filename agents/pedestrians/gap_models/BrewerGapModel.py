@@ -3,6 +3,7 @@ from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
 from .GapUtils import GapUtils
+import carla
 
 class BrewerGapModel(TimeGapModel):
     
@@ -34,3 +35,16 @@ class BrewerGapModel(TimeGapModel):
     def p_go(self, gap):
         return 1 - self.p_stop(gap)
 
+
+
+    def calculateForce(self):
+
+        if self.agent.isCrossing():
+
+            distanceOncoming = self.actorManager.distanceFromNearestOncomingVehicle()
+            if distanceOncoming is not None:
+                # random will not work. The force should be off while pedestrian is not on road
+                # idea: if nearest waypoint is too far, that means pedestrian is not worried about on coming vehicle. But carla waypoint calculation is not reliable
+                return Utils.createRandomVector(0, 0.5) # TODO implement force based on distance
+                
+        return carla.Vector3D() # in othe states this model does not produce force
