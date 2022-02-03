@@ -6,7 +6,7 @@ from lib import Utils
 from .PedestrianAgent import PedestrianAgent
 from .PedestrianPlanner import PedestrianPlanner
 from .DestinationModel import DestinationModel
-from .PedGapModel import PedGapModel
+from .gap_models.DistanceGapModel import DistanceGapModel
 from .StateTransitionManager import StateTransitionManager
 from lib import ActorManager, ObstacleManager, LoggerFactory, TooManyNewStates
 
@@ -30,7 +30,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
     def initModels(self):
         self.destinationModel = DestinationModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
-        pedGapModel = PedGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
         self.stopGoModel = StopGoModel(pedGapModel, self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
 
         self.models = [self.destinationModel, self.stopGoModel]

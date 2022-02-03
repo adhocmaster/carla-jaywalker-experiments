@@ -8,4 +8,6 @@ min_crossing_speed: 0.5
 max_crossing_speed: 3
 median_crossing_speed: 1.5
 
+brewer_beta0: 6.2064
+brewer_beta1: -0.9420
 

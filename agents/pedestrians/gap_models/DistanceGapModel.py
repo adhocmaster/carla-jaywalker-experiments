@@ -2,10 +2,9 @@ import carla
 from agents.pedestrians.factors import InternalFactors
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from .GapModel import GapModel
-from .PedestrianAgent import PedestrianAgent
-import random
+from ..PedestrianAgent import PedestrianAgent
 
-class PedGapModel(GapModel):
+class DistanceGapModel(GapModel):
 
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 

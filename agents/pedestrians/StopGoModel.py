@@ -2,7 +2,7 @@ import carla
 from agents.pedestrians.PedState import PedState
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from .ForceModel import ForceModel
-from .GapModel import GapModel
+from .gap_models.GapModel import GapModel
 from .PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
 

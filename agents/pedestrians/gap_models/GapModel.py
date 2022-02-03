@@ -1,4 +1,4 @@
-from .ForceModel import ForceModel
+from ..ForceModel import ForceModel
 from abc import abstractmethod
 from lib import NotImplementedInterface
 
