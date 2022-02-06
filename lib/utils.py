@@ -106,7 +106,6 @@ class Utils:
             :param z: height in meters
         """
         for wpt in waypoints:
-            print(wpt)
             wpt_t = wpt.transform
             begin = wpt_t.location + carla.Location(z=z)
             angle = math.radians(wpt_t.rotation.yaw)

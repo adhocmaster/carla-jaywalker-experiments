@@ -6,6 +6,7 @@ from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
+from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
 from lib import Simulator
 from lib import Utils
@@ -70,7 +71,9 @@ class Research1v1(BaseResearch):
         
         self.world.wait_for_tick() # otherwise we can get wrong agent location!
 
-        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG)
+        optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
+
+        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG, optionalFactors=optionalFactors)
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)

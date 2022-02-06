@@ -2,14 +2,17 @@ from datetime import timedelta
 import carla
 from agents.pedestrians.PedState import PedState
 from agents.pedestrians.StopGoModel import StopGoModel
-from agents.pedestrians.factors import InternalFactors
+from agents.pedestrians.factors import InternalFactors, CrossingOncomingFactorModel
 from lib import Utils
-from .PedestrianAgent import PedestrianAgent
+from ..PedestrianAgent import PedestrianAgent
 from .PedestrianPlanner import PedestrianPlanner
-from .DestinationModel import DestinationModel
-from .gap_models import *
-from .StateTransitionManager import StateTransitionManager
+from .ModelFactory import ModelFactory
+from ..DestinationModel import DestinationModel
+from ..gap_models import *
+from ..StateTransitionManager import StateTransitionManager
 from lib import ActorManager, ObstacleManager, LoggerFactory, TooManyNewStates
+from agents.pedestrians.factors import *
+from typing import List
 
 class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
@@ -24,20 +27,52 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         self.name = f"SingleOncomingVehicleLocalPlanner {agent.id}"
         self._logger = LoggerFactory.create(self.name)
         super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=time_delta)
-        # self._vehicle = vehicle
-        self.models = []
-        self.stateTransitionModels = []
-        self.initModels()
+        self.modelFactory = ModelFactory(
+                                    self,
+                                    self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                                    )
+        # self.initModels()
+        self.modelFactory.createRequiredModels()
         pass
 
-    def initModels(self):
-        self.destinationModel = DestinationModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
-        # pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
-        pedGapModel = BrewerGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
-        self.stopGoModel = StopGoModel(pedGapModel, self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+    # def initModels(self): # maybe create a factory
+        # self.destinationModel = DestinationModel(
+        #                             self.agent, 
+        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+        #                             internalFactors=self.internalFactors
+        #                             )
+        # # pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        # pedGapModel = BrewerGapModel(
+        #                             self.agent, 
+        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+        #                             internalFactors=self.internalFactors
+        #                             )
+        # self.stopGoModel = StopGoModel(         
+        #                             pedGapModel,
+        #                             self.agent, 
+        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+        #                             internalFactors=self.internalFactors
+        #                             )
+        # # factor models
 
-        self.models = [self.destinationModel, self.stopGoModel]
-        self.stateTransitionModels = [self.stopGoModel]
+        # self.crossingOncomingVehicleModel = CrossingOncomingFactorModel(
+        #                             self.agent, 
+        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+        #                             internalFactors=self.internalFactors
+        #                             )
+
+        # self.models = [
+        #                 self.destinationModel, 
+        #                 self.stopGoModel
+        #               ]
+        # self.stateTransitionModels = [self.stopGoModel]
+
+
+    def createOptionalModels(self, optionalFactors: List[Factors]):
+        self.modelFactory.createOptionalModels(optionalFactors)
+
 
     
     # @property
@@ -115,16 +150,32 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         return control
 
     def getResultantForce(self):
-        destForce = self.destinationModel.calculateForce()
-        onComingVehicleForce = self.stopGoModel.calculateForce()
-        self.logger.info(f"Force from destination model {destForce}")
-        self.logger.info(f"Force from ped gap model {onComingVehicleForce}")
-        return destForce + onComingVehicleForce
+
+        resultantForce = carla.Vector3D()
+
+        for model in self.models:
+            force = model.calculateForce()
+            self.logger.info(f"Force from {model.name} {force}")
+            
+            if force is not None:
+                resultantForce += force
+        
+        return resultantForce
+
+        # destForce = self.destinationModel.calculateForce()
+        # onComingVehicleForce = self.stopGoModel.calculateForce()
+        # self.logger.info(f"Force from destination model {destForce}")
+        # self.logger.info(f"Force from ped gap model {onComingVehicleForce}")
+        # return destForce + onComingVehicleForce
 
     # def getOncomingVehicles(self):
     #     if self.vehicle is None:
     #         return []
     #     return [self.vehicle]
+
+
+    def getDestinationModel(self):
+        return self.destinationModel
 
 
     def getOncomingPedestrians(self):

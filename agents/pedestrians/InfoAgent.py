@@ -1,13 +1,14 @@
 import carla
 from lib import LoggerFactory
-from .PedestrianPlanner import PedestrianPlanner
+# from .planner.PedestrianPlanner import PedestrianPlanner
 
 class InfoAgent:
     def __init__(self, name, walker, desired_speed=1.5, config=None):
         self._walker = walker
         self.desired_speed = desired_speed
         # self._acceleration = 1 #m/s^2
-        self._localPlanner:PedestrianPlanner = None
+        self._localPlanner = None
+        # self._localPlanner:PedestrianPlanner = None
 
         self._logger = LoggerFactory.create(name, config)
 
@@ -47,7 +48,7 @@ class InfoAgent:
 
     # region planning
 
-    def setLocalPlanner(self, planner: PedestrianPlanner):
+    def setLocalPlanner(self, planner: any):
         self._localPlanner = planner
 
         

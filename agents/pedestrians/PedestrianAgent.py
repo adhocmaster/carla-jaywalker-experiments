@@ -4,7 +4,7 @@ import carla
 import logging
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
-from .PedestrianPlanner import PedestrianPlanner
+from .planner.PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
 

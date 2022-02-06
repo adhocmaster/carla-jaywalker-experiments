@@ -10,12 +10,15 @@ class BrewerGapModel(TimeGapModel):
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
-        self.name = f"BrewerGapModel #{agent.id}"
+        # self.name = f"BrewerGapModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
         self.initFactors()
 
         pass
 
+    @property
+    def name(self):
+        return f"BrewerGapModel #{self.agent.id}"
     
     def initFactors(self):
         
@@ -39,12 +42,14 @@ class BrewerGapModel(TimeGapModel):
 
     def calculateForce(self):
 
-        if self.agent.isCrossing():
+        return None
 
-            distanceOncoming = self.actorManager.distanceFromNearestOncomingVehicle()
-            if distanceOncoming is not None:
-                # random will not work. The force should be off while pedestrian is not on road
-                # idea: if nearest waypoint is too far, that means pedestrian is not worried about on coming vehicle. But carla waypoint calculation is not reliable
-                return Utils.createRandomVector(0, 0.5) # TODO implement force based on distance
+        # if self.agent.isCrossing():
+
+        #     distanceOncoming = self.actorManager.distanceFromNearestOncomingVehicle()
+        #     if distanceOncoming is not None:
+        #         # random will not work. The force should be off while pedestrian is not on road
+        #         # idea: if nearest waypoint is too far, that means pedestrian is not worried about on coming vehicle. But carla waypoint calculation is not reliable
+        #         return Utils.createRandomVector(0, 0.5) # TODO implement force based on distance
                 
-        return carla.Vector3D() # in othe states this model does not produce force
+        # return None # in othe states this model does not produce force

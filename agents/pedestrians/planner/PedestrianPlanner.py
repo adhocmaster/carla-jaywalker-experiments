@@ -1,7 +1,11 @@
 import carla
 from abc import abstractmethod
+from agents.pedestrians.ForceModel import ForceModel
+from agents.pedestrians.StateTransitionModel import StateTransitionModel
 from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
 from agents.pedestrians.factors import InternalFactors
+from agents.pedestrians.factors.CrossingFactorModel import CrossingFactorModel
+from typing import List
 
 class PedestrianPlanner:
     """A planner has the state of the world, state of the pedestrian, and factors of the pedestrian. It does not plan any path or trajectory. 
@@ -19,6 +23,11 @@ class PedestrianPlanner:
         self.obstacleManager = obstacleManager
         self._destination = None
         self.internalFactors = internalFactors
+
+        self.models: List[ForceModel] = []
+        self.stateTransitionModels: List[StateTransitionModel] = []
+        self.crossingFactorModels: List[CrossingFactorModel] = []
+
         pass
 
     @property
@@ -46,6 +55,7 @@ class PedestrianPlanner:
     def onTickStart(self, world_snapshot):
         self.actorManager.onTickStart(world_snapshot)
         self.obstacleManager.onTickStart(world_snapshot)
+        self.setFactorModelDestinationParams()
 
     def setDestination(self, destination):
         self._destination = destination
@@ -90,7 +100,12 @@ class PedestrianPlanner:
     def getNewVelocity(self):
         oldVelocity = self.agent.getOldVelocity()
         dv = self.getRequiredChangeInVelocity()
-        return oldVelocity + dv
+        newVelo = oldVelocity + dv
+
+        
+        self.logger.info(f"Speed {oldVelocity.length()} -> {newVelo.length()}")
+
+        return newVelo
 
     def getRequiredChangeInVelocity(self):
         timeDelta = Utils.getTimeDelta(self.world)
@@ -99,9 +114,30 @@ class PedestrianPlanner:
 
         force = self.getResultantForce() # unit mass, so force == acceleration
         self.logger.info(f"Resultant force is {force}")
+        self.logger.info(f"Resultant acceleration is {force.length()} m/s^2")
         self.logger.info(f"timeDelta is {timeDelta}")
         dv = force * timeDelta
         return dv
+
+    
+    def setFactorModelDestinationParams(self):
+        """Must be run every tick
+        """
+        destinationModel = self.getDestinationModel()
+
+        destForce = destinationModel.calculateForce()
+        destDirection = destForce.make_unit_vector()
+        destSpeed = destForce.length()
+
+        for crossingFactorModel in self.crossingFactorModels:
+            crossingFactorModel.setDestinationParams(destForce, destDirection, destSpeed)
+        
+        pass
+
+    @abstractmethod
+    def getDestinationModel(self) -> ForceModel:
+        raise NotImplementedInterface("getDestinationModel")
+
 
     @abstractmethod
     def getResultantForce(self):

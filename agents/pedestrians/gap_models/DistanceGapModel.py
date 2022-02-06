@@ -15,6 +15,10 @@ class DistanceGapModel(GapModel):
 
         pass
 
+
+    @property
+    def name(self):
+        return f"BrewerGapModel {self.agent.id}"
     
     def initFactors(self):
         pass

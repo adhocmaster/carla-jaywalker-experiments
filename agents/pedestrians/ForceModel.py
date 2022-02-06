@@ -3,12 +3,12 @@ import carla
 from abc import abstractmethod
 
 from lib import ActorManager, ObstacleManager, NotImplementedInterface
-from agents.pedestrians.PedestrianAgent import PedestrianAgent
-from agents.pedestrians.factors import InternalFactors
+# from agents.pedestrians.PedestrianAgent import Pedestria.Agent
+from agents.pedestrians.factors.InternalFactors import InternalFactors
 
 class ForceModel:
 
-    def __init__(self, agent: PedestrianAgent,  actorManager: ActorManager, obstacleManager: ObstacleManager,
+    def __init__(self, agent: any,  actorManager: ActorManager, obstacleManager: ObstacleManager,
                     internalFactors: InternalFactors) -> None:
 
         self._agent = agent
@@ -20,6 +20,12 @@ class ForceModel:
     @property
     def agent(self):
         return self._agent
+
+    @property
+    @abstractmethod
+    def name(self):
+        raise NotImplementedInterface("name")
+        
 
     @abstractmethod
     def calculateForce(self):

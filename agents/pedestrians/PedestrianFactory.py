@@ -3,11 +3,14 @@ import random
 import logging
 
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
-from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
+from agents.pedestrians.planner.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
 from agents.pedestrians.factors import InternalFactors
 from lib import LoggerFactory, ClientUser
 from lib.ActorManager import ActorManager
 from lib.ObstacleManager import ObstacleManager
+from typing import List
+from agents.pedestrians.factors import *
+
 
 class PedestrianFactory(ClientUser):
 
@@ -67,7 +70,7 @@ class PedestrianFactory(ClientUser):
         return PedestrianFactory.obstacleDetectors[walker]
 
     
-    def createAgent(self, walker: carla.Walker, desired_speed=1.5, logLevel=logging.INFO) -> PedestrianAgent:
+    def createAgent(self, walker: carla.Walker, desired_speed=1.5, logLevel=logging.INFO, internalFactorsPath = None, optionalFactors: List[Factors] = None) -> PedestrianAgent:
         agent = PedestrianAgent(
             walker, 
             desired_speed=desired_speed,
@@ -76,23 +79,28 @@ class PedestrianFactory(ClientUser):
             config={"LOG_LEVEL": logLevel}
             )
 
-        self.addPlanners(agent)
+        self.addPlanners(agent, internalFactorsPath=internalFactorsPath, optionalFactors=optionalFactors)
         # self.initSensors(agent)
         
         return agent
 
-    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None):
+    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None):
         
         actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
         obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)
 
         if internalFactorsPath is None:
+            self.logger.warn(f"Internation factor path is None. Using the default at ({PedestrianFactory.internalFactorPath})")
             internalFactorsPath = PedestrianFactory.internalFactorPath
         
         internalFactors = InternalFactors(internalFactorsPath)
 
 
         localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=self.time_delta)
+
+        if optionalFactors is not None:
+            localPlanner.createOptionalModels(optionalFactors=optionalFactors)
+            
         agent.setLocalPlanner(localPlanner)
 
         

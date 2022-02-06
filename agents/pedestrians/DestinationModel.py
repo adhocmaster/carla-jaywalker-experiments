@@ -19,6 +19,9 @@ class DestinationModel(ForceModel):
 
         pass
 
+    @property
+    def name(self):
+        return f"DestinationModel {self.agent.id}"
     
     def initFactors(self):
         if "desired_speed" not in self.internalFactors:

@@ -24,7 +24,7 @@ class ActorManager:
         self._currentActorDistances = {}
         self._previousActorDistances = {}
 
-        self._nearestOncomingVehicle = None
+        self._nearestOncomingVehicle = None # updated every tick start
 
     @property
     def actor(self):

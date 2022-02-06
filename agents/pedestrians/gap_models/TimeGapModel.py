@@ -13,30 +13,40 @@ class TimeGapModel(GapModel):
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
-        self.name = f"TimeGapModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
-        self.initFactors()
+        # self.initFactors()
 
         pass
 
+    @property
+    def name(self):
+        return f"TimeGapModel #{self.agent.id}"
     
-    def initFactors(self):
+    # def initFactors(self):
 
-        pass
+    #     pass
 
     def canCross(self):
+        riskLevel = self.internalFactors["risk_level"]
+        if riskLevel == "extreme":
+            return True
+
         timeGap = self.getAvailableGap()
+
+        self.logger.info(f"Time gap is {timeGap} seconds")
         if timeGap is None:
             return True
             
         p_go = self.p_go(timeGap)
-        agressionLevel = self.internalFactors["aggression_level"]
 
-        if agressionLevel == "cautious":
+        if riskLevel == "cautious":
             p_go = 0.8 * p_go
 
-        if agressionLevel == "risky":
+        if riskLevel == "risky":
             p_go = p_go * 2
+
+        if p_go > 0.85:
+            return True
 
         return np.random.choice([True, False], p=[p_go, 1-p_go])
 
