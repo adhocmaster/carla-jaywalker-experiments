@@ -149,18 +149,18 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
         return control
 
-    def getResultantForce(self):
+    # def getResultantForce(self):
 
-        resultantForce = carla.Vector3D()
+    #     resultantForce = carla.Vector3D()
 
-        for model in self.models:
-            force = model.calculateForce()
-            self.logger.info(f"Force from {model.name} {force}")
+    #     for model in self.models:
+    #         force = model.calculateForce()
+    #         self.logger.info(f"Force from {model.name} {force}")
             
-            if force is not None:
-                resultantForce += force
+    #         if force is not None:
+    #             resultantForce += force
         
-        return resultantForce
+    #     return resultantForce
 
         # destForce = self.destinationModel.calculateForce()
         # onComingVehicleForce = self.stopGoModel.calculateForce()

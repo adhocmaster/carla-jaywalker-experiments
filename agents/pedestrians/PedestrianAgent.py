@@ -7,6 +7,7 @@ from lib import SimulationVisualization
 from .planner.PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
+from typing import Dict
 
 class PedestrianAgent(InfoAgent):
     
@@ -37,6 +38,17 @@ class PedestrianAgent(InfoAgent):
 
         self.collisionSensor = None
         self.obstacleDetector = None
+
+        self.visualizationForceLocation = None
+        if config is not None:
+            if "visualizationForceLocation" in config:
+                self.visualizationForceLocation = config["visualizationForceLocation"]
+
+        self.visualizationInfoLocation = None
+        if config is not None:
+            if "visualizationInfoLocation" in config:
+                self.visualizationInfoLocation = config["visualizationInfoLocation"]
+                
         # config parameters
 
     @property
@@ -63,8 +75,30 @@ class PedestrianAgent(InfoAgent):
             return True
         return False
 
+    # region visualization
     def visualiseState(self):
         self.visualizer.drawPedState(self.state, self.walker, life_time=0.1)
+
+    
+
+    def visualiseForces(self):
+        forces = self._localPlanner.modelForces
+
+        visualizationForceLocation = self.location + carla.Location(x=10)
+        if self.visualizationForceLocation is not None:
+            visualizationForceLocation = self.visualizationForceLocation
+
+        visualizationInfoLocation = self.location + carla.Location(x=10)
+        if self.visualizationInfoLocation is not None:
+            visualizationInfoLocation = self.visualizationInfoLocation
+
+        self.visualizer.visualizeForces(
+            self.name, 
+            forces = forces, 
+            forceCenter = visualizationForceLocation, 
+            infoCenter = visualizationInfoLocation, 
+            life_time=0.15
+            )
     #endregion
     
 
@@ -118,6 +152,7 @@ class PedestrianAgent(InfoAgent):
         control = self._localPlanner.calculateNextControl()
 
         self.visualiseState()
+        self.visualiseForces()
 
         return control
 

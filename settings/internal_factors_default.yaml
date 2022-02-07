@@ -2,7 +2,7 @@ risk_level: "extreme"
 
 # Destination related factors
 relaxation_time: 0.1
-desired_speed: 0.5
+desired_speed: 1
 desired_distance_gap: 2
 # desired_time_gap: 1
 

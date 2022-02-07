@@ -70,13 +70,26 @@ class PedestrianFactory(ClientUser):
         return PedestrianFactory.obstacleDetectors[walker]
 
     
-    def createAgent(self, walker: carla.Walker, desired_speed=1.5, logLevel=logging.INFO, internalFactorsPath = None, optionalFactors: List[Factors] = None) -> PedestrianAgent:
+    def createAgent(
+        self, 
+        walker: carla.Walker, 
+        desired_speed=1.5, 
+        logLevel=logging.INFO, 
+        internalFactorsPath = None, 
+        optionalFactors: List[Factors] = None,
+        config=None
+        ) -> PedestrianAgent:
+
+        if config is None:
+            config = {}
+        config["LOG_LEVEL"] = logLevel
+
         agent = PedestrianAgent(
             walker, 
             desired_speed=desired_speed,
             visualizer=self.visualizer, 
             time_delta=self.time_delta, 
-            config={"LOG_LEVEL": logLevel}
+            config=config
             )
 
         self.addPlanners(agent, internalFactorsPath=internalFactorsPath, optionalFactors=optionalFactors)

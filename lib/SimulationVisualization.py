@@ -7,6 +7,7 @@ import math
 from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
 from .MapManager import MapManager
+from typing import Dict
 # import agents.pedestrians.PedState as PedState
 
 class SimulationVisualization(ClientUser):
@@ -194,6 +195,34 @@ class SimulationVisualization(ClientUser):
             color=carla.Color(50, 25, 25), 
             life_time=life_time
             )
+
+
+    def drawForce(self, location, force:carla.Vector3D, color=(50, 25, 25), z=0.5, life_time=1.0):
+        """
+        Draw a list of waypoints at a certain height given in z.
+
+            :param world: carla.world object
+            :param waypoints: list or iterable container with the waypoints to draw
+            :param z: height in meters
+        """
+        begin = location + carla.Location(z=z)
+        direction = force.make_unit_vector()
+        magnitude = force.length()
+        angle = math.atan2(direction.y, direction.x)
+        end = begin + carla.Location(
+                                        x=math.cos(angle) * magnitude, 
+                                        y=math.sin(angle) * magnitude
+                                    )
+
+        self.world.debug.draw_arrow(
+            begin, 
+            end, 
+            arrow_size=0.3, 
+            color=carla.Color(*color), 
+            life_time=life_time
+            )
+
+
     def drawAllWaypoints(self, z=0.5, life_time=1.0):
         """
         Draw a list of waypoints at a certain height given in z.
@@ -213,7 +242,7 @@ class SimulationVisualization(ClientUser):
         self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D", life_time=life_time/2)
 
     
-    def drawPedState(self, state, walker, life_time=0.1):
+    def drawPedState(self, state, walker, life_time=0.1, location=None):
 
         from agents.pedestrians.PedState import PedState
         color = (0, 0, 0)
@@ -225,9 +254,49 @@ class SimulationVisualization(ClientUser):
             color = (255, 0, 0)
 
         # self.drawWalkerBB(walker, color = color, life_time=0.1)
-        overlayLocation = walker.get_location() + carla.Location(z=1)
+        if location is not None:
+            overlayLocation = location
+        else:
+            overlayLocation = walker.get_location() + carla.Location(z=1)
+
         self.drawTextOnMap(location=overlayLocation, text=state.value, color=color, life_time=life_time)
 
     
+
+    def visualizeForces(self, title, forces:Dict[str, carla.Vector3D], forceCenter: carla.Location, infoCenter: carla.Location, life_time=0.1):
+        """[summary]
+
+        Args:
+            forces (dict): name -> vector3D
+        """
+        # draw names
+        # in our case change x values
+        x = infoCenter.x
+        y = infoCenter.y
+        # z = infoCenter.z
+        z = 1
+        overlayLocation = carla.Location(
+                x = x,
+                y = y,
+                z = z
+            )
+
+        self.drawTextOnMap(location=overlayLocation, text=title, life_time=life_time)
+        offsetX = 1.5
+        offsetY = 0
+        for name in forces:
+            color = (random.randint(0, 200), random.randint(0, 200), random.randint(0, 200))
+            x = x + offsetX
+            y = y + offsetY
+            nameLocation = carla.Location(
+                x = x,
+                y = y,
+                z = z
+            )
+            force = forces[name]
+            self.drawTextOnMap(location=nameLocation, text=f"{name} {force}", color=color, life_time=life_time)
+            if force is not None and force.length() > 0:
+                self.drawForce(forceCenter, force, color=color, life_time=life_time*2)
+
 
     

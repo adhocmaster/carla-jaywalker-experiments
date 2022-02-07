@@ -5,7 +5,7 @@ from agents.pedestrians.StateTransitionModel import StateTransitionModel
 from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
 from agents.pedestrians.factors import InternalFactors
 from agents.pedestrians.factors.CrossingFactorModel import CrossingFactorModel
-from typing import List
+from typing import List, Dict
 
 class PedestrianPlanner:
     """A planner has the state of the world, state of the pedestrian, and factors of the pedestrian. It does not plan any path or trajectory. 
@@ -27,6 +27,8 @@ class PedestrianPlanner:
         self.models: List[ForceModel] = []
         self.stateTransitionModels: List[StateTransitionModel] = []
         self.crossingFactorModels: List[CrossingFactorModel] = []
+
+        self.modelForces: Dict[str, carla.Vector3D] = {} # tracks the forces for the next tick
 
         pass
 
@@ -120,6 +122,20 @@ class PedestrianPlanner:
         return dv
 
     
+    def getResultantForce(self):
+
+        resultantForce = carla.Vector3D()
+
+        for model in self.models:
+            force = model.calculateForce()
+            self.logger.info(f"Force from {model.name} {force}")
+            self.modelForces[model.name] = force
+            
+            if force is not None:
+                resultantForce += force
+        
+        return resultantForce
+
     def setFactorModelDestinationParams(self):
         """Must be run every tick
         """
@@ -139,9 +155,6 @@ class PedestrianPlanner:
         raise NotImplementedInterface("getDestinationModel")
 
 
-    @abstractmethod
-    def getResultantForce(self):
-        raise NotImplementedInterface("getResultantForce")
 
     @abstractmethod
     def calculateNextPedestrianState(self):
