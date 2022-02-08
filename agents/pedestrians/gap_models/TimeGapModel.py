@@ -1,6 +1,7 @@
 from turtle import distance
 import carla
 from abc import abstractmethod
+from agents.pedestrians.PedUtils import PedUtils
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
@@ -53,10 +54,7 @@ class TimeGapModel(GapModel):
 
 
     def getAvailableGap(self):
-        # distance = self.actorManager.distanceFromNearestOncomingVehicle()
-        # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
-        # TODO add 
-        return self.actorManager.TTCNearestOncomingVehicle()
+        return self.agent.getAvailableTimeGapWithClosestVehicle()
 
 
     @abstractmethod

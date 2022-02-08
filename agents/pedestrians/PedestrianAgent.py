@@ -1,4 +1,6 @@
 from msilib.schema import Error
+from random import random
+import numpy as np
 import time
 import carla
 import logging
@@ -8,6 +10,8 @@ from .planner.PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
 from typing import Dict
+from .PedUtils import PedUtils
+
 
 class PedestrianAgent(InfoAgent):
     
@@ -52,11 +56,48 @@ class PedestrianAgent(InfoAgent):
         # config parameters
 
     @property
+    def world(self):
+        return self._world
+
+    @property
+    def map(self):
+        return self._map
+
+    @property
     def actorManager(self):
         return self._localPlanner.actorManager
     @property
     def obstacleManager(self):
         return self._localPlanner.obstacleManager
+  
+    def getAvailableTimeGapWithClosestVehicle(self):
+        # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
+        # TODO assuming vehicle driving in agent's nearest lane 
+        # TODO Assuming pedestrian will cross at desired speed.
+        TTC = self.actorManager.pedTTCNearestOncomingVehicle()
+        self.logger.info(f"TTC = {TTC} seconds")
+
+        if TTC is None:
+            return None
+
+
+        TTX = PedUtils.timeToCrossNearestLane(self.map, self.location, self._localPlanner.getDestinationModel().getDesiredSpeed())
+
+        TG = self.addError(TTC)
+
+        self.logger.info(f"TG (Time gap) = {TG} seconds")
+
+        # if TG > TTX:
+        #     # positive oncoming vehicle force
+        # else:
+        #     # negative oncoming vehicle force.
+
+        return TG
+
+    def addError(self, TTC):
+        # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
+        noiseFactor = np.random.uniform(0.5, 1.5)
+        return TTC * noiseFactor # TODO error modeling in Gap
 
     #region states
 

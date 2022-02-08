@@ -21,7 +21,7 @@ class ActorManager:
         self._world = actor.get_world()
         self._map = self.world.get_map()
         self._cache = {}
-        self._currentActorDistances = {}
+        self._currentActorDistances = {} # for vehicles, the distance is calculated from the nearest waypoint for an actor.
         self._previousActorDistances = {}
 
         self._nearestOncomingVehicle = None # updated every tick start
@@ -62,6 +62,10 @@ class ActorManager:
         # # cache results of all the function calls every tick.
         actorLocation = self.actor.get_location()
 
+        # get nearest waypoint
+        wp = self.map.get_waypoint(actorLocation)
+        wpLocation = wp.transform.location
+
         # self.logger.warn(f"previous distances before update {self._previousActorDistances}")
         # self.logger.warn(f"current distances before update {self._currentActorDistances}")
 
@@ -70,7 +74,8 @@ class ActorManager:
         for otherActor in self.getDynamicActors():
             if self.actor.id == otherActor.id:
                 continue
-            self._currentActorDistances[otherActor.id] = actorLocation.distance_2d(otherActor.get_location())
+            self._currentActorDistances[otherActor.id] = wpLocation.distance_2d(otherActor.get_location())
+            # self._currentActorDistances[otherActor.id] = actorLocation.distance_2d(otherActor.get_location())
         
         self.logger.info(f"previous distances {self._previousActorDistances}")
         self.logger.info(f"current distances {self._currentActorDistances}")
@@ -119,6 +124,11 @@ class ActorManager:
         return minVehicle
     
     def distanceFromNearestOncomingVehicle(self):
+        """Can be negative when the front crosses the conflict point
+
+        Returns:
+            [type]: [description]
+        """
         # TODO we are now just measuring distance from all actors
         vehicle = self.nearestOncomingVehicle
         if vehicle is None:
@@ -126,17 +136,22 @@ class ActorManager:
             return None
         distance = self.getCurrentDistance(vehicle)
         self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
-        return distance
+        return distance - 2.3 # meter offset for front of the oncoming vehicle.
 
-    def TTCNearestOncomingVehicle(self):
+    def pedTTCNearestOncomingVehicle(self):
         if self.nearestOncomingVehicle is None:
             return None
 
-        distance = self.distanceFromNearestOncomingVehicle()
-        speed = self.getLinearSpeed(self.nearestOncomingVehicle)
-        return distance / speed
+        wp_distance = self.distanceFromNearestOncomingVehicle()
+        # speed = self.getLinearSpeed(self.nearestOncomingVehicle) # TODO how can we get vehicle speed?
+        velocity = self.nearestOncomingVehicle.get_velocity()
+        speed = velocity.length()
+        if speed < 0.001:
+            return None
+        return wp_distance / speed
 
         
+    
 
 
     #endregion
