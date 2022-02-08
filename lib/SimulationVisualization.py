@@ -274,7 +274,7 @@ class SimulationVisualization(ClientUser):
         x = infoCenter.x
         y = infoCenter.y
         # z = infoCenter.z
-        z = 1
+        z = 0
         overlayLocation = carla.Location(
                 x = x,
                 y = y,
@@ -282,10 +282,12 @@ class SimulationVisualization(ClientUser):
             )
 
         self.drawTextOnMap(location=overlayLocation, text=title, life_time=life_time)
-        offsetX = 1.5
+        offsetX = 1
         offsetY = 0
+        colors = self._getForceColors()
         for name in forces:
-            color = (random.randint(0, 200), random.randint(0, 200), random.randint(0, 200))
+            color = colors.pop(0)
+            print(color)
             x = x + offsetX
             y = y + offsetY
             nameLocation = carla.Location(
@@ -294,9 +296,30 @@ class SimulationVisualization(ClientUser):
                 z = z
             )
             force = forces[name]
-            self.drawTextOnMap(location=nameLocation, text=f"{name} {force}", color=color, life_time=life_time)
+            if force is None:
+                length = 0
+            else:
+                length = force.length()
+
+            self.drawTextOnMap(location=nameLocation, text=f"{name} force = {length}", color=color, life_time=life_time)
             if force is not None and force.length() > 0:
-                self.drawForce(forceCenter, force, color=color, life_time=life_time*2)
+                self.drawForce(forceCenter, force, color=color, life_time=life_time)
+
+    
+    def _getForceColors(self):
+        pallete = [
+            (0, 100, 0),
+            (100, 0, 0),
+            (0, 0, 100),
+            (50, 100, 0),
+            (0, 100, 50),
+            (100, 50, 0),
+            (100, 0, 50),
+            (0, 50, 100),
+            (50, 0, 100)
+            
+        ]
+        return pallete
 
 
     

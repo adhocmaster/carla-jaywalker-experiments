@@ -1,8 +1,10 @@
 import carla
+import numpy as np
 from lib import ActorManager, ObstacleManager, Utils
 from .ForceModel import ForceModel
 from .PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
+from .PedUtils import PedUtils
 
 
 class DestinationModel(ForceModel):
@@ -14,6 +16,9 @@ class DestinationModel(ForceModel):
         # self._source = source # source may not be current agent location
         self._finalDestination = final_destination
         self._nextDestination = final_destination
+
+        self.skipForceTicks = 0
+        self.skipForceTicksCounter = 0
 
         self.initFactors()
 
@@ -31,6 +36,32 @@ class DestinationModel(ForceModel):
             self.internalFactors["relaxation_time"] = 0.1 
         
         pass
+
+    def skipNextTicks(self, n):
+        """We can skip n next ticks
+
+        Args:
+            n ([type]): [description]
+        """
+        self.skipForceTicks = n
+        self.skipForceTicksCounter = 0
+
+    def needSkip(self):
+        """One time skip counter
+
+        Returns:
+            [type]: [description]
+        """
+        if self.skipForceTicks == 0:
+            return False
+        
+        if self.skipForceTicksCounter > self.skipForceTicks:
+            self.skipForceTicksCounter = 0
+            self.skipForceTicks = 0
+            return False
+        
+        self.skipForceTicksCounter += 1
+        return True
 
     
     def setFinalDestination(self, destination):
@@ -50,6 +81,9 @@ class DestinationModel(ForceModel):
         self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
         
             
+    def setNextDestination(self, destination):
+        self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
+
     def getDistanceToDestination(self):
         return Utils.getDistance(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
 
@@ -72,7 +106,39 @@ class DestinationModel(ForceModel):
 
 
     def calculateForce(self):
-        return self.calculateForceForDesiredVelocity()
+
+        if self.needSkip:
+            return None
+
+        self.calculateNextDestination()
+
+        force = self.calculateForceForDesiredVelocity()
+        
+        return force
+
+
+
+    def calculateNextDestination(self):
+
+
+        # # First we check if we need to go back to origin.
+
+        # TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+        
+        # TTX = PedUtils.timeToCrossNearestLane(self.map, self.location, self._localPlanner.getDestinationModel().getDesiredSpeed())
+
+
+        # if TG > TTX:
+        #     # positive oncoming vehicle force
+        # else:
+        #     # negative oncoming vehicle force.
+
+
+        # # last, check if next destination is reached, if so, set it to final destination
+
+        if self._nextDestination.distance2_d(self.agent.location) < 0.1:
+            self._nextDestination = self._finalDestination
+
     
     def calculateForceForDesiredVelocity(self):
         desiredVelocity = self.getDesiredVelocity()

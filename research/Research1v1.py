@@ -74,8 +74,8 @@ class Research1v1(BaseResearch):
         optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
 
         config = {
-            "visualizationForceLocation": carla.Location(x=-155.0, y=2.0, z=1.5),
-            "visualizationInfoLocation": carla.Location(x=-160.0, y=0.0, z=1.5)
+            "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
+            "visualizationInfoLocation": carla.Location(x=-155.0, y=0.0, z=1.5)
         }
 
         self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG, optionalFactors=optionalFactors, config=config)

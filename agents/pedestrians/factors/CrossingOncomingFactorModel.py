@@ -1,7 +1,8 @@
 import carla
-from numpy import empty
+import numpy as np
 from .CrossingFactorModel import CrossingFactorModel
 from lib import Utils
+from ..PedUtils import PedUtils
 
 class CrossingOncomingFactorModel(CrossingFactorModel):
 
@@ -18,7 +19,21 @@ class CrossingOncomingFactorModel(CrossingFactorModel):
         if magnitude == 0:
             return None
 
-        return self.destDirection * magnitude
+        force = self.destDirection * magnitude
+        # Do we need to flinch back? If so, increase the force and multiply it with 10.
+        if self.flinchRequired():
+            self.agent.logger.info("Flinching back")
+            force = carla.Vector3D() - force
+
+        return force
+
+    def flinchRequired(self):
+
+        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
+        
+        # return np.random.choice([True, False], p=[0.5, 0.5])
+
 
     def calculateForce(self):
         if self.agent.isCrossing():

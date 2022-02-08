@@ -22,6 +22,14 @@ class ForceModel:
         return self._agent
 
     @property
+    def map(self):
+        return self.world.get_map()
+
+    @property
+    def world(self):
+        return self.agent._world
+
+    @property
     @abstractmethod
     def name(self):
         raise NotImplementedInterface("name")

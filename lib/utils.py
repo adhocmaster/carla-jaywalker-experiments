@@ -1,6 +1,7 @@
 import carla
 import math
 import random
+from shapely.geometry import LineString, Point
 
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
@@ -76,6 +77,80 @@ class Utils:
             z=random.uniform(min, max)
         )
 
+
+    
+    @staticmethod
+    def getLineSegment(vel1: carla.Vector3D, start1: carla.Location, seconds=10):
+        end1 = start1 + vel1 * seconds
+        lineS1 = LineString([
+            (start1.x, start1.y),
+            (end1.x, end1.y)
+        ])
+
+        return lineS1
+
+
+    @staticmethod
+    def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10):
+        """returns if there is a conflict, but not necessarily they will collide with each other
+
+        Args:
+            vel1 (carla.Vector3D): [description]
+            start1 (carla.Location): [description]
+            vel2 (carla.Vector3D): [description]
+            start2 (carla.Location): [description]
+            seconds (int, optional): [description]. Defaults to 10.
+
+        Returns:
+            [type]: [description]
+        """
+
+        end1 = start1 + vel1 * seconds
+        end2 = start2 + vel2 * seconds
+
+        lineS1 = Utils.getLineSegment(vel1, start1, seconds)
+        lineS2 = Utils.getLineSegment(vel2, start2, seconds)
+
+        point = lineS1.intersection(lineS2)
+
+        if isinstance(point, Point):
+            return point
+        
+        return None
+
+    @staticmethod
+    def getCollisionPoint(bbActor1, bbActor2, seconds=10):
+
+        """vehicle, and, walker has bounding_box relative to their actor center
+        """
+        bb1 = carla.BoundingBox(
+            extent = bbActor1.extent,
+            location = bbActor1.location + bbActor1.get_location(),
+            rotation = bbActor1.rotation + bbActor1.get_transform().rotation
+        )
+        bb2 = carla.BoundingBox(
+            extent = bbActor2.extent,
+            location = bbActor2.location + bbActor1.get_location(),
+            rotation = bbActor2.rotation + bbActor2.get_transform().rotation
+        )
+        bbActor1.logger.info("BB center {bb1.location}")
+        bbActor2.logger.info("BB center {bb2.location}")
+
+
+        # Find conflict point. In some rare cases it will give us no conflict, but there will still be a conflict.
+        conflictPoint = Utils.getConflictPoint(
+            vel1 = bbActor1.get_velocity(),
+            start1=bb1.location,
+            vel2=bbActor2.get_velocity(),
+            start2=bb2.location,
+            seconds=seconds)
+
+        # If no conflict point, disregard? 
+
+        # time to conflict point
+        # location of 2, after that time
+
+        # check bounding box overlaps with 
 
 
     #endregion

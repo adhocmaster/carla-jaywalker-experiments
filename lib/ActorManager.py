@@ -149,8 +149,7 @@ class ActorManager:
         if speed < 0.001:
             return None
         return wp_distance / speed
-
-        
+       
     
 
 

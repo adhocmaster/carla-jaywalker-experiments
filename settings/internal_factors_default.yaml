@@ -2,7 +2,7 @@ risk_level: "normal"
 
 # Destination related factors
 relaxation_time: 0.1
-desired_speed: 1
+desired_speed: 2
 desired_distance_gap: 2
 # desired_time_gap: 1
 
@@ -14,8 +14,8 @@ speed_change_probability: 0.1
 
 # set this to 0 for no change
 oncoming_vehicle_speed_force: 2000
-acceleration_positive_max: 1
-acceleration_negative_min: -1
+acceleration_positive_max: 100
+acceleration_negative_min: -100
 
 brewer_beta0: 6.2064
 brewer_beta1: -0.9420

@@ -49,6 +49,14 @@ class PedestrianPlanner:
     def logger(self):
         pass
 
+
+    @property
+    def maxAcceleration(self):
+        return self.internalFactors["acceleration_positive_max"]
+
+    @property
+    def minAcceleration(self):
+        return self.internalFactors["acceleration_negative_min"]
     
     @property
     def destination(self):
@@ -134,6 +142,16 @@ class PedestrianPlanner:
             if force is not None:
                 resultantForce += force
         
+        # clip force
+        if resultantForce.length() > self.maxAcceleration:
+            self.logger.info(f"Clipping {resultantForce.length()} to {self.maxAcceleration}")
+            resultantForce = resultantForce.make_unit_vector() *  self.maxAcceleration
+
+        # clip force
+        if resultantForce.length() < self.minAcceleration:
+            self.logger.info(f"Clipping {resultantForce.length()} to {self.minAcceleration}")
+            resultantForce = resultantForce.make_unit_vector() *  self.minAcceleration
+
         return resultantForce
 
     def setFactorModelDestinationParams(self):
@@ -142,8 +160,9 @@ class PedestrianPlanner:
         destinationModel = self.getDestinationModel()
 
         destForce = destinationModel.calculateForce()
-        destDirection = destForce.make_unit_vector()
-        destSpeed = destForce.length()
+        destVelocity = destinationModel.getDesiredVelocity()
+        destDirection = destinationModel.getDesiredDirection()
+        destSpeed = destVelocity.length()
 
         for crossingFactorModel in self.crossingFactorModels:
             crossingFactorModel.setDestinationParams(destForce, destDirection, destSpeed)

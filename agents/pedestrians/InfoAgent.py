@@ -59,6 +59,7 @@ class InfoAgent:
     def setDestination(self, destination: carla.Location):
         self._localPlanner.setDestination(destination)
 
+
     
     # def set_destination(self, destination):
     #     """

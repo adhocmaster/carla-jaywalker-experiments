@@ -81,16 +81,9 @@ class PedestrianAgent(InfoAgent):
             return None
 
 
-        TTX = PedUtils.timeToCrossNearestLane(self.map, self.location, self._localPlanner.getDestinationModel().getDesiredSpeed())
-
         TG = self.addError(TTC)
 
         self.logger.info(f"TG (Time gap) = {TG} seconds")
-
-        # if TG > TTX:
-        #     # positive oncoming vehicle force
-        # else:
-        #     # negative oncoming vehicle force.
 
         return TG
 
@@ -98,6 +91,8 @@ class PedestrianAgent(InfoAgent):
         # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
         noiseFactor = np.random.uniform(0.5, 1.5)
         return TTC * noiseFactor # TODO error modeling in Gap
+
+    
 
     #region states
 
@@ -138,7 +133,7 @@ class PedestrianAgent(InfoAgent):
             forces = forces, 
             forceCenter = visualizationForceLocation, 
             infoCenter = visualizationInfoLocation, 
-            life_time=0.15
+            life_time=0.1
             )
     #endregion
     
@@ -246,7 +241,7 @@ class PedestrianAgent(InfoAgent):
 
     def climbSidewalkIfNeeded(self):
 
-        location = self.feetLocation
+        location = self.location
 
         if self.canClimbSideWalk():
             self.updateJumped()
@@ -254,7 +249,8 @@ class PedestrianAgent(InfoAgent):
             # self._walker.add_force(carla.Vector3D(0, 0, 10))
             # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
             
-            velocity = self.speedToVelocity(self.desired_speed)
+            # velocity = self.speedToVelocity(self.desired_speed)
+            velocity = self.speedToVelocity(2.0)
 
             self._walker.set_location(
                 carla.Location(
