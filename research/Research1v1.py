@@ -32,7 +32,7 @@ class Research1v1(BaseResearch):
         self.vehicle.destroy()
 
     def setup(self):
-        self.settingsManager.load("setting1")
+        self.settingsManager.load("setting3")
 
         self.walker = None
         self.walkerAgent = None
@@ -42,7 +42,9 @@ class Research1v1(BaseResearch):
 
         self.vehicle = None
         self.vehicleAgent = None
-        self.vehicleSpawnPoint = self.settingsManager.getEgoSpawnpoint()
+        self.vehicleSetting = self.getVehicleSetting()
+        self.vehicleSpawnPoint = self.settingsManager.locationToVehicleSpawnPoint(self.vehicleSetting.source)
+        self.vehicleDestination = self.vehicleSetting.destination
 
         self.simulator = None # populated when run
 
@@ -51,6 +53,11 @@ class Research1v1(BaseResearch):
         walkerSettings = self.settingsManager.getWalkerSettings()
         walkerSetting = walkerSettings[1]
         return walkerSetting
+
+    def getVehicleSetting(self):
+        vehicleSetting = self.settingsManager.getVehicleSettings()
+        vehicleSetting = vehicleSetting[0]
+        return vehicleSetting
 
 
     def createWalker(self):
@@ -104,7 +111,10 @@ class Research1v1(BaseResearch):
         self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
-        destination = self.getNextDestination(spawnXYLocation)
+
+        # destination = self.getNextDestination(spawnXYLocation)
+        destination = self.vehicleSetting.destination
+
         self.vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
         self.visualizer.drawDestinationPoint(destination)
 

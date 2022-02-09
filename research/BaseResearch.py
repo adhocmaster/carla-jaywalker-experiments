@@ -29,7 +29,7 @@ class BaseResearch(ClientUser):
 
     
     def initVisualizer(self):
-        # self.visualizer.drawSpawnPoints()
+        self.visualizer.drawSpawnPoints()
         self.visualizer.drawSpectatorPoint()
         # self.visualizer.drawAllWaypoints(life_time=1.0)
         pass

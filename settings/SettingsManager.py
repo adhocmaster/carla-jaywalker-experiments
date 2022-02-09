@@ -3,7 +3,7 @@ import logging
 
 from matplotlib import transforms
 from lib.ClientUser import ClientUser
-from .WalkerSetting import WalkerSetting
+from .SourceDestinationPair import SourceDestinationPair
 from typing import List
 
 class SettingsManager(ClientUser):
@@ -14,15 +14,23 @@ class SettingsManager(ClientUser):
 
         self.settingsDict = settingsDict
         self.currentSetting = None
-        self._walkerSettings:List[WalkerSetting] = None
+        self._walkerSettings:List[SourceDestinationPair] = None
         self._walkerTransforms = None
+
+        self._vehicleSettings: List[SourceDestinationPair] = None
+        self._vehicleTransforms = None
+
         pass
 
 
     def load(self, settingsId):
         self.currentSetting = self.settingsDict[settingsId]
+
         self._walkerSettings = None
         self._walkerTransforms = None
+
+        self._vehicleSettings = None
+        self._vehicleTransforms = None
 
     def _assertCurrentSetting(self):
         if self.currentSetting is None:
@@ -31,7 +39,7 @@ class SettingsManager(ClientUser):
     
     
     
-    def _pointToLocation(self, point, z=0.3):
+    def _pointToLocation(self, point, z=1):
         
         location = carla.Location(
             x = point[0],
@@ -42,7 +50,7 @@ class SettingsManager(ClientUser):
         return location
 
     
-    def _locationToVehicleSpawnPoint(self, location: carla.Location) -> carla.Transform:
+    def locationToVehicleSpawnPoint(self, location: carla.Location) -> carla.Transform:
 
         # find a way point
         waypoint = self.map.get_waypoint(location, project_to_road=True, lane_type=carla.LaneType.Driving)
@@ -56,13 +64,31 @@ class SettingsManager(ClientUser):
         return transform
 
 
-    def getEgoSpawnpoint(self) -> carla.Transform:
-        self._assertCurrentSetting()
+    # def getEgoSpawnpoint(self) -> carla.Transform:
+    #     self._assertCurrentSetting()
         
-        point = self.currentSetting["ego_spawn_point"]
-        location = self._pointToLocation(point)
-        return self._locationToVehicleSpawnPoint(location)
+    #     point = self.currentSetting["ego_setting"]
+    #     location = self._pointToLocation(point)
+    #     return self.locationToVehicleSpawnPoint(location)
 
+    
+    def getVehicleSettings(self):
+        self._assertCurrentSetting()
+
+        if self._vehicleSettings is None:
+            self._vehicleSettings = []
+            for setting in self.currentSetting["ego_settings"]:
+                sourcePoint = (setting[0], setting[1])
+                destinationPoint = (setting[2], setting[3])
+
+                self._vehicleSettings.append(
+                    SourceDestinationPair(
+                        source=self._pointToLocation(sourcePoint),
+                        destination=self._pointToLocation(destinationPoint, z=0.1)
+                    )
+                )
+
+        return self._vehicleSettings
     
     def getWalkerSettings(self):
         self._assertCurrentSetting()
@@ -74,7 +100,7 @@ class SettingsManager(ClientUser):
                 destinationPoint = (setting[2], setting[3])
 
                 self._walkerSettings.append(
-                    WalkerSetting(
+                    SourceDestinationPair(
                         source=self._pointToLocation(sourcePoint),
                         destination=self._pointToLocation(destinationPoint, z=0.1)
                     )

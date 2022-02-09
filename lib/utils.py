@@ -156,10 +156,10 @@ class Utils:
             return None, None
 
         # time to conflict point
-        distance1 = start1.distance2_d(conflictPoint)
+        distance1 = start1.distance_2d(conflictPoint)
         delta1 = distance1 / vel1.length()
 
-        distance2 = start2.distance2_d(conflictPoint)
+        distance2 = start2.distance_2d(conflictPoint)
         delta2 = distance2 / vel2.length()
 
 

@@ -129,10 +129,11 @@ class PedestrianAgent(InfoAgent):
 
 
     def visualizeConflictPoint(self):
-        conflictPoint = self.actorManager.getConflictPoint(self.actorManager.nearestOncomingVehicle)
-        if conflictPoint is None:
-            return
-        self.visualizer.drawPoint(conflictPoint, size=1, color=(200, 100, 0), life_time = 0.1)
+        if self.actorManager.nearestOncomingVehicle is not None:
+            conflictPoint = self.actorManager.getConflictPoint(self.actorManager.nearestOncomingVehicle)
+            if conflictPoint is None:
+                return
+            self.visualizer.drawPoint(conflictPoint, size=0.2, color=(255, 0, 0), life_time = 0.1)
 
     
 

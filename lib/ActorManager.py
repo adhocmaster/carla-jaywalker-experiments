@@ -247,7 +247,12 @@ class ActorManager:
         extent = Utils.getMaxExtent(bbActor)
         extentVector = direction * extent
 
-        return location + extentVector
+        vertexLocation = carla.Location(
+            location.x + extentVector.x,
+            location.y + extentVector.y,
+            location.z + extentVector.x
+        )
+        return vertexLocation
 
 
     #endregion

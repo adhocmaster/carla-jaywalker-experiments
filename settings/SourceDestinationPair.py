@@ -1,5 +1,5 @@
 import carla
-class WalkerSetting:
+class SourceDestinationPair:
 
     def __init__(self, source: carla.Location, destination: carla.Location) -> None:
         self.source = source
