@@ -35,6 +35,10 @@ class InfoAgent:
         return self._walker.get_location()
 
     @property
+    def velocity(self):
+        return self._walker.get_velocity()
+
+    @property
     def feetLocation(self):
         actorLocation = self.location
         return carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)

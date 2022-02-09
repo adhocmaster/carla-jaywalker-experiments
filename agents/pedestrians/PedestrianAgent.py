@@ -75,15 +75,27 @@ class PedestrianAgent(InfoAgent):
         # TODO assuming vehicle driving in agent's nearest lane 
         # TODO Assuming pedestrian will cross at desired speed.
         TTC = self.actorManager.pedTTCNearestOncomingVehicle()
+        TG = self.actorManager.pedTGNearestOncomingVehicle()
+        
         self.logger.info(f"TTC = {TTC} seconds")
+        self.logger.info(f"TG = {TG} seconds")
 
-        if TTC is None:
+        if TG is None: # Vehicle already crossed
             return None
 
+        conflictPoint = self.actorManager.getConflictPoint(self.actorManager.nearestOncomingVehicle)
+        self.logger.info(f"conflictPoint = {conflictPoint}")
+        if conflictPoint is None:
+            self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
+            self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
+            self.logger.info(f"ped velo: {self.velocity}")
+            self.logger.info(f"ped location: {self.location}")
+            return None # already pass the conflict zone
 
-        TG = self.addError(TTC)
 
-        self.logger.info(f"TG (Time gap) = {TG} seconds")
+        TG = self.addError(TG)
+
+        self.logger.info(f"Perceived TG (Time gap) = {TG} seconds")
 
         return TG
 
@@ -114,6 +126,13 @@ class PedestrianAgent(InfoAgent):
     # region visualization
     def visualiseState(self):
         self.visualizer.drawPedState(self.state, self.walker, life_time=0.1)
+
+
+    def visualizeConflictPoint(self):
+        conflictPoint = self.actorManager.getConflictPoint(self.actorManager.nearestOncomingVehicle)
+        if conflictPoint is None:
+            return
+        self.visualizer.drawPoint(conflictPoint, size=1, color=(200, 100, 0), life_time = 0.1)
 
     
 
@@ -187,8 +206,10 @@ class PedestrianAgent(InfoAgent):
 
         control = self._localPlanner.calculateNextControl()
 
+        self.visualizeConflictPoint()
         self.visualiseState()
         self.visualiseForces()
+        
 
         return control
 

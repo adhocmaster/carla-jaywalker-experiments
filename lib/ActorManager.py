@@ -176,18 +176,63 @@ class ActorManager:
         self._tickCache["collisionPoint"] = collisionPoint
 
 
-        # wp_distance = self.distanceFromNearestOncomingVehicle()
-        # # speed = self.getLinearSpeed(self.nearestOncomingVehicle) # TODO how can we get vehicle speed?
-        # velocity = self.nearestOncomingVehicle.get_velocity()
-        # speed = velocity.length()
-        # if speed < 0.001:
-        #     return None
-
-        # TTC = wp_distance / speed
-        # self._tickCache["TTCNearestOncomingVehicle"] = TTC
-
         return self._tickCache["TTCNearestOncomingVehicle"]
+
+    def getConflictPoint(self, otherActor):
+        if "conflictPoint" in self._tickCache:
+            return self._tickCache["conflictPoint"]
+
+        vel1 = otherActor.get_velocity()
+        start1 = self.getBBVertexInTravelDirection(otherActor)
+        vel2 = self.actor.get_velocity()
+        start2 = self.actor.get_location()
+
+        self._tickCache["conflictPoint"] = Utils.getConflictPoint(vel1, start1, vel2, start2)
+
+        return self._tickCache["conflictPoint"]
+        
+
+
+    def getCollisionPoint(self, otherActor):
+        if "collisionPoint" in self._tickCache:
+            return self._tickCache["collisionPoint"]
+
+        vel1 = otherActor.get_velocity()
+        start1 = self.getBBVertexInTravelDirection(otherActor)
+        vel2 = self.actor.get_velocity()
+        start2 = self.actor.get_location()
+
+        collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)
+
+        self._tickCache["TTCNearestOncomingVehicle"] = TTC
+        self._tickCache["collisionPoint"] = collisionPoint
+
+        return self._tickCache["collisionPoint"]
+        
        
+    def pedTGNearestOncomingVehicle(self):
+        """Time gap is different than TTC.
+
+        Returns:
+            [type]: [description]
+        """
+        if "TGNearestOncomingVehicle" in self._tickCache:
+            return self._tickCache["TGNearestOncomingVehicle"]
+
+        vehicle = self.nearestOncomingVehicle
+        if vehicle is None:
+            return None
+            
+        wp_distance = self.distanceFromNearestOncomingVehicle()
+        velocity = vehicle.get_velocity()
+        speed = velocity.length()
+        if speed < 0.001:
+            return None
+
+        TG = wp_distance / speed
+        self._tickCache["TGNearestOncomingVehicle"] = TG
+
+        return self._tickCache["TGNearestOncomingVehicle"]
     
     def getBBVertexInTravelDirection(self, bbActor):
         """Can be head or rearend
