@@ -43,6 +43,19 @@ class ForceModel:
     def getNewState(self):
         raise NotImplementedInterface("getNewState")
 
+    @abstractmethod
+    def isEphemeral(self, ticks):
+        raise NotImplementedInterface("isEphemeral")
+
+    @abstractmethod
+    def activate(self, ticks):
+        raise NotImplementedInterface("activate")
+
+    @abstractmethod
+    def deactivate(self, ticks):
+        raise NotImplementedInterface("deactivate")
+
+
         
 
     

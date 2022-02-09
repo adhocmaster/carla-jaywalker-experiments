@@ -91,7 +91,7 @@ class Utils:
 
 
     @staticmethod
-    def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10):
+    def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10) -> carla.Location:
         """returns if there is a conflict, but not necessarily they will collide with each other
 
         Args:
@@ -114,24 +114,29 @@ class Utils:
         point = lineS1.intersection(lineS2)
 
         if isinstance(point, Point):
-            return point
+            return carla.Location(x = point.x, y = point.y, z=0)
+            # return point
         
         return None
 
     @staticmethod
-    def getCollisionPoint(bbActor1, bbActor2, seconds=10):
+    def getCollisionPointAndTTC(bbActor1, bbActor2, seconds=10):
 
         """vehicle, and, walker has bounding_box relative to their actor center
         """
+        
+        bbActor1.logger.info("Actor 1 BB center {bbActor1.bounding_box.location}")
+        bbActor2.logger.info("Actor 2 BB center {bbActor2.bounding_box.location}")
+        
         bb1 = carla.BoundingBox(
             extent = bbActor1.extent,
-            location = bbActor1.location + bbActor1.get_location(),
-            rotation = bbActor1.rotation + bbActor1.get_transform().rotation
+            location = bbActor1.bounding_box.location + bbActor1.get_location(),
+            rotation = bbActor1.bounding_box.rotation + bbActor1.get_transform().rotation
         )
         bb2 = carla.BoundingBox(
             extent = bbActor2.extent,
-            location = bbActor2.location + bbActor1.get_location(),
-            rotation = bbActor2.rotation + bbActor2.get_transform().rotation
+            location = bbActor2.bounding_box.location + bbActor1.get_location(),
+            rotation = bbActor2.bounding_box.rotation + bbActor2.get_transform().rotation
         )
         bbActor1.logger.info("BB center {bb1.location}")
         bbActor2.logger.info("BB center {bb2.location}")
@@ -147,8 +152,14 @@ class Utils:
 
         # If no conflict point, disregard? 
 
+        if conflictPoint is None:
+            return None
+
         # time to conflict point
+        distance1 = bbActor1.get_location().distance2_d(conflictPoint)
+        delta1 = distance1 / bbActor1.get_velocity().length()
         # location of 2, after that time
+
 
         # check bounding box overlaps with 
 
