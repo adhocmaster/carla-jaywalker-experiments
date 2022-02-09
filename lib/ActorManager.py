@@ -1,8 +1,9 @@
 
-from turtle import distance
 import carla
+import math
 from typing import Dict, List
 from lib.LoggerFactory import LoggerFactory
+from lib.utils import Utils
 
 
 class ActorManager:
@@ -20,11 +21,10 @@ class ActorManager:
         self._actor = actor
         self._world = actor.get_world()
         self._map = self.world.get_map()
-        self._cache = {}
+        self._tickCache = {}
         self._currentActorDistances = {} # for vehicles, the distance is calculated from the nearest waypoint for an actor.
         self._previousActorDistances = {}
 
-        self._nearestOncomingVehicle = None # updated every tick start
 
     @property
     def actor(self):
@@ -40,7 +40,7 @@ class ActorManager:
 
     @property
     def nearestOncomingVehicle(self):
-        return self._nearestOncomingVehicle
+        return self.calculateNearestOnComingVehicle()
 
 
     @property
@@ -59,6 +59,7 @@ class ActorManager:
         return types
     
     def onTickStart(self, world_snapshot):
+        self._tickCache = {} # clear cache.
         # # cache results of all the function calls every tick.
         actorLocation = self.actor.get_location()
 
@@ -74,13 +75,13 @@ class ActorManager:
         for otherActor in self.getDynamicActors():
             if self.actor.id == otherActor.id:
                 continue
-            self._currentActorDistances[otherActor.id] = wpLocation.distance_2d(otherActor.get_location())
+            self._currentActorDistances[otherActor.id] = wpLocation.distance_2d(otherActor.get_location()) - Utils.getMaxExtent(otherActor)
             # self._currentActorDistances[otherActor.id] = actorLocation.distance_2d(otherActor.get_location())
         
         self.logger.info(f"previous distances {self._previousActorDistances}")
         self.logger.info(f"current distances {self._currentActorDistances}")
 
-        self._nearestOncomingVehicle = self.calculateNearestOnComingVehicle()
+        self.calculateNearestOnComingVehicle()
         pass
         # raise Exception("Not implemented yet")
 
@@ -105,14 +106,23 @@ class ActorManager:
         return False
     
     def getOncomingVehicles(self):
+        if "oncomingVehicles" in self._tickCache:
+            return self._tickCache["oncomingVehicles"]
+
         oncomingVs = []
         for vehicle in self.getVehicles():
             if self.isOncoming(vehicle):
                 oncomingVs.append(vehicle)
         self.logger.debug("Oncoming vehicles", oncomingVs)
-        return oncomingVs
+
+        self._tickCache["oncomingVehicles"] = oncomingVs
+        return self._tickCache["oncomingVehicles"]
     
     def calculateNearestOnComingVehicle(self):
+
+        if "nearestOnComingVehicle" in self._tickCache:
+            return self._tickCache["nearestOnComingVehicle"]
+
         oncomingVs = self.getOncomingVehicles()
         minD = 999999
         minVehicle = None
@@ -121,7 +131,10 @@ class ActorManager:
             if currentDistance < minD:
                 minD = currentDistance
                 minVehicle = vehicle
-        return minVehicle
+
+        self._tickCache["nearestOnComingVehicle"] = minVehicle
+
+        return self._tickCache["nearestOnComingVehicle"]
     
     def distanceFromNearestOncomingVehicle(self):
         """Can be negative when the front crosses the conflict point
@@ -139,18 +152,57 @@ class ActorManager:
         return distance - 2.3 # meter offset for front of the oncoming vehicle.
 
     def pedTTCNearestOncomingVehicle(self):
-        if self.nearestOncomingVehicle is None:
+        """Fix this method. When there is no collision, TTC must be None. Put it in cache.
+
+        Returns:
+            [type]: [description]
+        """
+        if "TTCNearestOncomingVehicle" in self._tickCache:
+            return self._tickCache["TTCNearestOncomingVehicle"]
+        
+
+        vehicle = self.nearestOncomingVehicle
+        if vehicle is None:
             return None
 
-        wp_distance = self.distanceFromNearestOncomingVehicle()
-        # speed = self.getLinearSpeed(self.nearestOncomingVehicle) # TODO how can we get vehicle speed?
-        velocity = self.nearestOncomingVehicle.get_velocity()
-        speed = velocity.length()
-        if speed < 0.001:
-            return None
-        return wp_distance / speed
+        vel1 = vehicle.get_velocity()
+        start1 = self.getBBVertexInTravelDirection(vehicle)
+        vel2 = self.actor.get_velocity()
+        start2 = self.actor.get_location()
+
+        collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)
+
+        self._tickCache["TTCNearestOncomingVehicle"] = TTC
+        self._tickCache["collisionPoint"] = collisionPoint
+
+
+        # wp_distance = self.distanceFromNearestOncomingVehicle()
+        # # speed = self.getLinearSpeed(self.nearestOncomingVehicle) # TODO how can we get vehicle speed?
+        # velocity = self.nearestOncomingVehicle.get_velocity()
+        # speed = velocity.length()
+        # if speed < 0.001:
+        #     return None
+
+        # TTC = wp_distance / speed
+        # self._tickCache["TTCNearestOncomingVehicle"] = TTC
+
+        return self._tickCache["TTCNearestOncomingVehicle"]
        
     
+    def getBBVertexInTravelDirection(self, bbActor):
+        """Can be head or rearend
+
+        Args:
+            bbActor ([type]): An actor with a bounding box property
+        """
+        
+        # TODO we can also get the vertice vectors and find the one most parallel to direction.
+        location = bbActor.get_location()
+        direction = bbActor.get_velocity().make_unit_vector()
+        extent = Utils.getMaxExtent(bbActor)
+        extentVector = direction * extent
+
+        return location + extentVector
 
 
     #endregion

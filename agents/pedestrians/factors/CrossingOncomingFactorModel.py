@@ -1,10 +1,12 @@
 import carla
 import numpy as np
 from .CrossingFactorModel import CrossingFactorModel
+from ..StateTransitionModel import StateTransitionModel
+from ..PedState import PedState
 from lib import Utils
 from ..PedUtils import PedUtils
 
-class CrossingOncomingFactorModel(CrossingFactorModel):
+class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
 
     @property
     def name(self):
@@ -40,3 +42,20 @@ class CrossingOncomingFactorModel(CrossingFactorModel):
             return self.getOncomingVehicleForce()
             
         return None # in othe states this model does not produce force
+
+
+        
+    def getNewState(self):
+        if self.agent.isCrossing() == False:
+            return None
+
+        # change to survival state if there is a near collision
+        # get the collision point from the head of the vehicle and the center of the pedestrian 
+
+        # if vehicle is too far, we don't need to even consider it
+        TTC = self.actorManager.pedTTCNearestOncomingVehicle()
+        if TTC is None:
+            return None
+
+        if self.internalFactors["threshold_ttc_survival_state"] > TTC:
+            return PedState.SURVIVAL

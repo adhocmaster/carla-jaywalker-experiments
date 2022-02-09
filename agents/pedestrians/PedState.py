@@ -6,3 +6,4 @@ class PedState(Enum):
     FROZEN = "FROZEN"
     INITALIZING = "INITALIZING"
     FINISHED = "FINISHED"
+    SURVIVAL = "SURVIVAL"

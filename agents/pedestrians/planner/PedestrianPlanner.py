@@ -1,4 +1,5 @@
 import carla
+from collections import deque
 from abc import abstractmethod
 from agents.pedestrians.ForceModel import ForceModel
 from agents.pedestrians.StateTransitionModel import StateTransitionModel
@@ -30,6 +31,11 @@ class PedestrianPlanner:
 
         self.modelForces: Dict[str, carla.Vector3D] = {} # tracks the forces for the next tick
 
+        # we will save 2 seconds of previous locations.
+        deqLength = max(1, int(2 / self.time_delta))
+        self.logger.warn(f"remembering {deqLength} tick locations")
+        self.locations: List[carla.Location] = deque(maxlen=deqLength) # list of previous locations of this agent.
+
         pass
 
     @property
@@ -49,10 +55,18 @@ class PedestrianPlanner:
     def logger(self):
         pass
 
+    @property
+    def maxSpeed(self):
+        return self.internalFactors["max_crossing_speed"]
+
+    @property
+    def minSpeed(self):
+        return self.internalFactors["min_crossing_speed"]
 
     @property
     def maxAcceleration(self):
         return self.internalFactors["acceleration_positive_max"]
+
 
     @property
     def minAcceleration(self):
@@ -63,6 +77,7 @@ class PedestrianPlanner:
         return self._destination
 
     def onTickStart(self, world_snapshot):
+        self.locations.append(self.agent.location)
         self.actorManager.onTickStart(world_snapshot)
         self.obstacleManager.onTickStart(world_snapshot)
         self.setFactorModelDestinationParams()
@@ -112,7 +127,16 @@ class PedestrianPlanner:
         dv = self.getRequiredChangeInVelocity()
         newVelo = oldVelocity + dv
 
-        
+        # we have two constraints
+        # 1. speed cannot go beyond maximum speed.
+        # 2. acceleration cannot go beyond max accelration. # which is clipped on resultant force.
+        # we just have to check the #1
+
+        newDirection = newVelo.make_unit_vector()
+        newSpeed = min(self.maxSpeed, newVelo.length())
+
+        newVelo = newDirection * newSpeed
+
         self.logger.info(f"Speed {oldVelocity.length()} -> {newVelo.length()}")
 
         return newVelo

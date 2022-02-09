@@ -20,3 +20,5 @@ acceleration_negative_min: -100
 brewer_beta0: 6.2064
 brewer_beta1: -0.9420
 
+threshold_ttc_survival_state: 2
+

@@ -92,13 +92,13 @@ class Utils:
 
     @staticmethod
     def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10) -> carla.Location:
-        """returns if there is a conflict, but not necessarily they will collide with each other
+        """returns if there is a conflict, but not necessarily they will collide with each other, 
 
         Args:
             vel1 (carla.Vector3D): [description]
-            start1 (carla.Location): [description]
+            start1 (carla.Location): head location of actor 1
             vel2 (carla.Vector3D): [description]
-            start2 (carla.Location): [description]
+            start2 (carla.Location): head location of actor 2
             seconds (int, optional): [description]. Defaults to 10.
 
         Returns:
@@ -120,48 +120,66 @@ class Utils:
         return None
 
     @staticmethod
-    def getCollisionPointAndTTC(bbActor1, bbActor2, seconds=10):
+    def getCollisionPointAndTTC(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10):
 
         """vehicle, and, walker has bounding_box relative to their actor center
         """
         
-        bbActor1.logger.info("Actor 1 BB center {bbActor1.bounding_box.location}")
-        bbActor2.logger.info("Actor 2 BB center {bbActor2.bounding_box.location}")
+        # bbActor1.logger.info("Actor 1 BB center {bbActor1.bounding_box.location}")
+        # bbActor2.logger.info("Actor 2 BB center {bbActor2.bounding_box.location}")
         
-        bb1 = carla.BoundingBox(
-            extent = bbActor1.extent,
-            location = bbActor1.bounding_box.location + bbActor1.get_location(),
-            rotation = bbActor1.bounding_box.rotation + bbActor1.get_transform().rotation
-        )
-        bb2 = carla.BoundingBox(
-            extent = bbActor2.extent,
-            location = bbActor2.bounding_box.location + bbActor1.get_location(),
-            rotation = bbActor2.bounding_box.rotation + bbActor2.get_transform().rotation
-        )
-        bbActor1.logger.info("BB center {bb1.location}")
-        bbActor2.logger.info("BB center {bb2.location}")
+        # bb1 = carla.BoundingBox(
+        #     extent = bbActor1.extent,
+        #     location = bbActor1.bounding_box.location + bbActor1.get_location(),
+        #     rotation = bbActor1.bounding_box.rotation + bbActor1.get_transform().rotation
+        # )
+        # bb2 = carla.BoundingBox(
+        #     extent = bbActor2.extent,
+        #     location = bbActor2.bounding_box.location + bbActor1.get_location(),
+        #     rotation = bbActor2.bounding_box.rotation + bbActor2.get_transform().rotation
+        # )
+        # bbActor1.logger.info("BB center {bb1.location}")
+        # bbActor2.logger.info("BB center {bb2.location}")
 
 
         # Find conflict point. In some rare cases it will give us no conflict, but there will still be a conflict.
         conflictPoint = Utils.getConflictPoint(
-            vel1 = bbActor1.get_velocity(),
-            start1=bb1.location,
-            vel2=bbActor2.get_velocity(),
-            start2=bb2.location,
+            vel1 = vel1,
+            start1 = start1,
+            vel2 = vel2,
+            start2 = start2,
             seconds=seconds)
 
         # If no conflict point, disregard? 
 
         if conflictPoint is None:
-            return None
+            return None, None
 
         # time to conflict point
-        distance1 = bbActor1.get_location().distance2_d(conflictPoint)
-        delta1 = distance1 / bbActor1.get_velocity().length()
+        distance1 = start1.distance2_d(conflictPoint)
+        delta1 = distance1 / vel1.length()
+
+        distance2 = start2.distance2_d(conflictPoint)
+        delta2 = distance2 / vel2.length()
+
+
+        if abs(delta1 - delta2) < 1: # we assume they will collide with each other.
+            TTC = min(delta1, delta2)
+            return conflictPoint, TTC
+        
+        return None, None
+
+
         # location of 2, after that time
 
 
         # check bounding box overlaps with 
+
+
+    @staticmethod
+    def getMaxExtent(bbActor):
+        extent = math.sqrt( bbActor.bounding_box.extent.x ** 2 + bbActor.bounding_box.extent.y ** 2)
+        return extent
 
 
     #endregion
