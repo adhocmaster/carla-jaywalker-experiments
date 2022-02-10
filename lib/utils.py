@@ -181,6 +181,46 @@ class Utils:
         extent = math.sqrt( bbActor.bounding_box.extent.x ** 2 + bbActor.bounding_box.extent.y ** 2)
         return extent
 
+    @staticmethod
+    # def getTTCBasedOnWaypoint(bbActor, destination):
+    @staticmethod
+    def getWaypointsToDestination(bbActor, destination):
+
+        # generate waypoints up to linear distance.
+        # if destination is not reached, generate more
+        currentVehicleLocation = bbActor.get_location()
+        lastDistance = currentVehicleLocation.distance_2d(destination)
+        startWaypoint = bbActor.get_world().get_map().get_waypoint(currentVehicleLocation)
+
+        nextWaypoints = startWaypoint.next(1)
+
+        lastWp = nextWaypoints[0]
+        lastWpLocation = lastWp.transform.location
+        nextDistance = lastWpLocation.distance_2d(destination)
+
+        while nextDistance > 2: # search until 5 meters.
+            lastDistance = nextDistance
+            # check if distance is increasing or decreasing
+            
+            moreWps= lastWp.next(1)
+            lastWp = moreWps[0]
+            lastWpLocation = lastWp.transform.location
+
+            nextDistance = lastWpLocation.distance_2d(destination) # safe guard when destination in another lane
+            if nextDistance > lastDistance:
+                break
+
+            nextWaypoints += moreWps
+
+        return nextWaypoints
+
+
+
+
+
+
+
+
 
     #endregion
 

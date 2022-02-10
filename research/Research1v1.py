@@ -202,6 +202,12 @@ class Research1v1(BaseResearch):
 
         self.updateWalker(world_snapshot)
         self.updateVehicle(world_snapshot)
+
+        # draw waypoints upto walker
+
+        walkerWp = self.map.get_waypoint(self.walkerAgent.location).transform.location
+        waypoints = Utils.getWaypointsToDestination(self.vehicle, walkerWp)
+        self.visualizer.drawWaypoints(waypoints, color=(0, 0, 0), z=1, life_time=0.1)
     
     
     def updateWalker(self, world_snapshot):

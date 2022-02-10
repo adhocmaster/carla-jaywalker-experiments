@@ -155,6 +155,17 @@ class SimulationVisualization(ClientUser):
         self.drawTextOnMap(location=carla.Location(location.x, location.y, 10), text=f"Center ({round(location.x)}, {round(location.y)})")
 
         
+
+    def drawAllWaypoints(self, z=0.5, life_time=1.0):
+        """
+        Draw a list of waypoints at a certain height given in z.
+
+            :param world: carla.world object
+            :param waypoints: list or iterable container with the waypoints to draw
+            :param z: height in meters
+        """
+        self.drawWaypoints(self.mapManager.waypoints, life_time=life_time)
+
     def drawWaypoints(self, waypoints, color=(25, 25, 25), z=0.5, life_time=1.0):
         """
         Draw a list of waypoints at a certain height given in z.
@@ -221,17 +232,6 @@ class SimulationVisualization(ClientUser):
             color=carla.Color(*color), 
             life_time=life_time
             )
-
-
-    def drawAllWaypoints(self, z=0.5, life_time=1.0):
-        """
-        Draw a list of waypoints at a certain height given in z.
-
-            :param world: carla.world object
-            :param waypoints: list or iterable container with the waypoints to draw
-            :param z: height in meters
-        """
-        self.drawWaypoints(self.mapManager.waypoints, life_time=life_time)
 
 
 
