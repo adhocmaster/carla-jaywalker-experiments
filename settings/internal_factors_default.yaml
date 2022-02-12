@@ -1,7 +1,7 @@
 risk_level: "normal"
 
 # Destination related factors
-relaxation_time: 0.1
+relaxation_time: 0.5
 desired_speed: 2
 desired_distance_gap: 2
 # desired_time_gap: 1
@@ -20,5 +20,5 @@ acceleration_negative_min: -100
 brewer_beta0: 6.2064
 brewer_beta1: -0.9420
 
-threshold_ttc_survival_state: 2
+threshold_ttc_survival_state: 1
 

@@ -23,18 +23,26 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
 
         force = self.destDirection * magnitude
         # Do we need to flinch back? If so, increase the force and multiply it with 10.
-        if self.flinchRequired():
-            self.agent.logger.info("Flinching back")
-            force = carla.Vector3D() - force
+        # if self.flinchRequired():
+        #     self.agent.logger.info("Flinching back")
+        #     force = carla.Vector3D() - force * 100
 
         return force
 
-    def flinchRequired(self):
+    # def flinchRequired(self):
 
-        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
-        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
+    #     conflictPoint = self.agent.getPredictedConflictPoint()
+    #     if conflictPoint is None:
+    #         return False
+
+    #     TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+    #     TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
         
-        # return np.random.choice([True, False], p=[0.5, 0.5])
+    #     diff = TG - TTX # may be too far
+    #     if diff < 1 and diff > 0:
+    #         return True
+    #     return False
+            
 
 
     def calculateForce(self):
@@ -46,6 +54,10 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
 
         
     def getNewState(self):
+
+        self.agent.logger.info(f"Collecting state from CrossingOncomingFactorModel")
+
+        # return None
         if self.agent.isCrossing() == False:
             return None
 
@@ -53,9 +65,21 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
         # get the collision point from the head of the vehicle and the center of the pedestrian 
 
         # if vehicle is too far, we don't need to even consider it
-        TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
-        if TTC is None:
+        # TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
+        # if TTC is None:
+        #     return None
+
+        
+        conflictPoint = self.agent.getPredictedConflictPoint()
+        if conflictPoint is None:
             return None
 
-        if self.internalFactors["threshold_ttc_survival_state"] > TTC:
+        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
+        
+        diff = TG - TTX # may be too far
+        if diff < self.internalFactors["threshold_ttc_survival_state"] and diff > 0:
             return PedState.SURVIVAL
+
+        # if self.internalFactors["threshold_ttc_survival_state"] > TG:
+        #     return PedState.SURVIVAL

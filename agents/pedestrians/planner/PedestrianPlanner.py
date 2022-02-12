@@ -88,6 +88,7 @@ class PedestrianPlanner:
 
     def setDestination(self, destination):
         self._destination = destination
+        self.getDestinationModel().setFinalDestination(destination)
 
     
     def done(self):
@@ -119,27 +120,31 @@ class PedestrianPlanner:
         """
         newVelocity = self.getNewVelocity()
         speed = newVelocity.length()
-        direction = newVelocity.make_unit_vector()
-        return carla.WalkerControl(
-                direction = direction,
-                speed = speed,
-                jump = False
-            )
+        if speed > 0:
+            direction = newVelocity.make_unit_vector()
+            return carla.WalkerControl(
+                    direction = direction,
+                    speed = speed,
+                    jump = False
+                )
+        else:
+            return self.getStopControl()
 
     def getNewVelocity(self):
         oldVelocity = self.agent.getOldVelocity()
         dv = self.getRequiredChangeInVelocity()
         newVelo = oldVelocity + dv
+        
 
         # we have two constraints
         # 1. speed cannot go beyond maximum speed.
         # 2. acceleration cannot go beyond max accelration. # which is clipped on resultant force.
         # we just have to check the #1
+        if newVelo.length() > 0:
+            newDirection = newVelo.make_unit_vector()
+            newSpeed = min(self.maxSpeed, newVelo.length())
 
-        newDirection = newVelo.make_unit_vector()
-        newSpeed = min(self.maxSpeed, newVelo.length())
-
-        newVelo = newDirection * newSpeed
+            newVelo = newDirection * newSpeed
 
         self.logger.info(f"Speed {oldVelocity.length()} -> {newVelo.length()}")
 

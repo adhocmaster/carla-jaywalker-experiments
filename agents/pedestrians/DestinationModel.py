@@ -37,31 +37,31 @@ class DestinationModel(ForceModel):
         
         pass
 
-    def skipNextTicks(self, n):
-        """We can skip n next ticks
+    # def skipNextTicks(self, n):
+    #     """We can skip n next ticks
 
-        Args:
-            n ([type]): [description]
-        """
-        self.skipForceTicks = n
-        self.skipForceTicksCounter = 0
+    #     Args:
+    #         n ([type]): [description]
+    #     """
+    #     self.skipForceTicks = n
+    #     self.skipForceTicksCounter = 0
 
-    def needSkip(self):
-        """One time skip counter
+    # def needSkip(self):
+    #     """One time skip counter
 
-        Returns:
-            [type]: [description]
-        """
-        if self.skipForceTicks == 0:
-            return False
+    #     Returns:
+    #         [type]: [description]
+    #     """
+    #     if self.skipForceTicks == 0:
+    #         return False
         
-        if self.skipForceTicksCounter > self.skipForceTicks:
-            self.skipForceTicksCounter = 0
-            self.skipForceTicks = 0
-            return False
+    #     if self.skipForceTicksCounter > self.skipForceTicks:
+    #         self.skipForceTicksCounter = 0
+    #         self.skipForceTicks = 0
+    #         return False
         
-        self.skipForceTicksCounter += 1
-        return True
+    #     self.skipForceTicksCounter += 1
+    #     return True
 
     
     def setFinalDestination(self, destination):
@@ -106,8 +106,8 @@ class DestinationModel(ForceModel):
 
     def calculateForce(self):
 
-        if self.needSkip:
-            return None
+        # if self.needSkip:
+        #     return None
 
         self.calculateNextDestination()
 
@@ -135,7 +135,7 @@ class DestinationModel(ForceModel):
 
         # # last, check if next destination is reached, if so, set it to final destination
 
-        if self._nextDestination.distance2_d(self.agent.location) < 0.1:
+        if self._nextDestination.distance_2d(self.agent.location) < 0.1:
             self._nextDestination = self._finalDestination
 
     

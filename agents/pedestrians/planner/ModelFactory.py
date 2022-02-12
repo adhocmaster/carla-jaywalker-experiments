@@ -77,3 +77,4 @@ class ModelFactory:
                                         )
             self.planner.models.append(self.planner.crossingOncomingVehicleModel)
             self.planner.crossingFactorModels.append(self.planner.crossingOncomingVehicleModel)
+            self.planner.stateTransitionModels.append(self.planner.crossingOncomingVehicleModel)

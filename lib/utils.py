@@ -106,6 +106,8 @@ class Utils:
         Returns:
             [type]: [description]
         """
+        if vel1.length() == 0 or vel2.length() == 0:
+            return None
 
         end1 = start1 + vel1 * seconds
         end2 = start2 + vel2 * seconds
@@ -145,6 +147,10 @@ class Utils:
 
 
         # Find conflict point. In some rare cases it will give us no conflict, but there will still be a conflict.
+
+        if vel1.length() == 0 or vel2.length() == 0:
+            return None, None
+
         conflictPoint = Utils.getConflictPoint(
             vel1 = vel1,
             start1 = start1,
@@ -183,9 +189,12 @@ class Utils:
         Args:
             bbActor ([type]): An actor with a bounding box property
         """
+        location = bbActor.get_location()
+
+        if bbActor.get_velocity().length() == 0:
+            return location
         
         # TODO we can also get the vertice vectors and find the one most parallel to direction.
-        location = bbActor.get_location()
         direction = bbActor.get_velocity().make_unit_vector()
         extent = Utils.getMaxExtent(bbActor)
         extentVector = direction * extent

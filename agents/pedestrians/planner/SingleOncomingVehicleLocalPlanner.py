@@ -87,9 +87,9 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         # self._vehicle = vehicle
         # pass
 
-    def setDestination(self, destination: carla.Location):
-        super().setDestination(destination)
-        self.destinationModel.setFinalDestination(destination)
+    # def setDestination(self, destination: carla.Location):
+    #     super().setDestination(destination)
+        # self.destinationModel.setFinalDestination(destination)
 
 
     def calculateNextPedestrianState(self):

@@ -78,19 +78,19 @@ class PedestrianAgent(InfoAgent):
         TG = self.actorManager.pedTGNearestOncomingVehicle()
         
         self.logger.info(f"predicted TTC = {TTC} seconds")
-        self.logger.info(f"TG = {TG} seconds")
+        self.logger.info(f"absolute TG (ignoring conflict point) = {TG} seconds")
 
         if TG is None: # Vehicle already crossed
             return None
 
-        conflictPoint = self._localPlanner.getPredictedConflictPoint()
-        self.logger.info(f"predicted conflictPoint = {conflictPoint}")
-        if conflictPoint is None:
-            # self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
-            # self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
-            # self.logger.info(f"ped velo: {self.velocity}")
-            # self.logger.info(f"ped location: {self.location}")
-            return None # already pass the conflict zone
+        # conflictPoint = self._localPlanner.getPredictedConflictPoint()
+        # self.logger.info(f"predicted conflictPoint = {conflictPoint}")
+        # if conflictPoint is None:
+        #     # self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
+        #     # self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
+        #     # self.logger.info(f"ped velo: {self.velocity}")
+        #     # self.logger.info(f"ped location: {self.location}")
+        #     return None # already pass the conflict zone
 
 
         TG = self.addError(TG)
@@ -101,10 +101,12 @@ class PedestrianAgent(InfoAgent):
 
     def addError(self, TTC):
         # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
-        noiseFactor = np.random.uniform(0.5, 1.5)
+        noiseFactor = np.random.uniform(0.8, 1.2)
         return TTC * noiseFactor # TODO error modeling in Gap
 
     
+    def getPredictedConflictPoint(self):
+        return self._localPlanner.getPredictedConflictPoint()
 
     #region states
 
@@ -202,7 +204,9 @@ class PedestrianAgent(InfoAgent):
         # speed = self.calculateNextSpeed(direction)
 
 
-        self.climbSidewalkIfNeeded()
+        if self.climbSidewalkIfNeeded():
+            # return a stop control
+            return self._localPlanner.getStopControl()
 
         control = self._localPlanner.calculateNextControl()
 
@@ -279,6 +283,8 @@ class PedestrianAgent(InfoAgent):
                     location.y + velocity.y * self.time_delta * 5,
                     location.z + 0.5
             ))
+            return True
+        return False
 
     def getObstaclesToDistance(self):
         actorLocation = self._walker.get_location()

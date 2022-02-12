@@ -1,3 +1,4 @@
+from genericpath import sameopenfile
 import carla
 import logging
 import random
@@ -165,7 +166,7 @@ class Research1v1(BaseResearch):
             # 1. recreated vehicle
             self.recreateVehicle()
             # 2. reset walker
-            self.resetWalker(reverse=False)
+            self.resetWalker(sameOrigin=False)
 
     
     def recreateVehicle(self):
@@ -177,20 +178,20 @@ class Research1v1(BaseResearch):
         self.vehicle = None
         self.createVehicle()
 
-    def resetWalker(self, reverse=False):
+    def resetWalker(self, sameOrigin=True):
 
-        # default keeps the same start and end as the first episode
-        source = self.walkerSetting.source
-        newDest = self.walkerSetting.destination
+        if sameOrigin == True:
+            
+            self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
+            self.walkerAgent.setDestination(self.walkerSetting.destination)
+            return 
 
-        if reverse:
-            source =  self.walkerAgent.destination
-            if self.walkerAgent.destination == newDest: # get back to source
-                newDest = source
-                
-
-        self.walkerAgent.reset()
-        self.walkerAgent.setDestination(self.walkerSetting.source)
+        if self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
+            self.walkerAgent.reset()
+            self.walkerAgent.setDestination(self.walkerSetting.destination)
+        else:
+            self.walkerAgent.reset()
+            self.walkerAgent.setDestination(self.walkerSetting.source)
     
     def onEnd(self):
         self.destoryActors()
