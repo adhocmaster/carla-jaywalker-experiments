@@ -15,7 +15,7 @@ from .PedUtils import PedUtils
 
 class PedestrianAgent(InfoAgent):
     
-    def __init__(self, walker, time_delta, desired_speed=1.5, visualizer=None, config=None):
+    def __init__(self, walker, time_delta, visualizer=None, config=None):
         """
         Initialization the agent paramters, the local and the global planner.
 
@@ -27,7 +27,7 @@ class PedestrianAgent(InfoAgent):
 
         self.name = f"PedestrianAgent #{walker.id}"
         self.state = PedState.INITALIZING
-        super().__init__(self.name, walker, desired_speed=desired_speed, config=config)
+        super().__init__(self.name, walker, config=config)
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
 
@@ -74,22 +74,22 @@ class PedestrianAgent(InfoAgent):
         # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
         # TODO assuming vehicle driving in agent's nearest lane 
         # TODO Assuming pedestrian will cross at desired speed.
-        TTC = self.actorManager.pedTTCNearestOncomingVehicle()
+        TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
         TG = self.actorManager.pedTGNearestOncomingVehicle()
         
-        self.logger.info(f"TTC = {TTC} seconds")
+        self.logger.info(f"predicted TTC = {TTC} seconds")
         self.logger.info(f"TG = {TG} seconds")
 
         if TG is None: # Vehicle already crossed
             return None
 
-        conflictPoint = self.actorManager.getConflictPoint(self.actorManager.nearestOncomingVehicle)
-        self.logger.info(f"conflictPoint = {conflictPoint}")
+        conflictPoint = self._localPlanner.getPredictedConflictPoint()
+        self.logger.info(f"predicted conflictPoint = {conflictPoint}")
         if conflictPoint is None:
-            self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
-            self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
-            self.logger.info(f"ped velo: {self.velocity}")
-            self.logger.info(f"ped location: {self.location}")
+            # self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
+            # self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
+            # self.logger.info(f"ped velo: {self.velocity}")
+            # self.logger.info(f"ped location: {self.location}")
             return None # already pass the conflict zone
 
 
@@ -129,11 +129,10 @@ class PedestrianAgent(InfoAgent):
 
 
     def visualizeConflictPoint(self):
-        if self.actorManager.nearestOncomingVehicle is not None:
-            conflictPoint = self.actorManager.getConflictPoint(self.actorManager.nearestOncomingVehicle)
-            if conflictPoint is None:
-                return
-            self.visualizer.drawPoint(conflictPoint, size=0.2, color=(255, 0, 0), life_time = 0.1)
+        conflictPoint = self._localPlanner.getPredictedConflictPoint()
+        if conflictPoint is None:
+            return
+        self.visualizer.drawPoint(conflictPoint, size=0.2, color=(255, 0, 0), life_time = 0.1)
 
     
 

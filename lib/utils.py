@@ -2,6 +2,8 @@ import carla
 import math
 import random
 from shapely.geometry import LineString, Point
+from typing import List, Dict
+import matplotlib.pyplot as plt
 
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
@@ -91,7 +93,7 @@ class Utils:
 
 
     @staticmethod
-    def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10) -> carla.Location:
+    def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=15) -> carla.Location:
         """returns if there is a conflict, but not necessarily they will collide with each other, 
 
         Args:
@@ -120,7 +122,7 @@ class Utils:
         return None
 
     @staticmethod
-    def getCollisionPointAndTTC(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=10):
+    def getCollisionPointAndTTC(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=15):
 
         """vehicle, and, walker has bounding_box relative to their actor center
         """
@@ -175,6 +177,25 @@ class Utils:
 
         # check bounding box overlaps with 
 
+    def getBBVertexInTravelDirection(bbActor):
+        """Can be head or rearend
+
+        Args:
+            bbActor ([type]): An actor with a bounding box property
+        """
+        
+        # TODO we can also get the vertice vectors and find the one most parallel to direction.
+        location = bbActor.get_location()
+        direction = bbActor.get_velocity().make_unit_vector()
+        extent = Utils.getMaxExtent(bbActor)
+        extentVector = direction * extent
+
+        vertexLocation = carla.Location(
+            location.x + extentVector.x,
+            location.y + extentVector.y,
+            location.z + extentVector.x
+        )
+        return vertexLocation
 
     @staticmethod
     def getMaxExtent(bbActor):
@@ -182,21 +203,49 @@ class Utils:
         return extent
 
     @staticmethod
-    # def getTTCBasedOnWaypoint(bbActor, destination):
+    def getTTCBasedOnWaypoint(bbActor: carla.Actor, destination: carla.Location):
+        """Approximate list of waypoints. Assumes no U-turn and destination is either on the same lane or adjacent. 
+        It will stop if at some point the path passes by the destination.
+
+        Args:
+            bbActor (carla.Actor): [description]
+            destination (carla.Location): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        waypoints = Utils.getWaypointsToDestination(bbActor, destination)
+        distance = Utils.getDistanceCoveredByWaypoints(waypoints)
+        return distance / bbActor.get_velocity().length()
+
     @staticmethod
-    def getWaypointsToDestination(bbActor, destination):
+    def getWaypointsToDestination(bbActor: carla.Actor, destination: carla.Location):
+        """Approximate list of waypoints. Assumes no U-turn and destination is either on the same lane or adjacent. 
+        It will stop if at some point the path passes by the destination.
+
+        Args:
+            bbActor (carla.Actor): [description]
+            destination (carla.Location): [description]
+
+        Returns:
+            [type]: [description]
+        """
 
         # generate waypoints up to linear distance.
         # if destination is not reached, generate more
-        currentVehicleLocation = bbActor.get_location()
-        lastDistance = currentVehicleLocation.distance_2d(destination)
-        startWaypoint = bbActor.get_world().get_map().get_waypoint(currentVehicleLocation)
+        currentVehicleHeadLocation = Utils.getBBVertexInTravelDirection(bbActor)
+        lastDistance = currentVehicleHeadLocation.distance_2d(destination)
+        startWaypoint = bbActor.get_world().get_map().get_waypoint(currentVehicleHeadLocation)
 
         nextWaypoints = startWaypoint.next(1)
 
         lastWp = nextWaypoints[0]
         lastWpLocation = lastWp.transform.location
         nextDistance = lastWpLocation.distance_2d(destination)
+
+        # print("lastDistance", lastDistance)
+        # print("lastWp", lastWp)
+        # print("nextDistance", nextDistance)
 
         while nextDistance > 2: # search until 5 meters.
             lastDistance = nextDistance
@@ -214,7 +263,27 @@ class Utils:
 
         return nextWaypoints
 
+    @staticmethod
+    def getDistanceCoveredByWaypoints(waypoints: List[carla.Waypoint]):
 
+        d = 0.0
+        prevWp = waypoints.pop(0)
+        while len(waypoints) > 0:
+            nextWp = waypoints.pop(0)
+            d += prevWp.transform.location.distance_2d(nextWp.transform.location)
+            prevWp = nextWp
+        
+        return d
+
+
+
+    @staticmethod
+    def getVelocityWithNewSpeed(oldVelocity: carla.Vector3D, newSpeed):
+        if oldVelocity.length() == 0:
+            raise Exception(f"Old velocity cannot be 0")
+
+        direction  = oldVelocity.make_unit_vector() 
+        return direction * newSpeed
 
 
 
@@ -313,4 +382,35 @@ class Utils:
             debug.draw_line(
                 pair_w[0].transform.location + carla.Location(z=0.75),
                 pair_w[1].transform.location + carla.Location(z=0.75), 0.1, white, l_time, False)
+
+
+    
+    @staticmethod
+    def drawConflictPointOnGraph(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=15):
+
+        plt.figure(figsize=(10, 10))
+        
+        end1 = start1 + vel1 * seconds
+        end2 = start2 + vel2 * seconds
+
+        lineS1 = Utils.getLineSegment(vel1, start1, seconds)
+        lineS2 = Utils.getLineSegment(vel2, start2, seconds)
+
+        x, y = lineS1.xy
+        plt.plot(x, y, c='red')
+
+        x, y = lineS2.xy
+        plt.plot(x, y, c='blue')
+
+        point = lineS1.intersection(lineS2)
+
+        if isinstance(point, Point):
+            circle1 = plt.Circle((point.x, point.y), 0.2, color='orange')
+            plt.gca().add_patch(circle1)
+        else:
+            print("No conflict point")
+
+        plt.show()
+
+
     #endregion

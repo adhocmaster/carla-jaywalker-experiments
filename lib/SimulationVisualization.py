@@ -287,7 +287,6 @@ class SimulationVisualization(ClientUser):
         colors = self._getForceColors()
         for name in forces:
             color = colors.pop(0)
-            print(color)
             x = x + offsetX
             y = y + offsetY
             nameLocation = carla.Location(

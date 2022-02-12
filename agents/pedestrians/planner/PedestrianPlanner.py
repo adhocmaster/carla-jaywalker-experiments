@@ -56,6 +56,10 @@ class PedestrianPlanner:
         pass
 
     @property
+    def desiredSpeed(self):
+        return self.internalFactors["desired_speed"] 
+
+    @property
     def maxSpeed(self):
         return self.internalFactors["max_crossing_speed"]
 
@@ -192,6 +196,28 @@ class PedestrianPlanner:
             crossingFactorModel.setDestinationParams(destForce, destDirection, destSpeed)
         
         pass
+
+    
+
+    def getPredictedConflictPoint(self):
+        """ TODO Will not work correctly for multiple"""
+        if self.actorManager.nearestOncomingVehicle is None:
+            return None
+
+        # if current speed is almost 0, get desired direction from destination model
+        if self.agent.velocity.length() < 0.01:
+            return self.getPredictedConflictPointTowardsDestination()
+        else:
+            velocity =  self.agent.direction * self.desiredSpeed
+        
+        return self.actorManager.getPredictedConflictPoint(self.actorManager.nearestOncomingVehicle, velocity)
+
+    
+    def getPredictedConflictPointTowardsDestination(self):
+        
+        velocity = self.getDestinationModel().getDesiredVelocity()
+        return self.actorManager.getPredictedConflictPoint(self.actorManager.nearestOncomingVehicle, velocity)
+
 
     @abstractmethod
     def getDestinationModel(self) -> ForceModel:

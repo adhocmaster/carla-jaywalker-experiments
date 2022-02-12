@@ -144,9 +144,8 @@ class Research1v1(BaseResearch):
 
         # return
 
-        self.createWalker()
         self.createVehicle()
-
+        self.createWalker()
         self.world.wait_for_tick()
 
         onTickers = [self.visualizer.onTick, self.onTick, self.restart]
@@ -208,6 +207,8 @@ class Research1v1(BaseResearch):
         walkerWp = self.map.get_waypoint(self.walkerAgent.location).transform.location
         waypoints = Utils.getWaypointsToDestination(self.vehicle, walkerWp)
         self.visualizer.drawWaypoints(waypoints, color=(0, 0, 0), z=1, life_time=0.1)
+        self.logger.info(f"Linear distance to pedestrian {self.walkerAgent.actorManager.distanceFromNearestOncomingVehicle()}")
+        self.logger.info(f"Arc distance to pedestrian {Utils.getDistanceCoveredByWaypoints(waypoints)}")
     
     
     def updateWalker(self, world_snapshot):

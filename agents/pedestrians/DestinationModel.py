@@ -97,8 +97,7 @@ class DestinationModel(ForceModel):
 
     def getDesiredDirection(self) -> carla.Vector3D:
         return Utils.getDirection(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
-        exit(0)
-        return direction
+        
         
 
     def getDistanceToNextDestination(self):

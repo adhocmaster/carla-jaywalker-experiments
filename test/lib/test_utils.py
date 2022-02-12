@@ -83,3 +83,16 @@ def test_conflict_point():
     # 2022-02-09 13:35:17,732 - PedestrianAgent #171 - INFO - vehicle location: Location(x=-155.988235, y=-27.490515, z=0.005021)
     # 2022-02-09 13:35:17,732 - PedestrianAgent #171 - INFO - ped velo: Vector3D(x=0.020926, y=-0.062343, z=0.000000)
     # 2022-02-09 13:35:17,732 - PedestrianAgent #171 - INFO - ped location: Location(x=-149.999222, y=-4.002181, z=1.103900)
+
+    # Utils.drawConflictPointOnGraph(vel1, start1, vel2, start2, seconds)
+
+    seconds = 10
+    vel1 = carla.Vector3D(x=1.359963, y=4.535622, z=0.002943)
+    start1 =  carla.Location(x=-156.723312, y=-23.485638, z=-0.372956)
+    
+    vel2 = carla.Vector3D(x=0.602263, y=-1.907165, z=0.000000)
+    start2 =  carla.Location(x=-150.000000, y=-4.000000, z=1.103900)
+
+    vel2 = Utils.getVelocityWithNewSpeed(vel2, 2)
+
+    Utils.drawConflictPointOnGraph(vel1, start1, vel2, start2, seconds)

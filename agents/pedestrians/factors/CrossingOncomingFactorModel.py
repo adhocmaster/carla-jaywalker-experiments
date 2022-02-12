@@ -53,7 +53,7 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
         # get the collision point from the head of the vehicle and the center of the pedestrian 
 
         # if vehicle is too far, we don't need to even consider it
-        TTC = self.actorManager.pedTTCNearestOncomingVehicle()
+        TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
         if TTC is None:
             return None
 

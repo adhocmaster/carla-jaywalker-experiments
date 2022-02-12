@@ -149,69 +149,188 @@ class ActorManager:
             return None
         distance = self.getCurrentDistance(vehicle)
         self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
-        return distance - 2.3 # meter offset for front of the oncoming vehicle.
+        distance = distance - vehicle.bounding_box.extent.x # meter offset for front of the oncoming vehicle.
+        if distance < 0:
+            distance = 0
 
-    def pedTTCNearestOncomingVehicle(self):
+        return distance
+
+    def pedPredictedTTCNearestOncomingVehicle(self):
         """Fix this method. When there is no collision, TTC must be None. Put it in cache.
 
         Returns:
             [type]: [description]
         """
-        if "TTCNearestOncomingVehicle" in self._tickCache:
-            return self._tickCache["TTCNearestOncomingVehicle"]
-        
-
-        vehicle = self.nearestOncomingVehicle
-        if vehicle is None:
+        if self.nearestOncomingVehicle is None:
             return None
 
-        vel1 = vehicle.get_velocity()
-        start1 = self.getBBVertexInTravelDirection(vehicle)
-        vel2 = self.actor.get_velocity()
-        start2 = self.actor.get_location()
+        _, TTC = self.getPredictedCollisionPointAndTTC(self.nearestOncomingVehicle)
 
-        collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)
-
-        self._tickCache["TTCNearestOncomingVehicle"] = TTC
-        self._tickCache["collisionPoint"] = collisionPoint
+        return TTC
 
 
-        return self._tickCache["TTCNearestOncomingVehicle"]
+    def getNearestWaypointOnOthersPath(self, otherActor):
+        """Here we find the nearest waypoint to the pedestrian that the otherActor may navigate to? Why
 
-    def getConflictPoint(self, otherActor):
-        if "conflictPoint" in self._tickCache:
-            return self._tickCache["conflictPoint"]
+        Args:
+            otherActor ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        actorWpLocation = self.map.get_waypoint(self.actor.get_location()).transform.location
+
+        waypoints = Utils.getWaypointsToDestination(otherActor, actorWpLocation)
+        if len(waypoints) > 0:
+            lastWp = waypoints[-1]
+            return lastWp
+        
+        return None
+
+    def getPredictedConflictPoint(self, otherActor, actorVelocity=None):
+        """Here we find the nearest waypoint to the pedestrian that the otherActor may navigate to? Then create a velocity vector from otherActor's current position to that way point.
+
+        Args:
+            otherActor ([type]): [description]
+            actorVelocity : Sometimes pedestrian can be very slow or waiting. This parameter is useful to find conflict point with their desired Velocity
+
+        Returns:
+            [type]: [description]
+        """
+        if "predictedConflictPoint" in self._tickCache:
+            return self._tickCache["predictedConflictPoint"]
+
+        lastWp = self.getNearestWaypointOnOthersPath(otherActor)
+        
+        if lastWp is not None:
+            lastWpLocation = lastWp.transform.location
+
+            otherVelo = otherActor.get_velocity()
+            newDirection = (lastWpLocation - otherActor.get_location()).make_unit_vector()
+            vel1 = newDirection * otherVelo.length()
+            start1 = Utils.getBBVertexInTravelDirection(otherActor)
+
+            vel2 = self.actor.get_velocity()
+            if actorVelocity is not None:
+                vel2 = actorVelocity
+
+            start2 = self.actor.get_location()
+            self.logger.info(f"lastWpLocation: {lastWpLocation}")
+            self.logger.info(f"vel1: {vel1}")
+            self.logger.info(f"start1: {start1}")
+            self.logger.info(f"vel2: {vel2}")
+            self.logger.info(f"start2: {start2}")
+
+            self._tickCache["predictedConflictPoint"] = Utils.getConflictPoint(vel1, start1, vel2, start2)
+        else:
+            self.logger.info("no waypoints towards ped location")
+            self._tickCache["predictedConflictPoint"] = None
+
+        return self._tickCache["predictedConflictPoint"]
+
+
+    
+    def getPredictedCollisionPointAndTTC(self, otherActor, actorVelocity=None):
+        """[summary]
+
+        Args:
+            otherActor ([type]): [description]
+            actorVelocity : Sometimes pedestrian can be very slow or waiting. This parameter is useful to find conflict point with their desired Velocity
+
+        Returns:
+            [type]: [description]
+        """
+
+        if "predictedCollisionPoint" in self._tickCache:
+            return self._tickCache["predictedCollisionPoint"], self._tickCache["predictedTTCNearestOncomingVehicle"]
+
+        lastWp = self.getNearestWaypointOnOthersPath(otherActor)
+
+        if lastWp is not None:
+            lastWpLocation = lastWp.transform.location
+
+            otherVelo = otherActor.get_velocity()
+            newDirection = (lastWpLocation - otherActor.get_location()).make_unit_vector()
+            vel1 = newDirection * otherVelo.length()
+            start1 = Utils.getBBVertexInTravelDirection(otherActor)
+
+            vel2 = self.actor.get_velocity()
+            if actorVelocity is not None:
+                vel2 = actorVelocity
+
+            start2 = self.actor.get_location()
+            self.logger.info(f"vel1: {vel1}")
+            self.logger.info(f"start1: {start1}")
+            self.logger.info(f"vel2: {vel2}")
+            self.logger.info(f"start2: {start2}")
+
+
+            collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)
+
+            self._tickCache["predictedTTCNearestOncomingVehicle"] = TTC
+            self._tickCache["predictedCollisionPoint"] = collisionPoint
+
+        else:
+            self.logger.info("no waypoints towards ped location")
+            self._tickCache["predictedTTCNearestOncomingVehicle"] = None
+            self._tickCache["predictedCollisionPoint"] = None
+
+        return self._tickCache["predictedCollisionPoint"], self._tickCache["predictedTTCNearestOncomingVehicle"]
+
+        
+
+    def getInstantConflictPoint(self, otherActor):
+        """Calculates conflict point based on vehicles instant velocity. So, it will give a wrong answer in case of an arc. We should consider angular velocity or getNearestVehicleWaypoint
+        Conflict or collision point cannot be determined by the vehicle's instant velocity.
+
+        Args:
+            otherActor ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        if "instantConflictPoint" in self._tickCache:
+            return self._tickCache["instantConflictPoint"]
 
         vel1 = otherActor.get_velocity()
-        start1 = self.getBBVertexInTravelDirection(otherActor)
+
+        start1 = Utils.getBBVertexInTravelDirection(otherActor)
         vel2 = self.actor.get_velocity()
         start2 = self.actor.get_location()
 
-        self._tickCache["conflictPoint"] = Utils.getConflictPoint(vel1, start1, vel2, start2)
+        self._tickCache["instantConflictPoint"] = Utils.getConflictPoint(vel1, start1, vel2, start2)
 
-        return self._tickCache["conflictPoint"]
+        return self._tickCache["instantConflictPoint"]
         
 
 
-    def getCollisionPoint(self, otherActor):
-        if "collisionPoint" in self._tickCache:
-            return self._tickCache["collisionPoint"]
+    def getInstantCollisionPoint(self, otherActor):
+        """Collision point should not be calculated from instant velocity. It should be calculated with predicted conflict point
+
+        Args:
+            otherActor ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        if "instantCollisionPoint" in self._tickCache:
+            return self._tickCache["instantCollisionPoint"]
 
         vel1 = otherActor.get_velocity()
-        start1 = self.getBBVertexInTravelDirection(otherActor)
+        start1 = Utils.getBBVertexInTravelDirection(otherActor)
         vel2 = self.actor.get_velocity()
         start2 = self.actor.get_location()
 
         collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)
 
-        self._tickCache["TTCNearestOncomingVehicle"] = TTC
-        self._tickCache["collisionPoint"] = collisionPoint
+        self._tickCache["instantTTCNearestOncomingVehicle"] = TTC
+        self._tickCache["instantCollisionPoint"] = collisionPoint
 
-        return self._tickCache["collisionPoint"]
+        return self._tickCache["instantCollisionPoint"]
         
        
     def pedTGNearestOncomingVehicle(self):
-        """Time gap is different than TTC.
+        """Time gap is different than TTC. It's just distance / speed without considering the direction.
 
         Returns:
             [type]: [description]
@@ -234,25 +353,6 @@ class ActorManager:
 
         return self._tickCache["TGNearestOncomingVehicle"]
     
-    def getBBVertexInTravelDirection(self, bbActor):
-        """Can be head or rearend
-
-        Args:
-            bbActor ([type]): An actor with a bounding box property
-        """
-        
-        # TODO we can also get the vertice vectors and find the one most parallel to direction.
-        location = bbActor.get_location()
-        direction = bbActor.get_velocity().make_unit_vector()
-        extent = Utils.getMaxExtent(bbActor)
-        extentVector = direction * extent
-
-        vertexLocation = carla.Location(
-            location.x + extentVector.x,
-            location.y + extentVector.y,
-            location.z + extentVector.x
-        )
-        return vertexLocation
 
 
     #endregion

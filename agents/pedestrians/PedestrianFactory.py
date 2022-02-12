@@ -73,7 +73,6 @@ class PedestrianFactory(ClientUser):
     def createAgent(
         self, 
         walker: carla.Walker, 
-        desired_speed=1.5, 
         logLevel=logging.INFO, 
         internalFactorsPath = None, 
         optionalFactors: List[Factors] = None,
@@ -86,7 +85,6 @@ class PedestrianFactory(ClientUser):
 
         agent = PedestrianAgent(
             walker, 
-            desired_speed=desired_speed,
             visualizer=self.visualizer, 
             time_delta=self.time_delta, 
             config=config
