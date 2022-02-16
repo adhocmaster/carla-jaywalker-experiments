@@ -71,6 +71,9 @@ class InfoAgent:
     def setDestination(self, destination: carla.Location):
         self._localPlanner.setDestination(destination)
 
+    @property
+    def previousLocations(self):
+        return self._localPlanner.locations
 
     
     # def set_destination(self, destination):

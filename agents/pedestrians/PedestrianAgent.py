@@ -125,6 +125,13 @@ class PedestrianAgent(InfoAgent):
             return True
         return False
 
+    def isSurviving(self):
+        if self.state == PedState.SURVIVAL:
+            return True
+        return False
+
+    #endregion 
+    
     # region visualization
     def visualiseState(self):
         self.visualizer.drawPedState(self.state, self.walker, life_time=0.1)
