@@ -55,31 +55,33 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
         
     def getNewState(self):
 
-        self.agent.logger.info(f"Collecting state from CrossingOncomingFactorModel")
-
         # return None
         if self.agent.isCrossing() == False:
             return None
 
-        # change to survival state if there is a near collision
-        # get the collision point from the head of the vehicle and the center of the pedestrian 
+        return None
 
-        # if vehicle is too far, we don't need to even consider it
-        # TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
-        # if TTC is None:
+        # self.agent.logger.info(f"Collecting state from {self.name}")
+
+        # # change to survival state if there is a near collision
+        # # get the collision point from the head of the vehicle and the center of the pedestrian 
+
+        # # if vehicle is too far, we don't need to even consider it
+        # # TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
+        # # if TTC is None:
+        # #     return None
+
+        
+        # conflictPoint = self.agent.getPredictedConflictPoint()
+        # if conflictPoint is None:
         #     return None
 
+        # TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+        # TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
         
-        conflictPoint = self.agent.getPredictedConflictPoint()
-        if conflictPoint is None:
-            return None
-
-        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
-        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
-        
-        diff = TG - TTX # may be too far
-        if diff < self.internalFactors["threshold_ttc_survival_state"] and diff > 0:
-            return PedState.SURVIVAL
-
-        # if self.internalFactors["threshold_ttc_survival_state"] > TG:
+        # diff = TG - TTX # may be too far
+        # if diff < self.internalFactors["threshold_ttc_survival_state"] and diff > 0:
         #     return PedState.SURVIVAL
+
+        # # if self.internalFactors["threshold_ttc_survival_state"] > TG:
+        # #     return PedState.SURVIVAL

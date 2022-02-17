@@ -1,4 +1,5 @@
 
+from ast import Pass
 from typing import List
 from .PedestrianPlanner import PedestrianPlanner
 from ..PedestrianAgent import PedestrianAgent
@@ -8,6 +9,7 @@ from ..DestinationModel import DestinationModel
 from ..gap_models import *
 from agents.pedestrians.StopGoModel import StopGoModel
 from ..factors.CrossingOncomingFactorModel import CrossingOncomingFactorModel
+from ..survival_models.SurvivalDestinationModel import SurvivalDestinationModel
 
 class ModelFactory:
 
@@ -62,19 +64,43 @@ class ModelFactory:
 
         self.createCrossingModels(optionalFactors)
 
+        self.createSurvivalModels(optionalFactors)
 
+
+    #region crossing models
     def createCrossingModels(self, optionalFactors: List[Factors]):
-        self.createCrossingOncomingVehicleModel(optionalFactors)
+
+        if Factors.CROSSING_ON_COMING_VEHICLE in optionalFactors:
+            self.createCrossingOncomingVehicleModel(optionalFactors)
 
 
     def createCrossingOncomingVehicleModel(self, optionalFactors: List[Factors]):
         
-        if Factors.CROSSING_ON_COMING_VEHICLE in optionalFactors:
-            self.planner.crossingOncomingVehicleModel = CrossingOncomingFactorModel(
-                                        self.agent, 
-                                        actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-                                        internalFactors=self.internalFactors
-                                        )
-            self.planner.models.append(self.planner.crossingOncomingVehicleModel)
-            self.planner.crossingFactorModels.append(self.planner.crossingOncomingVehicleModel)
-            self.planner.stateTransitionModels.append(self.planner.crossingOncomingVehicleModel)
+        self.planner.crossingOncomingVehicleModel = CrossingOncomingFactorModel(
+                                    self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                                    )
+        self.planner.models.append(self.planner.crossingOncomingVehicleModel)
+        self.planner.crossingFactorModels.append(self.planner.crossingOncomingVehicleModel)
+        self.planner.stateTransitionModels.append(self.planner.crossingOncomingVehicleModel)
+
+    #endregion
+
+    #region survival models
+    
+
+    def createSurvivalModels(self, optionalFactors: List[Factors]):
+        if Factors.SURVIVAL_DESTINATION in optionalFactors:
+            self.createSurvivalDestinationModel(optionalFactors)
+
+    def createSurvivalDestinationModel(self, optionalFactors: List[Factors]):
+        survivalDestModel = SurvivalDestinationModel(
+                                    self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                            )
+        self.planner.models.append(survivalDestModel)
+        self.planner.survivalModels.append(survivalDestModel)
+        self.planner.stateTransitionModels.append(survivalDestModel)
+        pass

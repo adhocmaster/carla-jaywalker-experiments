@@ -1,4 +1,4 @@
-risk_level: "normal"
+risk_level: "risky"
 
 # Destination related factors
 relaxation_time: 0.5
@@ -21,6 +21,6 @@ brewer_beta0: 6.2064
 brewer_beta1: -0.9420
 
 # survival state
-threshold_ttc_survival_state: 1
+threshold_ttc_survival_state: 2
 survival_safety_distance: 5
 

@@ -1,0 +1,2 @@
+class SurvivalModel:
+    pass

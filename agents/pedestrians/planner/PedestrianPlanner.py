@@ -6,6 +6,7 @@ from agents.pedestrians.StateTransitionModel import StateTransitionModel
 from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
 from agents.pedestrians.factors import InternalFactors
 from agents.pedestrians.factors.CrossingFactorModel import CrossingFactorModel
+from agents.pedestrians.survival_models.SurvivalModel import SurvivalModel
 from typing import List, Dict
 
 class PedestrianPlanner:
@@ -28,6 +29,7 @@ class PedestrianPlanner:
         self.models: List[ForceModel] = []
         self.stateTransitionModels: List[StateTransitionModel] = []
         self.crossingFactorModels: List[CrossingFactorModel] = []
+        self.survivalModels: List[SurvivalModel] = []
 
         self.modelForces: Dict[str, carla.Vector3D] = {} # tracks the forces for the next tick
 

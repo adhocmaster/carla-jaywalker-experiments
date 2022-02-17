@@ -106,6 +106,13 @@ class DestinationModel(ForceModel):
 
     def calculateForce(self):
 
+        # return None
+        if self.agent.isCrossing() == False:
+            return None
+
+
+        self.agent.logger.info(f"Collecting state from {self.name}")
+        
         # if self.needSkip:
         #     return None
 

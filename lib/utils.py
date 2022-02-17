@@ -40,13 +40,17 @@ class Utils:
     #region geometries and vector ops
 
     @staticmethod
-    def getDirection(fromLocation, toLocation, ignoreZ=False):
+    def getDirection(fromLocation: carla.Location, toLocation: carla.Location, ignoreZ=False):
         diff = toLocation - fromLocation
         if ignoreZ:
             diff.z = 0
         mag = Utils.getMagnitude(diff)
         direction =  diff / mag
         return direction
+
+    @staticmethod
+    def getDirection2D(fromLocation: carla.Location, toLocation: carla.Location):
+        return Utils.getDirection(fromLocation, toLocation, ignoreZ=True)
 
     
     @staticmethod

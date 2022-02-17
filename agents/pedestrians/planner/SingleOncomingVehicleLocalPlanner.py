@@ -139,11 +139,11 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
             self.logger.info(f"Finished. no new control")
             return self.getStopControl()
 
-        if self.agent.isCrossing():
-            control = self.getNewControl()
-        else:
+        if self.agent.isWaiting():
             self.logger.info(f"cannot cross due gap model")
             control = self.getStopControl()
+        else:
+            control = self.getNewControl()
 
         self.logger.info(f"New speed is {control.speed}")
 

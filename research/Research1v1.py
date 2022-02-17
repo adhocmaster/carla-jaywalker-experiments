@@ -79,7 +79,7 @@ class Research1v1(BaseResearch):
         
         self.world.wait_for_tick() # otherwise we can get wrong agent location!
 
-        optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
+        optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
 
         config = {
             "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
