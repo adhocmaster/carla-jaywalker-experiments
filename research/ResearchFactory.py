@@ -4,6 +4,8 @@ import os
 
 from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, Utils
 from research import *
+from research.SimulationMode import SimulationMode
+from research.ResearchCogMod import ResearchCogMod
 
 class ResearchFactory:
     def __init__(self, host="127.0.0.1", port=2000, output_dir="logs", map=MapNames.circle_t_junctions) -> None:
@@ -23,4 +25,23 @@ class ResearchFactory:
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
         research = Research1v1(client, defaultLogLevel, output_dir)
+        research.run(maxTicks=maxTicks)
+    
+    @staticmethod
+    def createResearchCogMod(maxTicks=100, 
+                             host="127.0.0.1", 
+                             port=2000, 
+                             defaultLogLevel=logging.INFO, 
+                             output_dir="logs", 
+                             map=MapNames.t_junction, 
+                             simulationMode=SimulationMode.ASYNCHRONOUS,
+                             simulation_id='setting1'):
+
+        print(f"research chosen : CogMod with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
+        port = int(port)
+        name = "ResearchCogMod"
+        logPath = os.path.join(output_dir, f"{name}.log")
+        logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
+        client = Utils.createClient(logger, host, port)
+        research = ResearchCogMod(client, defaultLogLevel, output_dir, simulationMode, simulation_id)
         research.run(maxTicks=maxTicks)

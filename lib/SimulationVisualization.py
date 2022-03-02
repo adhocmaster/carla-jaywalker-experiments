@@ -23,18 +23,30 @@ class SimulationVisualization(ClientUser):
 
         self.tracking = {} # actor id -> tracking config
 
+        self.trackingAgent = {} # agent actor id -> agent
         # self.pool.spawn_n(self.world.on_tick, self.onTick)
         # self.world.on_tick(self.onTick) # freezes. may need greenlets.
 
     
 
+    def trackAgentOnTick(self, agent):
+        if agent is None:
+            return
+        self.trackingAgent[agent.vehicle.id] = agent
+
+
+    # def onTick(self, world_snapshot):
+    #     for actorId in self.tracking:
+    #         actor_snapshot = world_snapshot.find(actorId)
+    #         if actor_snapshot is not None:
+    #             life_time = self.tracking[actorId]["life_time"]
+    #             color = self.tracking[actorId]["color"]
+    #             self.drawWalkerBB(actor_snapshot, color=color, life_time=life_time)
+
     def onTick(self, world_snapshot):
-        for actorId in self.tracking:
-            actor_snapshot = world_snapshot.find(actorId)
-            if actor_snapshot is not None:
-                life_time = self.tracking[actorId]["life_time"]
-                color = self.tracking[actorId]["color"]
-                self.drawWalkerBB(actor_snapshot, color=color, life_time=life_time)
+        for agent in self.trackingAgent.values():
+            self.drawAgentStatus(agent)
+
 
     #region unit functions
 
@@ -320,5 +332,52 @@ class SimulationVisualization(ClientUser):
         ]
         return pallete
 
+    def drawAgentStatus(self, vehicleAgent):
+        self.draw_target_waypoint(vehicleAgent)
+        self.draw_global_plan(vehicleAgent)
+        # self.draw_steering_direction(vehicleAgent)
+        pass
 
+    def draw_target_waypoint(self, agent):
+        target_waypoint = agent.motor_control.target_waypoint
+        if target_waypoint is not None:
+            self.drawWaypoints([target_waypoint],
+                                color=(255, 0, 0),
+                                z=1.5,
+                                life_time=1)
     
+    def draw_global_plan(self, vehicleAgent):
+        globalPlan = vehicleAgent.local_map.global_plan
+        waypoints = []
+        for wp, _ in globalPlan:
+            waypoints.append(wp)
+        self.drawWaypoints(waypoints, color=(0, 255, 0), life_time=1)
+        pass
+
+
+    def draw_steering_direction(self, vehicleAgent, line_size=5.0):
+
+        vehicle_location = vehicleAgent.vehicle.get_location()
+        vehicle_location = carla.Location(x=vehicle_location.x, y=vehicle_location.y, z=1.5)
+        vehicle_forward_vector = vehicleAgent.vehicle.get_transform().get_forward_vector()
+
+        control = vehicleAgent.get_vehicle_control()
+        steering_angle = control.steer
+
+
+        vehicle_forward_vector3D = carla.Vector3D(vehicle_forward_vector.x, vehicle_forward_vector.y, 0)
+        vehicle_forward_vector_end_point = vehicle_location + carla.Vector3D(vehicle_forward_vector3D.x * line_size, vehicle_forward_vector3D.y * line_size, 0)
+
+        steering_vector_x = vehicle_forward_vector3D.x * math.cos(steering_angle) - vehicle_forward_vector3D.y * math.sin(steering_angle)
+        steering_vector_y = vehicle_forward_vector3D.x * math.sin(steering_angle) + vehicle_forward_vector3D.y * math.cos(steering_angle)
+
+        steering_vector = carla.Vector3D(steering_vector_x*line_size, steering_vector_y*line_size, 1.5)
+        steering_end_point = (steering_vector + vehicle_location)
+
+        # print(f'vehicle_location : {vehicle_location}, end_point : {end_point}')
+
+        vehicleAgent.world.debug.draw_line(vehicle_location, steering_end_point, life_time=0.5, color=carla.Color(0, 255, 0), thickness=0.2)
+        vehicleAgent.world.debug.draw_line(vehicle_location, vehicle_forward_vector_end_point, life_time=0.5, color=carla.Color(255, 0, 0), thickness=0.2)
+
+
+        pass
