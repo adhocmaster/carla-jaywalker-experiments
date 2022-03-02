@@ -27,6 +27,10 @@ class VehicleFactory(ClientUser):
         self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
 
         
+    def getVehicles(self):
+        return VehicleFactory.vehicles
+
+        
     def create(self):
         vehicleBp = random.choice(self.vehicleBps)
         return vehicleBp
