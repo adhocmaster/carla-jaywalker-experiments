@@ -30,6 +30,12 @@ class VehicleFactory(ClientUser):
     def create(self):
         vehicleBp = random.choice(self.vehicleBps)
         return vehicleBp
+
+    
+    def destroy(self, vehicle: carla.Vehicle):
+        VehicleFactory.vehicles.remove(vehicle)
+        vehicle.destroy()
+
     
     def spawn(self, spawnPoint):
         vehicleBp = self.create()

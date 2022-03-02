@@ -28,9 +28,12 @@ class Research1v1(BaseResearch):
     def destoryActors(self):
         self.logger.info('\ndestroying  walkers')
         if self.walker is not None:
-            self.walker.destroy()
+            # self.walker.destroy()
+            self.pedFactory.destroy(self.walker)
+
         self.logger.info('\ndestroying  vehicles')
-        self.vehicle.destroy()
+        if self.vehicle is not None:
+            self.vehicleFactory.destroy(self.vehicle)
 
     def setup(self):
         self.settingsManager.load("setting3")
@@ -48,6 +51,8 @@ class Research1v1(BaseResearch):
         self.vehicleDestination = self.vehicleSetting.destination
 
         self.simulator = None # populated when run
+
+        self.initStats()
 
     
     def getWalkerSetting(self):
@@ -173,7 +178,7 @@ class Research1v1(BaseResearch):
         # destroy current one
         # self.simulator.removeOnTicker()
         self.logger.warn(f"Recreating vehicle")
-        self.vehicle.destroy()
+        self.vehicleFactory.destroy(self.vehicle)
         self.vehicleAgent = None
         self.vehicle = None
         self.createVehicle()
@@ -195,8 +200,11 @@ class Research1v1(BaseResearch):
     
     def onEnd(self):
         self.destoryActors()
+        self.saveStats()
 
     def onTick(self, world_snapshot):
+
+        self.collectStats(world_snapshot)
 
         self.walkerAgent.onTickStart(world_snapshot)
 
@@ -256,3 +264,15 @@ class Research1v1(BaseResearch):
         self.vehicle.apply_control(control)
         pass
 
+
+    def initStats(self):
+        # we will save stats of all the dynamic actors
+        pass
+    
+    def collectStats(self, world_snapshot):
+
+        pass
+
+
+    def saveStats(self):
+        pass

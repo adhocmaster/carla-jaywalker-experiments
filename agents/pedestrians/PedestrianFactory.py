@@ -40,6 +40,12 @@ class PedestrianFactory(ClientUser):
     def create(self):
         walkerBp = random.choice(self.pedBps)
         return walkerBp
+
+    
+    def destroy(self, walker: carla.Walker):
+        PedestrianFactory.walkers.remove(walker)
+        walker.destroy()
+
     
     def spawn(self, spawnPoint):
         walkerBp = self.create()
