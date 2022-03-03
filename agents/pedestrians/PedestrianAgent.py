@@ -206,8 +206,6 @@ class PedestrianAgent(InfoAgent):
         
  
         location = self.feetLocation
-        direction = self._localPlanner.getDesiredDirection()
-        self.visualizer.drawDirection(location, direction, life_time=0.1)
         # speed = self.calculateNextSpeed(direction)
 
 
@@ -216,6 +214,9 @@ class PedestrianAgent(InfoAgent):
             return self._localPlanner.getStopControl()
 
         control = self._localPlanner.calculateNextControl()
+
+        direction = control.direction
+        self.visualizer.drawDirection(location, direction, life_time=0.1)
 
         self.visualizeConflictPoint()
         self.visualiseState()

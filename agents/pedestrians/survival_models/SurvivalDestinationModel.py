@@ -29,11 +29,33 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
     def name(self):
         return f"SurvivalModel {self.agent.id}"
 
+    
+    def canSwitchToCrossing(self):
         
-    def getNewState(self):
         # 1. return to crossing is safe destination is reached
         if self.agent.isSurviving():
-            if self.agent.location.distance_2d(self._destination) < 0.2:
+            if self.agent.location.distance_2d(self._destination) < 0.001:
+                self._destination = None
+                self.haveSafeDestination = False
+                return True
+
+        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+        if TG is None:
+            return True
+
+        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
+        
+        diff = abs(TG - TTX) # may be too far
+        self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
+        self.agent.logger.info(f"difference between TG and TTX: {diff}")
+        if diff > self.internalFactors["threshold_ttc_survival_state"]:
+            return True
+
+        return False
+
+    def getNewState(self):
+        # 1. return to crossing is safe destination is reached or vehicle stoppped
+        if self.canSwitchToCrossing():
                 return PedState.CROSSING
 
         # 2. any other state means, we need to reset the safe destination
@@ -54,8 +76,10 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
         TG = self.agent.getAvailableTimeGapWithClosestVehicle()
         TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
         
-        diff = TG - TTX # may be too far
-        if diff < self.internalFactors["threshold_ttc_survival_state"] and diff > 0:
+        diff = abs(TG - TTX) # may be too far
+        self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
+        self.agent.logger.info(f"difference between TG and TTX: {diff}")
+        if diff < self.internalFactors["threshold_ttc_survival_state"]:
             return PedState.SURVIVAL
 
         return None
@@ -79,7 +103,7 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
         
         oldVelocity = self.agent.getOldVelocity()
 
-        return (desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"]
+        return (desiredVelocity - oldVelocity) / (self.internalFactors["relaxation_time"] * 0.1)
 
         # now 
 
@@ -93,23 +117,36 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
         if len(prevLocations) == 0:
             raise Exception(f"No previous locations to safely go to")
 
-        if len(prevLocations) == 1:
-            self._destination = prevLocations[0]
-            return
+        
+        # we find a point in the direction firstLocation - currentLocation * min distance
 
-        lastLocation = prevLocations[0]
-        firstLocation = prevLocations[-1]
+        self.agent.logger.info(prevLocations)
 
-        distanceToDestination = lastLocation.distance_2d(firstLocation)
+        backwardVector = prevLocations[-1] - self.agent.location
+        safeDestination = self.agent.location + backwardVector.make_unit_vector() * self.internalFactors["survival_safety_distance"]
+        self._destination = safeDestination
 
-        if distanceToDestination < self.internalFactors["survival_safety_distance"]:
-            self._destination = firstLocation
-            self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
-            return
+        self.agent.logger.info(safeDestination)
 
-        # TODO improve this
-        self._destination = firstLocation
+        # if len(prevLocations) == 1:
+        #     self._destination = prevLocations[0]
+        #     return
 
+        # lastLocation = prevLocations[0]
+        # firstLocation = prevLocations[-1]
+
+        # distanceToDestination = lastLocation.distance_2d(firstLocation)
+
+        # if distanceToDestination < self.internalFactors["survival_safety_distance"]:
+
+        #     self._destination = firstLocation
+        #     self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
+        #     return
+
+        # # TODO improve this
+        # self._destination = firstLocation
+
+        self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
         self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
 
         self.haveSafeDestination = True

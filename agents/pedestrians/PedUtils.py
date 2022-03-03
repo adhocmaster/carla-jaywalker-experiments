@@ -25,5 +25,16 @@ class PedUtils(ABC):
         """
         nearestWp, dToWp = PedUtils.getNearestDrivingWayPointAndDistance(map, agentLocation)
         # TTX = agent.internalFactors["desired_speed"] * dToWp + (PedUtils.getLaneWidth() / 2)
-        TTX = speed * dToWp + (PedUtils.getLaneWidth(nearestWp) / 2)
+        # TTX = speed * dToWp + (PedUtils.getLaneWidth(nearestWp) / 2)
+        TTX = (dToWp +  (PedUtils.getLaneWidth(nearestWp) / 2)) / speed
+        return TTX
+    
+    def timeToReachNearestWP(map, agentLocation, speed):
+        """Assumes pedestrian will cross with desired speed.
+
+        """
+        nearestWp, dToWp = PedUtils.getNearestDrivingWayPointAndDistance(map, agentLocation)
+        # TTX = agent.internalFactors["desired_speed"] * dToWp + (PedUtils.getLaneWidth() / 2)
+        # TTX = speed * dToWp + (PedUtils.getLaneWidth(nearestWp) / 2)
+        TTX = dToWp/ speed
         return TTX
