@@ -1,8 +1,10 @@
 from genericpath import sameopenfile
+from turtle import distance
 import carla
 import logging
 import random
 import os
+import numpy as np
 from datetime import date
 
 from .BaseResearch import BaseResearch
@@ -106,9 +108,20 @@ class Research1v1(BaseResearch):
         pass
 
     
-    def createVehicle(self):
+    def createVehicle(self, randomizeSpawnPoint=True):
         vehicleSpawnPoint = self.vehicleSpawnPoint
         # vehicleSpawnPoint = random.choice(self.mapManager.spawn_points)
+        # randomize spawn point
+        if randomizeSpawnPoint:
+            currentWp = self.map.get_waypoint(vehicleSpawnPoint.location)
+            distance = random.random() * 10 # 0 to 10 meter gap
+            # vehicleSpawnPoint = currentWp.next(distance)[0].transform
+            if np.random.choice([True, False]): # back for forward
+                vehicleSpawnPoint = currentWp.next(distance)[0].transform
+            else:
+                vehicleSpawnPoint = currentWp.previous(distance)[0].transform
+            vehicleSpawnPoint.location += carla.Location(z=1)
+
         self.vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)       
         if self.vehicle is None:
             self.logger.error("Cannot spawn vehicle")

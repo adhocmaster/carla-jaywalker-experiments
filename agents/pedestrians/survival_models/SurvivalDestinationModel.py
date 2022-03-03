@@ -136,8 +136,14 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
 
         self.agent.logger.info(prevLocations)
 
+        maxDistanceBack =  self.internalFactors["survival_safety_distance"]
+        # we subtract the distance to next way point to 
+        nearestWp, dToWp = PedUtils.getNearestDrivingWayPointAndDistance(self.map, self.agent.location)
+        distance = min(maxDistanceBack, maxDistanceBack / dToWp)
+
+
         backwardVector = prevLocations[-1] - self.agent.location
-        safeDestination = self.agent.location + backwardVector.make_unit_vector() * self.internalFactors["survival_safety_distance"]
+        safeDestination = self.agent.location + backwardVector.make_unit_vector() * distance
         self._destination = safeDestination
 
         self.agent.logger.info(safeDestination)
