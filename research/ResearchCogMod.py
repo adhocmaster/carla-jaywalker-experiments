@@ -24,7 +24,7 @@ class ResearchCogMod(BaseResearch):
         self.name = "Research CogMod"
         super().__init__(name=self.name, 
                          client=client, 
-                         mapName=MapNames.t_junction, 
+                         mapName=MapNames.straight_road_with_parking, 
                          logLevel=logLevel, 
                          outputDir=outputDir,
                          simulationMode=simulationMode)
@@ -100,24 +100,24 @@ class ResearchCogMod(BaseResearch):
         print('inside run research')
         
         
-        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
-            self.createCogmodAgentAsynchronousMode()
-            self.createActorAgentsAsynchronousMode()
-            self.world.wait_for_tick()
-        if self.simulationMode == SimulationMode.SYNCHRONOUS:
-            self.createCogmodAgentSynchronousMode()
-            # self.createActorAgentsSynchronousMode()
-            self.world.tick()
+        # if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+        #     self.createCogmodAgentAsynchronousMode()
+        #     self.createActorAgentsAsynchronousMode()
+        #     self.world.wait_for_tick()
+        # if self.simulationMode == SimulationMode.SYNCHRONOUS:
+        #     self.createCogmodAgentSynchronousMode()
+        #     # self.createActorAgentsSynchronousMode()
+        #     self.world.tick()
         
-        for agent in self.cogmod_agent_list:
-            print(f'agent : {agent}')
-            self.visualizer.trackAgentOnTick(agent)
+        # for agent in self.cogmod_agent_list:
+        #     print(f'agent : {agent}')
+        #     self.visualizer.trackAgentOnTick(agent)
 
-        onTickers = [self.visualizer.onTick, self.onTick]
-        onEnders = [self.onEnd]
-        self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
+        # onTickers = [self.visualizer.onTick, self.onTick]
+        # onEnders = [self.onEnd]
+        # self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
 
-        self.simulator.run(maxTicks)
+        # self.simulator.run(maxTicks)
 
         # # try: 
         # # except Exception as e:
