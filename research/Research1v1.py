@@ -2,6 +2,8 @@ from genericpath import sameopenfile
 import carla
 import logging
 import random
+import os
+from datetime import date
 
 from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
@@ -11,6 +13,7 @@ from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
 from lib import Simulator
 from lib import Utils
+import pandas as pd
 
 class Research1v1(BaseResearch):
     
@@ -22,15 +25,20 @@ class Research1v1(BaseResearch):
         self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
+        self.episodeNumber = 0
+
         self.setup()
 
 
     def destoryActors(self):
         self.logger.info('\ndestroying  walkers')
         if self.walker is not None:
-            self.walker.destroy()
+            # self.walker.destroy()
+            self.pedFactory.destroy(self.walker)
+
         self.logger.info('\ndestroying  vehicles')
-        self.vehicle.destroy()
+        if self.vehicle is not None:
+            self.vehicleFactory.destroy(self.vehicle)
 
     def setup(self):
         self.settingsManager.load("setting3")
@@ -48,6 +56,8 @@ class Research1v1(BaseResearch):
         self.vehicleDestination = self.vehicleSetting.destination
 
         self.simulator = None # populated when run
+
+        self.initStats()
 
     
     def getWalkerSetting(self):
@@ -140,6 +150,8 @@ class Research1v1(BaseResearch):
     #region simulation
     def run(self, maxTicks=1000):
 
+        self.episodeNumber = 1 # updated when resetted
+
         # self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
         # self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
 
@@ -168,12 +180,15 @@ class Research1v1(BaseResearch):
             # 2. reset walker
             self.resetWalker(sameOrigin=False)
 
+            # 3. episode
+            self.episodeNumber += 1
+
     
     def recreateVehicle(self):
         # destroy current one
         # self.simulator.removeOnTicker()
         self.logger.warn(f"Recreating vehicle")
-        self.vehicle.destroy()
+        self.vehicleFactory.destroy(self.vehicle)
         self.vehicleAgent = None
         self.vehicle = None
         self.createVehicle()
@@ -195,8 +210,11 @@ class Research1v1(BaseResearch):
     
     def onEnd(self):
         self.destoryActors()
+        self.saveStats()
 
     def onTick(self, world_snapshot):
+
+        self.collectStats(world_snapshot)
 
         self.walkerAgent.onTickStart(world_snapshot)
 
@@ -256,3 +274,56 @@ class Research1v1(BaseResearch):
         self.vehicle.apply_control(control)
         pass
 
+
+    def initStats(self):
+        # we will save trajectories of all the walkers and vehicles (location, speed, velocity). Time interval is not saved.
+
+        # self.stats = pd.DataFrame(columns=['walker_trajectories'])
+
+        # self.stats = {
+        #     "walker_trajectories": {},
+        # }
+
+        # walkers = self.pedFactory.getWalkers()
+        # vehicles  = self.vehicleFactory.getVehicles()
+        
+        # for walker in walkers
+
+        # self.trajectories = pd.DataFrame(columns=["episode", "v_loc", "v_speed", "v_direction", "w_loc", "w_speed", "w_direction"])
+
+        self.statDict = {
+            "episode": [], 
+            "v_x": [], 
+            "v_y": [], 
+            "v_speed": [], 
+            # "v_direction": [], 
+            "w_x": [], 
+            "w_y": [], 
+            "w_speed": [], 
+            # "w_direction": []
+        }
+
+
+        pass
+    
+    def collectStats(self, world_snapshot):
+
+        self.statDict["episode"].append(self.episodeNumber)
+        self.statDict["v_x"].append(self.vehicle.get_location().x)
+        self.statDict["v_y"].append(self.vehicle.get_location().y)
+        self.statDict["v_speed"].append(self.vehicle.get_velocity().length())
+        # self.statDict["v_direction"].append(self.episodeNumber)
+        self.statDict["w_x"].append(self.walkerAgent.location.x)
+        self.statDict["w_y"].append(self.walkerAgent.location.y)
+        self.statDict["w_speed"].append(self.walkerAgent.speed)
+        # self.statDict["w_direction"].append(self.episodeNumber)
+
+        pass
+
+
+    def saveStats(self):
+        dateStr = date.today().strftime("%m-%d-%Y")
+        statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
+        df = pd.DataFrame.from_dict(self.statDict)
+        df.to_csv(statsPath)
+        pass

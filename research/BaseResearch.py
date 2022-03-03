@@ -5,6 +5,8 @@ from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisua
 class BaseResearch(ClientUser):
     def __init__(self, name, client: carla.Client, logLevel, outputDir:str = "logs") -> None:
         super().__init__(client)
+        
+        self.outputDir = outputDir
         logPath = os.path.join(outputDir, f"{name}.log")
         self.logger = LoggerFactory.getBaseLogger(name, defaultLevel=logLevel, file=logPath)
 

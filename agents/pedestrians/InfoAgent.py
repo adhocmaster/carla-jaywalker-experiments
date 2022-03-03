@@ -40,6 +40,10 @@ class InfoAgent:
         return self._walker.get_velocity()
 
     @property
+    def speed(self):
+        return self._walker.get_velocity().length()
+
+    @property
     def direction(self):
         direction = self.control.direction
         if direction is None:
