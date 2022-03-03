@@ -217,6 +217,8 @@ class SimulationVisualization(ClientUser):
             :param z: height in meters
         """
         begin = location + carla.Location(z=z)
+        if force.length() == 0:
+            return
         direction = force.make_unit_vector()
         magnitude = force.length()
         angle = math.atan2(direction.y, direction.x)

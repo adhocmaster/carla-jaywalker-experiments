@@ -98,7 +98,7 @@ class ActorManager:
             self.logger.debug(f"actor not oncoming as previous distance is unknown")
             return False # in the first tick there will not be any previous distance
         self.logger.debug(f"actor previous distance {self._previousActorDistances[otherActor.id]} and current distance {self._currentActorDistances[otherActor.id]}")
-        if self._previousActorDistances[otherActor.id] > self._currentActorDistances[otherActor.id]: # TODO improve this algorithm
+        if (self._previousActorDistances[otherActor.id] > self._currentActorDistances[otherActor.id]) or (self._currentActorDistances[otherActor.id] < 3): # TODO improve this algorithm
             # self.logger.info(f"actor oncoming")
             return True
 
@@ -343,6 +343,32 @@ class ActorManager:
             return None
             
         wp_distance = self.distanceFromNearestOncomingVehicle()
+        velocity = vehicle.get_velocity()
+        speed = velocity.length()
+        if speed < 0.001:
+            return None
+
+        TG = wp_distance / speed
+        self._tickCache["TGNearestOncomingVehicle"] = TG
+
+        return self._tickCache["TGNearestOncomingVehicle"]
+    
+
+       
+    def pedTGNearestOncomingVehicleBack(self):
+        """Time gap is different than TTC. It's just distance / speed without considering the direction.
+
+        Returns:
+            [type]: [description]
+        """
+        if "TGNearestOncomingVehicle" in self._tickCache:
+            return self._tickCache["TGNearestOncomingVehicle"]
+
+        vehicle = self.nearestOncomingVehicle
+        if vehicle is None:
+            return None
+            
+        wp_distance = self.distanceFromNearestOncomingVehicle() + vehicle.bounding_box.extent.x * 2 
         velocity = vehicle.get_velocity()
         speed = velocity.length()
         if speed < 0.001:

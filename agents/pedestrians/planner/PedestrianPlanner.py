@@ -57,6 +57,9 @@ class PedestrianPlanner:
     def logger(self):
         pass
 
+    def getInternalFactor(self, name):
+        return self.internalFactors[name] 
+
     @property
     def desiredSpeed(self):
         return self.internalFactors["desired_speed"] 

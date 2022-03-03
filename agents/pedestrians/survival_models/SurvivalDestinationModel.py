@@ -30,7 +30,7 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
         return f"SurvivalModel {self.agent.id}"
 
     
-    def canSwitchToCrossing(self):
+    def canSwitchToCrossing(self, TG, TTX):
         
         # 1. return to crossing is safe destination is reached
         if self.agent.isSurviving():
@@ -39,24 +39,30 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
                 self.haveSafeDestination = False
                 return True
 
-        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
-        if TG is None:
-            return True
-
-        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
-        
-        diff = abs(TG - TTX) # may be too far
-        self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
-        self.agent.logger.info(f"difference between TG and TTX: {diff}")
-        if diff > self.internalFactors["threshold_ttc_survival_state"]:
-            return True
+            if TG is None or TG == 0:
+                return True
+            
+            # diff = TG - TTX # may be too far
+            # self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
+            # self.agent.logger.info(f"difference between TG and TTX: {diff}")
+            # if diff > self.internalFactors["threshold_ttc_survival_state"]:
+            #     return True
+            # if diff < 0: # means vehicle will cross first
+            #     if diff > -1:
+            #         return True
+            # elif diff > self.internalFactors["threshold_ttc_survival_state"]:
+            #     return True
 
         return False
 
     def getNewState(self):
+
+        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
+        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
+
         # 1. return to crossing is safe destination is reached or vehicle stoppped
-        if self.canSwitchToCrossing():
-                return PedState.CROSSING
+        if self.canSwitchToCrossing(TG, TTX):
+            return PedState.CROSSING
 
         # 2. any other state means, we need to reset the safe destination
         if self.agent.isSurviving() == False:
@@ -73,13 +79,15 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
         if conflictPoint is None:
             return None
 
-        TG = self.agent.getAvailableTimeGapWithClosestVehicle()
-        TTX = PedUtils.timeToCrossNearestLane(self.map, self.agent.location, self.agent._localPlanner.getDestinationModel().getDesiredSpeed())
         
-        diff = abs(TG - TTX) # may be too far
+        diff = TG - TTX # may be too far
         self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
         self.agent.logger.info(f"difference between TG and TTX: {diff}")
-        if diff < self.internalFactors["threshold_ttc_survival_state"]:
+
+        if diff < 0: # means vehicle will cross first
+            if diff < -2:
+                return PedState.SURVIVAL
+        elif diff < self.internalFactors["threshold_ttc_survival_state"]:
             return PedState.SURVIVAL
 
         return None
@@ -103,7 +111,13 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
         
         oldVelocity = self.agent.getOldVelocity()
 
-        return (desiredVelocity - oldVelocity) / (self.internalFactors["relaxation_time"] * 0.1)
+        force = (desiredVelocity - oldVelocity) / (self.internalFactors["relaxation_time"] * 0.1)
+
+        # stopping case
+        if self.agent.location.distance_2d(self._destination) < 0.5:
+            force = force * -100 # a huge negative force to stop fast
+
+        return force
 
         # now 
 

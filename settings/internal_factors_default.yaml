@@ -1,14 +1,14 @@
 risk_level: "risky"
 
 # Destination related factors
-relaxation_time: 0.5
+relaxation_time: 2
 desired_speed: 2
 desired_distance_gap: 2
 # desired_time_gap: 1
 
 # speed change related factor.
 min_crossing_speed: 0.5
-max_crossing_speed: 3
+max_crossing_speed: 2
 median_crossing_speed: 1 
 speed_change_probability: 0.1
 
@@ -17,10 +17,13 @@ oncoming_vehicle_speed_force: 2000
 acceleration_positive_max: 100
 acceleration_negative_min: -100
 
+# GAP params
+# for TG_multiplier underestimate TG if less than 1 and overestimate TG if > 1
+TG_multiplier: 0.9
 brewer_beta0: 6.2064
 brewer_beta1: -0.9420
 
 # survival state
-threshold_ttc_survival_state: 2
-survival_safety_distance: 5
+threshold_ttc_survival_state: 1.5
+survival_safety_distance: 3
 
