@@ -33,7 +33,15 @@ class ForceModel:
     @abstractmethod
     def name(self):
         raise NotImplementedInterface("name")
-        
+
+    @property
+    def maxAcceleration(self):
+        return self.internalFactors["acceleration_positive_max"]
+
+
+    @property
+    def minAcceleration(self):
+        return self.internalFactors["acceleration_negative_min"]
 
     @abstractmethod
     def calculateForce(self):
@@ -54,6 +62,22 @@ class ForceModel:
     # @abstractmethod
     # def deactivate(self, ticks):
     #     raise NotImplementedInterface("deactivate")
+
+
+    def clipForce(self, force):
+        
+        # clip force
+        if force.length() > self.maxAcceleration:
+            self.logger.info(f"Clipping {force.length()} to {self.maxAcceleration}")
+            force = force.make_unit_vector() *  self.maxAcceleration
+
+        # clip force
+        if force.length() < self.minAcceleration:
+            self.logger.info(f"Clipping {force.length()} to {self.minAcceleration}")
+            force = force.make_unit_vector() *  self.minAcceleration
+        
+        return force
+
 
 
         

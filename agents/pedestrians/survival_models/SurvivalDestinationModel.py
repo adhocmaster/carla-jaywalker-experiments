@@ -31,15 +31,22 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
 
         
     def getNewState(self):
+        # 1. return to crossing is safe destination is reached
+        if self.agent.isSurviving():
+            if self.agent.location.distance_2d(self._destination) < 0.2:
+                return PedState.CROSSING
+
+        # 2. any other state means, we need to reset the safe destination
         if self.agent.isSurviving() == False:
             self.haveSafeDestination = False
         
+        # 3. no survival state if the current state is not crossing
         if self.agent.isCrossing() == False: # wer change state only when crossing
             return None
 
-
         self.agent.logger.info(f"Collecting state from {self.name}")
 
+        # 4. Switch to survival mode if close to a collision
         conflictPoint = self.agent.getPredictedConflictPoint()
         if conflictPoint is None:
             return None
@@ -97,9 +104,12 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
 
         if distanceToDestination < self.internalFactors["survival_safety_distance"]:
             self._destination = firstLocation
+            self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
             return
 
         # TODO improve this
         self._destination = firstLocation
+
+        self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
 
         self.haveSafeDestination = True

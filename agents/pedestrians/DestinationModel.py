@@ -119,8 +119,10 @@ class DestinationModel(ForceModel):
         self.calculateNextDestination()
 
         force = self.calculateForceForDesiredVelocity()
+
+        # now clip force.
         
-        return force
+        return self.clipForce(force)
 
 
 
