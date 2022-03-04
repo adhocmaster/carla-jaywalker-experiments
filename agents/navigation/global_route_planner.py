@@ -132,7 +132,7 @@ class GlobalRoutePlanner(object):
 
     def _build_topology_singleRoad(self):
         # assuming first waypoint is at index 0, and last waypoint is in index -1
-        wps = self._wmap.generate_waypoints(1)
+        wps = self._wmap.generate_waypoints(10)
         first = wps[0]
         last = wps[-1]
         l1, l2 = first.transform.location, last.transform.location
@@ -143,13 +143,19 @@ class GlobalRoutePlanner(object):
         seg_dict['entryxyz'], seg_dict['exitxyz'] = (x1, y1, z1), (x2, y2, z2)
         seg_dict['path'] = []
 
+        for wp in wps:
+            print("_build_topology_singleRoad: wp", wp)
+
         
         endloc = last.transform.location
         if first.transform.location.distance(endloc) > self._sampling_resolution:
             w = first.next(self._sampling_resolution)[0]
             while w.transform.location.distance(endloc) > self._sampling_resolution:
                 seg_dict['path'].append(w)
-                w = w.next(self._sampling_resolution)[0]
+                nextWps =  w.next(self._sampling_resolution)
+                if len(nextWps) == 0:
+                    break
+                w = nextWps[0]
         else:
             seg_dict['path'].append(first.next(self._sampling_resolution)[0])
         self._topology.append(seg_dict)

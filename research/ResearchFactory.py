@@ -33,7 +33,7 @@ class ResearchFactory:
                              port=2000, 
                              defaultLogLevel=logging.INFO, 
                              output_dir="logs", 
-                             map=MapNames.t_junction, 
+                             map=MapNames.straight_road_with_parking, 
                              simulationMode=SimulationMode.ASYNCHRONOUS,
                              simulation_id='setting1'):
 
@@ -43,5 +43,5 @@ class ResearchFactory:
         logPath = os.path.join(output_dir, f"{name}.log")
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
-        research = ResearchCogMod(client, defaultLogLevel, output_dir, simulationMode, simulation_id)
+        research = ResearchCogMod(client, defaultLogLevel, map, output_dir, simulationMode, simulation_id)
         research.run(maxTicks=maxTicks)

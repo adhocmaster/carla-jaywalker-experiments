@@ -18,13 +18,14 @@ class ResearchCogMod(BaseResearch):
 
     def __init__(self, client: carla.Client, 
                  logLevel, 
+                 mapName=MapNames.t_junction, 
                  outputDir:str = "logs", 
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  simulation_id = "setting1"):
         self.name = "Research CogMod"
         super().__init__(name=self.name, 
                          client=client, 
-                         mapName=MapNames.t_junction, 
+                         mapName=mapName, 
                          logLevel=logLevel, 
                          outputDir=outputDir,
                          simulationMode=simulationMode)
