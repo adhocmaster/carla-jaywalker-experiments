@@ -12,28 +12,30 @@ class BaseResearch(ClientUser):
         self.logger = LoggerFactory.getBaseLogger(name, defaultLevel=logLevel, file=logPath)
 
         self.simulationMode = simulationMode
-        if simulationMode == SimulationMode.ASYNCHRONOUS:
-            self.initWorldSettingsAsynchronousMode()
-        else:
-            self.initWorldSettingsSynchronousMode()
 
         self.mapManager = MapManager(client)
         self.mapManager.load(mapName)
-        self.time_delta = 0.007
+        self.time_delta = None
 
         self.visualizer = SimulationVisualization(self.client, self.mapManager)
 
-        # self.initWorldSettings()
+        self.initWorldSettings()
         self.initVisualizer()
 
         pass
 
 
     def initWorldSettings(self):
-        settings = self.world.get_settings()
-        settings.substepping = False
-        settings.fixed_delta_seconds = self.time_delta
-        self.world.apply_settings(settings)
+        # settings = self.world.get_settings()
+        # settings.substepping = False
+        # settings.fixed_delta_seconds = self.time_delta
+        # self.world.apply_settings(settings)
+        
+        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+            self.initWorldSettingsAsynchronousMode()
+        else:
+            self.initWorldSettingsSynchronousMode()
+
         pass
 
     
@@ -44,19 +46,19 @@ class BaseResearch(ClientUser):
         pass
 
     def initWorldSettingsAsynchronousMode(self):
-        time_delta = 0.007
+        self.time_delta = 0.007
         settings = self.world.get_settings()
         settings.substepping = False
-        settings.fixed_delta_seconds = time_delta
+        settings.fixed_delta_seconds = self.time_delta
         self.world.apply_settings(settings)
         pass
 
     def initWorldSettingsSynchronousMode(self):
-        time_delta = 0.05
+        self.time_delta = 0.05
         settings = self.world.get_settings()
         # settings.substepping = False # https://carla.readthedocs.io/en/latest/python_api/#carlaworldsettings
         settings.synchronous_mode = True # Enables synchronous mode
-        settings.fixed_delta_seconds = time_delta # Sets fixed time step
+        settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
         self.world.apply_settings(settings)
         pass
 

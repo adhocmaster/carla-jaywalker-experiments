@@ -16,12 +16,25 @@ from agents.vehicles import VehicleFactory
 from lib import Simulator
 from lib import Utils
 import pandas as pd
+from lib.MapManager import MapNames
+from .SimulationMode import SimulationMode
 
 class Research1v1(BaseResearch):
     
-    def __init__(self, client: carla.Client, logLevel, outputDir:str = "logs") -> None:
+    def __init__(self, client: carla.Client, 
+                 logLevel, 
+                 outputDir:str = "logs", 
+                 simulationMode = SimulationMode.ASYNCHRONOUS,
+                 simulation_id = "setting1"):
+
         self.name = "Research1v1"
-        super().__init__(name=self.name, client=client, logLevel=logLevel, outputDir=outputDir)
+
+        super().__init__(name=self.name, 
+                         client=client, 
+                         mapName=MapNames.circle_t_junctions, 
+                         logLevel=logLevel, 
+                         outputDir=outputDir,
+                         simulationMode=simulationMode)
 
         self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
         self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
