@@ -103,7 +103,14 @@ class GlobalRoutePlanner(object):
         """
         self._topology = []
         # Retrieving waypoints to construct a detailed topology
-        for segment in self._wmap.get_topology():
+
+        topology = self._wmap.get_topology()
+
+        if topology is None or len(topology) == 0:
+            self._build_topology_singleRoad()
+            return
+
+        for segment in topology:
             wp1, wp2 = segment[0], segment[1]
             l1, l2 = wp1.transform.location, wp2.transform.location
             # Rounding off to avoid floating point imprecision
@@ -122,6 +129,34 @@ class GlobalRoutePlanner(object):
             else:
                 seg_dict['path'].append(wp1.next(self._sampling_resolution)[0])
             self._topology.append(seg_dict)
+
+    def _build_topology_singleRoad(self):
+        # assuming first waypoint is at index 0, and last waypoint is in index -1
+        wps = self._wmap.generate_waypoints(1)
+        first = wps[0]
+        last = wps[-1]
+        l1, l2 = first.transform.location, last.transform.location
+        x1, y1, z1, x2, y2, z2 = np.round([l1.x, l1.y, l1.z, l2.x, l2.y, l2.z], 0)
+        first.transform.location, last.transform.location = l1, l2
+        seg_dict = dict()
+        seg_dict['entry'], seg_dict['exit'] = first, last
+        seg_dict['entryxyz'], seg_dict['exitxyz'] = (x1, y1, z1), (x2, y2, z2)
+        seg_dict['path'] = []
+
+        
+        endloc = last.transform.location
+        if first.transform.location.distance(endloc) > self._sampling_resolution:
+            w = first.next(self._sampling_resolution)[0]
+            while w.transform.location.distance(endloc) > self._sampling_resolution:
+                seg_dict['path'].append(w)
+                w = w.next(self._sampling_resolution)[0]
+        else:
+            seg_dict['path'].append(first.next(self._sampling_resolution)[0])
+        self._topology.append(seg_dict)
+
+
+
+
 
     def _build_graph(self):
         """
