@@ -4,9 +4,11 @@ from .ClientUser import ClientUser
 from .LoggerFactory import LoggerFactory
 import traceback
 
+from research.SimulationMode import SimulationMode
+
 class Simulator(ClientUser):
 
-    def __init__(self, client, onTickers=None, onEnders=None, useThreads=False, sleep=0.05):
+    def __init__(self, client, onTickers=None, onEnders=None, useThreads=False, sleep=0.05, simulationMode=SimulationMode.ASYNCHRONOUS):
         self.name = "Simulator"
         self.logger = LoggerFactory.create(self.name)
         super().__init__(client)
@@ -20,6 +22,8 @@ class Simulator(ClientUser):
         self.onEnders = [] # methods to call on end
         if onEnders is not None:
             self.onEnders = onEnders
+
+        self.simulationMode = simulationMode
 
     
     def addOnticker(self, onTicker):
@@ -47,7 +51,12 @@ class Simulator(ClientUser):
 
         try:
             for i in range(maxTicks):
-                world_snapshot = self.world.wait_for_tick()
+                if self.simulationMode == SimulationMode.SYNCHRONOUS:
+                    world_snapshot = self.world.tick() # synchronous mode
+                    print(f'world_snapshot: {world_snapshot}, i: {i}')
+                if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+                    world_snapshot = self.world.wait_for_tick() # asynchronous mode 
+                
                 if i % 100 == 0:
                     print(f"world ticks {i}")
                 for onTicker in self.onTickers:
