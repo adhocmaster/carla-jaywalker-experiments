@@ -41,6 +41,7 @@ class Research1v1(BaseResearch):
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
         self.episodeNumber = 0
+        self.episodeTimeStep = 0
 
         self.setup()
 
@@ -72,7 +73,8 @@ class Research1v1(BaseResearch):
 
         self.simulator = None # populated when run
 
-        self.initStats()
+        self.statDataframe = pd.DataFrame()
+        self.initStatDict()
 
     
     def getWalkerSetting(self):
@@ -177,6 +179,7 @@ class Research1v1(BaseResearch):
     def run(self, maxTicks=1000):
 
         self.episodeNumber = 1 # updated when resetted
+        
 
         # self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
         # self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
@@ -187,7 +190,7 @@ class Research1v1(BaseResearch):
         self.createWalker()
         self.world.wait_for_tick()
 
-        onTickers = [self.visualizer.onTick, self.onTick, self.restart]
+        onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart
         onEnders = [self.onEnd]
         self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 
@@ -204,10 +207,15 @@ class Research1v1(BaseResearch):
             # 1. recreated vehicle
             self.recreateVehicle()
             # 2. reset walker
-            self.resetWalker(sameOrigin=False)
+            self.resetWalker(sameOrigin=True)
 
             # 3. episode
             self.episodeNumber += 1
+            self.episodeTimeStep = 0
+
+            # 4. update statDataframe
+
+            self.updateStatDataframe()
 
     
     def recreateVehicle(self):
@@ -239,6 +247,8 @@ class Research1v1(BaseResearch):
         self.saveStats()
 
     def onTick(self, world_snapshot):
+
+        self.episodeTimeStep += 1
 
         self.collectStats(world_snapshot)
 
@@ -300,8 +310,16 @@ class Research1v1(BaseResearch):
         self.vehicle.apply_control(control)
         pass
 
+    def updateStatDataframe(self):
+        # 1. make a dataframe from self.statDict
+        df = pd.DataFrame.from_dict(self.statDict)
+        # 2. merge it with the statDataframe
+        self.statDataframe = pd.concat([self.statDataframe, df], ignore_index=True)
+        # 3. clear self.statDict
+        self.initStatDict()
 
-    def initStats(self):
+
+    def initStatDict(self):
         # we will save trajectories of all the walkers and vehicles (location, speed, velocity). Time interval is not saved.
 
         # self.stats = pd.DataFrame(columns=['walker_trajectories'])
@@ -319,6 +337,7 @@ class Research1v1(BaseResearch):
 
         self.statDict = {
             "episode": [], 
+            "timestep": [],
             "v_x": [], 
             "v_y": [], 
             "v_speed": [], 
@@ -335,13 +354,18 @@ class Research1v1(BaseResearch):
     def collectStats(self, world_snapshot):
 
         self.statDict["episode"].append(self.episodeNumber)
+        self.statDict["timestep"].append(self.episodeTimeStep)
         self.statDict["v_x"].append(self.vehicle.get_location().x)
         self.statDict["v_y"].append(self.vehicle.get_location().y)
         self.statDict["v_speed"].append(self.vehicle.get_velocity().length())
         # self.statDict["v_direction"].append(self.episodeNumber)
         self.statDict["w_x"].append(self.walkerAgent.location.x)
         self.statDict["w_y"].append(self.walkerAgent.location.y)
-        self.statDict["w_speed"].append(self.walkerAgent.speed)
+
+        if self.walkerAgent.isMovingTowardsDestination():
+            self.statDict["w_speed"].append(self.walkerAgent.speed)
+        else:
+            self.statDict["w_speed"].append(-self.walkerAgent.speed)
         # self.statDict["w_direction"].append(self.episodeNumber)
 
         pass
@@ -350,6 +374,7 @@ class Research1v1(BaseResearch):
     def saveStats(self):
         dateStr = date.today().strftime("%m-%d-%Y")
         statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
-        df = pd.DataFrame.from_dict(self.statDict)
-        df.to_csv(statsPath)
+        # df = pd.DataFrame.from_dict(self.statDict)
+        # df.to_csv(statsPath, index=False)
+        self.statDataframe.to_csv(statsPath, index=False)
         pass

@@ -4,6 +4,7 @@ import random
 from shapely.geometry import LineString, Point
 from typing import List, Dict
 import matplotlib.pyplot as plt
+import numpy as np
 
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
@@ -94,6 +95,19 @@ class Utils:
         ])
 
         return lineS1
+
+    @staticmethod
+    def angleBetweenDirections(d1: carla.Vector3D, d2: carla.Vector3D):
+
+        d1 = (d1.x, d1.y, d1.z)
+        d2 = (d2.x, d2.y, d2.z)
+        return np.arccos(np.clip(np.dot(d1, d2), -1.0, 1.0))
+
+    @staticmethod
+    def angleBetweenVectors(v1: carla.Vector3D, v2: carla.Vector3D):
+        d1 = v1.make_unit_vector()
+        d2 = v2.make_unit_vector()
+        return np.arccos(np.clip(np.dot(d1, d2), -1.0, 1.0))
 
 
     @staticmethod

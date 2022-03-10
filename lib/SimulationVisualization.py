@@ -229,7 +229,7 @@ class SimulationVisualization(ClientUser):
             :param z: height in meters
         """
         begin = location + carla.Location(z=z)
-        if force.length() == 0:
+        if force.length() < 0.001:
             return
         direction = force.make_unit_vector()
         magnitude = force.length()

@@ -132,6 +132,9 @@ class PedestrianAgent(InfoAgent):
             return True
         return False
 
+    def isMovingTowardsDestination(self):
+        return self._localPlanner.isMovingTowardsDestination()
+
     #endregion 
     
     # region visualization

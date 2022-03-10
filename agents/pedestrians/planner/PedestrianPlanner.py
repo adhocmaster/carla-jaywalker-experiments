@@ -8,6 +8,7 @@ from agents.pedestrians.factors import InternalFactors
 from agents.pedestrians.factors.CrossingFactorModel import CrossingFactorModel
 from agents.pedestrians.survival_models.SurvivalModel import SurvivalModel
 from typing import List, Dict
+import numpy as np
 
 class PedestrianPlanner:
     """A planner has the state of the world, state of the pedestrian, and factors of the pedestrian. It does not plan any path or trajectory. 
@@ -84,6 +85,29 @@ class PedestrianPlanner:
     @property
     def destination(self):
         return self._destination
+
+        
+    def isMovingTowardsDestination(self):
+
+        """Based on the angle between the desired direction and current direction
+        """
+
+        #TODO
+        currentVelocity = self.agent.velocity
+
+        if currentVelocity.length() <0.001:
+            return True
+        
+        currentDirection = currentVelocity.make_unit_vector()
+        desiredDirection = self.getDestinationModel().getDesiredDirection()
+
+        angle = abs(Utils.angleBetweenDirections(currentDirection, desiredDirection))
+        if angle > (np.pi / 2):
+            return False
+        
+        return True
+
+
 
     def onTickStart(self, world_snapshot):
         self.locations.append(self.agent.location)
