@@ -202,19 +202,28 @@ class Research1v1(BaseResearch):
 
 
     def restart(self, world_snapshot):
+
+        killCurrentEpisode = False
         
         if self.walkerAgent.isFinished():
+            self.episodeNumber += 1
+            self.episodeTimeStep = 0
+            killCurrentEpisode = True
+
+        if self.episodeTimeStep > 200:
+            self.episodeTimeStep = 0
+            killCurrentEpisode = True
+            self.logger.info("Killing current episode as it takes more than 200 ticks")
+        
+        if killCurrentEpisode:
+
             # 1. recreated vehicle
             self.recreateVehicle()
+
             # 2. reset walker
             self.resetWalker(sameOrigin=True)
 
-            # 3. episode
-            self.episodeNumber += 1
-            self.episodeTimeStep = 0
-
-            # 4. update statDataframe
-
+            # 3. update statDataframe
             self.updateStatDataframe()
 
     
@@ -345,6 +354,7 @@ class Research1v1(BaseResearch):
             "w_x": [], 
             "w_y": [], 
             "w_speed": [], 
+            "w_state": []
             # "w_direction": []
         }
 
@@ -367,6 +377,7 @@ class Research1v1(BaseResearch):
         else:
             self.statDict["w_speed"].append(-self.walkerAgent.speed)
         # self.statDict["w_direction"].append(self.episodeNumber)
+        self.statDict["w_state"].append(self.walkerAgent.state.value)
 
         pass
 
@@ -376,5 +387,9 @@ class Research1v1(BaseResearch):
         statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
         # df = pd.DataFrame.from_dict(self.statDict)
         # df.to_csv(statsPath, index=False)
+
+        if len(self.statDataframe) == 0:
+            self.logger.warn("Empty stats. It means no episode was completed in this run")
+            return
         self.statDataframe.to_csv(statsPath, index=False)
         pass

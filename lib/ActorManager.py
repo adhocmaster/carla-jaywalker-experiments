@@ -215,15 +215,15 @@ class ActorManager:
                 vel2 = actorVelocity
 
             start2 = self.actor.get_location()
-            self.logger.info(f"lastWpLocation: {lastWpLocation}")
-            self.logger.info(f"vel1: {vel1}")
-            self.logger.info(f"start1: {start1}")
-            self.logger.info(f"vel2: {vel2}")
-            self.logger.info(f"start2: {start2}")
+            self.logger.debug(f"lastWpLocation: {lastWpLocation}")
+            self.logger.debug(f"vel1: {vel1}")
+            self.logger.debug(f"start1: {start1}")
+            self.logger.debug(f"vel2: {vel2}")
+            self.logger.debug(f"start2: {start2}")
 
             self._tickCache["predictedConflictPoint"] = Utils.getConflictPoint(vel1, start1, vel2, start2)
         else:
-            self.logger.info("no waypoints towards ped location")
+            self.logger.debug("no waypoints towards ped location")
             self._tickCache["predictedConflictPoint"] = None
 
         return self._tickCache["predictedConflictPoint"]
@@ -259,10 +259,10 @@ class ActorManager:
                 vel2 = actorVelocity
 
             start2 = self.actor.get_location()
-            self.logger.info(f"vel1: {vel1}")
-            self.logger.info(f"start1: {start1}")
-            self.logger.info(f"vel2: {vel2}")
-            self.logger.info(f"start2: {start2}")
+            self.logger.debug(f"vel1: {vel1}")
+            self.logger.debug(f"start1: {start1}")
+            self.logger.debug(f"vel2: {vel2}")
+            self.logger.debug(f"start2: {start2}")
 
 
             collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)

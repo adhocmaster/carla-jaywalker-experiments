@@ -216,7 +216,7 @@ class PedestrianAgent(InfoAgent):
 
         if self.climbSidewalkIfNeeded():
             # return a stop control
-            return self._localPlanner.getStopControl()
+            return self._localPlanner.getSidewalkClimbedControl()
 
         control = self._localPlanner.calculateNextControl()
 
@@ -290,10 +290,23 @@ class PedestrianAgent(InfoAgent):
             # velocity = self.speedToVelocity(self.desired_speed)
             velocity = self.speedToVelocity(2.0)
 
+            # self._walker.set_location(
+            #     carla.Location(
+            #         location.x + velocity.x * self.time_delta * 5,
+            #         location.y + velocity.y * self.time_delta * 5,
+            #         location.z + 0.5
+            # ))
+
+            # issue with velocity is when it's close to 0 nothing works.
+            
+            desiredDirection = self._localPlanner.desiredDirection
+
+            translation = desiredDirection * 0.5
+
             self._walker.set_location(
                 carla.Location(
-                    location.x + velocity.x * self.time_delta * 5,
-                    location.y + velocity.y * self.time_delta * 5,
+                    location.x + translation.x,
+                    location.y + translation.y,
                     location.z + 0.5
             ))
             return True

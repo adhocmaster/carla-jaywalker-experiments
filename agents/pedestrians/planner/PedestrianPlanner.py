@@ -66,6 +66,10 @@ class PedestrianPlanner:
         return self.internalFactors["desired_speed"] 
 
     @property
+    def desiredDirection(self):
+        return self.getDestinationModel().getDesiredDirection()
+
+    @property
     def maxSpeed(self):
         return self.internalFactors["max_crossing_speed"]
 
@@ -99,7 +103,7 @@ class PedestrianPlanner:
             return True
         
         currentDirection = currentVelocity.make_unit_vector()
-        desiredDirection = self.getDestinationModel().getDesiredDirection()
+        desiredDirection = self.desiredDirection
 
         angle = abs(Utils.angleBetweenDirections(currentDirection, desiredDirection))
         if angle > (np.pi / 2):
@@ -140,6 +144,16 @@ class PedestrianPlanner:
         control = carla.WalkerControl(
             direction = oldControl.direction,
             speed = 0,
+            jump = False
+        )
+        return control
+
+    def getSidewalkClimbedControl(self):
+        oldControl = self.agent.getOldControl()
+        
+        control = carla.WalkerControl(
+            direction = oldControl.direction,
+            speed = 0.5,
             jump = False
         )
         return control
