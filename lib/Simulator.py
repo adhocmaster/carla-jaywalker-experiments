@@ -47,20 +47,15 @@ class Simulator(ClientUser):
             self.loop(maxTicks)
 
     
+    def onEnd(self):
+        for onEnder in self.onEnders:
+            onEnder()
+    
     def loop(self, maxTicks):
 
         try:
             for i in range(maxTicks):
-                if self.simulationMode == SimulationMode.SYNCHRONOUS:
-                    world_snapshot = self.world.tick() # synchronous mode
-                    print(f'world_snapshot: {world_snapshot}, i: {i}')
-                if self.simulationMode == SimulationMode.ASYNCHRONOUS:
-                    world_snapshot = self.world.wait_for_tick() # asynchronous mode 
-                
-                if i % 100 == 0:
-                    print(f"world ticks {i}")
-                for onTicker in self.onTickers:
-                    onTicker(world_snapshot)
+                self.tick(i)
                 time.sleep(self.sleep)
                 
         except Exception as e:
@@ -70,8 +65,17 @@ class Simulator(ClientUser):
             self.onEnd()
         
 
-    
-    def onEnd(self):
-        for onEnder in self.onEnders:
-            onEnder()
+
+    def tick(self, i):
+
+        if self.simulationMode == SimulationMode.SYNCHRONOUS:
+            world_snapshot = self.world.tick() # synchronous mode
+            print(f'world_snapshot: {world_snapshot}, i: {i}')
+        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+            world_snapshot = self.world.wait_for_tick() # asynchronous mode 
+        
+        if i % 100 == 0:
+            print(f"world ticks {i}")
+        for onTicker in self.onTickers:
+            onTicker(world_snapshot)
 

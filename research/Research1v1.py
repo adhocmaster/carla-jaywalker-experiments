@@ -13,7 +13,7 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
-from lib import Simulator
+from lib import Simulator, EpisodeSimulator
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
@@ -190,9 +190,11 @@ class Research1v1(BaseResearch):
         self.createWalker()
         self.world.wait_for_tick()
 
-        onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart
+        # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
+        onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
         onEnders = [self.onEnd]
-        self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
+        terminalSignalers = [self.walkerAgent.isFinished]
+        self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders)
 
         self.simulator.run(maxTicks)
 
