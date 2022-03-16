@@ -1,3 +1,4 @@
+from xmlrpc.client import Boolean
 from .Simulator import Simulator
 import time
 
@@ -38,13 +39,24 @@ class EpisodeSimulator(Simulator):
     
 
     
-    def loop(self, maxTicks):
+    def loop(self, maxTicks) -> Boolean:
+        """Returns true if episode successfully ends
+
+        Args:
+            maxTicks (_type_): _description_
+
+        Returns:
+            bool: True if episode successfully ends, False otherwise.
+
+        """
 
         try:
             for i in range(maxTicks):
                 self.tick(i)
                 if self._isDone():
-                    raise Exception("Episode finished")
+                    # raise Exception("Episode finished")
+                    self.logger.info("Episode finished")
+                    return True
                 time.sleep(self.sleep)
                 
         except Exception as e:
@@ -52,6 +64,8 @@ class EpisodeSimulator(Simulator):
             self.logger.exception(e)
         finally:
             self.onEnd()
+        
+        return False
 
     def tick(self, i):
 

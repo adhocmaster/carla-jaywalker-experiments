@@ -77,6 +77,8 @@ class Research1v1(BaseResearch):
         self.initStatDict()
 
     
+    #region actor generation
+
     def getWalkerSetting(self):
         walkerSettings = self.settingsManager.getWalkerSettings()
         walkerSetting = walkerSettings[1]
@@ -86,7 +88,6 @@ class Research1v1(BaseResearch):
         vehicleSetting = self.settingsManager.getVehicleSettings()
         vehicleSetting = vehicleSetting[0]
         return vehicleSetting
-
 
     def createWalker(self):
         
@@ -174,6 +175,48 @@ class Research1v1(BaseResearch):
                 raise Exception("Cannot find a destination")
         return destination
 
+    def recreateVehicle(self):
+        # destroy current one
+        # self.simulator.removeOnTicker()
+        self.logger.warn(f"Recreating vehicle")
+        self.vehicleFactory.destroy(self.vehicle)
+        self.vehicleAgent = None
+        self.vehicle = None
+        self.createVehicle()
+
+    def resetWalker(self, sameOrigin=True):
+
+        if sameOrigin == True:
+            
+            self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
+            self.walkerAgent.setDestination(self.walkerSetting.destination)
+            return 
+
+        if self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
+            self.walkerAgent.reset()
+            self.walkerAgent.setDestination(self.walkerSetting.destination)
+        else:
+            self.walkerAgent.reset()
+            self.walkerAgent.setDestination(self.walkerSetting.source)
+
+    
+    def createDynamicAgents(self):
+        
+        self.createVehicle()
+        self.createWalker()
+        pass
+
+    def recreateDynamicAgents(self):
+        # 1. recreated vehicle
+        self.recreateVehicle()
+
+        # 2. reset walker
+        self.resetWalker(sameOrigin=True)
+
+        pass
+    
+    
+    #end region
 
     #region simulation
     def run(self, maxTicks=1000):
@@ -186,8 +229,7 @@ class Research1v1(BaseResearch):
 
         # return
 
-        self.createVehicle()
-        self.createWalker()
+        self.createDynamicAgents()
         self.world.wait_for_tick()
 
         # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
@@ -219,39 +261,11 @@ class Research1v1(BaseResearch):
         
         if killCurrentEpisode:
 
-            # 1. recreated vehicle
-            self.recreateVehicle()
-
-            # 2. reset walker
-            self.resetWalker(sameOrigin=True)
-
+            self.recreateDynamicAgents()
             # 3. update statDataframe
             self.updateStatDataframe()
 
     
-    def recreateVehicle(self):
-        # destroy current one
-        # self.simulator.removeOnTicker()
-        self.logger.warn(f"Recreating vehicle")
-        self.vehicleFactory.destroy(self.vehicle)
-        self.vehicleAgent = None
-        self.vehicle = None
-        self.createVehicle()
-
-    def resetWalker(self, sameOrigin=True):
-
-        if sameOrigin == True:
-            
-            self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
-            self.walkerAgent.setDestination(self.walkerSetting.destination)
-            return 
-
-        if self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
-            self.walkerAgent.reset()
-            self.walkerAgent.setDestination(self.walkerSetting.destination)
-        else:
-            self.walkerAgent.reset()
-            self.walkerAgent.setDestination(self.walkerSetting.source)
     
     def onEnd(self):
         self.destoryActors()

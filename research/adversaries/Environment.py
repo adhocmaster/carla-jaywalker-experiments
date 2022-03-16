@@ -1,6 +1,7 @@
 from ...lib import NotImplementedInterface
 from abc import abstractmethod
 from ...research import BaseResearch
+from ...lib import EpisodeSimulator
 
 class Environment:
 
@@ -10,6 +11,7 @@ class Environment:
 
     def __init__(self, research: BaseResearch) -> None:
         self.research = research
+        self.reset()
         pass
 
     @abstractmethod
