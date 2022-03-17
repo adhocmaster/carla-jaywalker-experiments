@@ -25,7 +25,8 @@ class Research1v1(BaseResearch):
                  logLevel, 
                  outputDir:str = "logs", 
                  simulationMode = SimulationMode.ASYNCHRONOUS,
-                 simulation_id = "setting1"):
+                 simulation_id = "setting1",
+                 stats=False):
 
         self.name = "Research1v1"
 
@@ -42,6 +43,7 @@ class Research1v1(BaseResearch):
 
         self.episodeNumber = 0
         self.episodeTimeStep = 0
+        self.stats = stats
 
         self.setup()
 
@@ -76,6 +78,19 @@ class Research1v1(BaseResearch):
         self.statDataframe = pd.DataFrame()
         self.initStatDict()
 
+    
+    def reset(self):
+        """Does not reset episode number
+        """
+        self.pedFactory.reset()
+        self.vehicleFactory.reset()
+        self.episodeTimeStep = 0
+
+        super().reset()
+        self.episodeTimeStep = 0
+        self.createDynamicAgents()
+
+        
     
     #region actor generation
 
@@ -219,9 +234,35 @@ class Research1v1(BaseResearch):
     #end region
 
     #region simulation
-    def run(self, maxTicks=1000):
 
+    def setupSimulator(self, episodic=False, simulationMode: SimulationMode=SimulationMode.ASYNCHRONOUS):
+        """Must be called after all actors are created.
+
+        Args:
+            episodic (bool, optional): _description_. Defaults to False.
+        """
         self.episodeNumber = 1 # updated when resetted
+
+        onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
+        onEnders = [self.onEnd]
+        terminalSignalers = [self.walkerAgent.isFinished]
+
+        if episodic:
+            self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders, simulationMode=simulationMode)
+        else:
+            onTickers.append(self.restart)
+            self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=simulationMode)
+
+
+
+    def run(self, maxTicks=1000):
+        """Runs in asynchronous mode
+
+        Args:
+            maxTicks (int, optional): _description_. Defaults to 1000.
+        """
+
+        # self.episodeNumber = 1 # updated when resetted
         
 
         # self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
@@ -233,10 +274,11 @@ class Research1v1(BaseResearch):
         self.world.wait_for_tick()
 
         # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
-        onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
-        onEnders = [self.onEnd]
-        terminalSignalers = [self.walkerAgent.isFinished]
-        self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders)
+        # onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
+        # onEnders = [self.onEnd]
+        # terminalSignalers = [self.walkerAgent.isFinished]
+        # self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders)
+        self.setupSimulator(False)
 
         self.simulator.run(maxTicks)
 
@@ -345,6 +387,9 @@ class Research1v1(BaseResearch):
 
 
     def initStatDict(self):
+
+        if not self.stats:
+            return
         # we will save trajectories of all the walkers and vehicles (location, speed, velocity). Time interval is not saved.
 
         # self.stats = pd.DataFrame(columns=['walker_trajectories'])
@@ -378,6 +423,8 @@ class Research1v1(BaseResearch):
         pass
     
     def collectStats(self, world_snapshot):
+        if not self.stats:
+            return
 
         self.statDict["episode"].append(self.episodeNumber)
         self.statDict["timestep"].append(self.episodeTimeStep)
@@ -399,6 +446,9 @@ class Research1v1(BaseResearch):
 
 
     def saveStats(self):
+        if not self.stats:
+            return
+
         dateStr = date.today().strftime("%m-%d-%Y")
         statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
         # df = pd.DataFrame.from_dict(self.statDict)

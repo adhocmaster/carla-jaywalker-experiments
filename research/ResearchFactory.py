@@ -16,7 +16,16 @@ class ResearchFactory:
         pass
 
     @staticmethod
-    def createResearch1v1(maxTicks=100, host="127.0.0.1", port=2000, defaultLogLevel=logging.INFO, output_dir="logs", map=MapNames.circle_t_junctions) -> Research1v1:
+    def createResearch1v1(
+                            maxTicks=100, 
+                            host="127.0.0.1", 
+                            port=2000, 
+                            defaultLogLevel=logging.INFO, 
+                            output_dir="logs", 
+                            map=MapNames.circle_t_junctions,
+                            simulationMode = SimulationMode.ASYNCHRONOUS,
+                            stats=True
+                            ) -> Research1v1:
 
         print(f"research chosen : R1v1 with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
         port = int(port)
@@ -24,7 +33,7 @@ class ResearchFactory:
         logPath = os.path.join(output_dir, f"{name}.log")
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
-        research = Research1v1(client, defaultLogLevel, output_dir)
+        research = Research1v1(client, defaultLogLevel, output_dir, simulationMode=simulationMode, stats=stats)
         research.run(maxTicks=maxTicks)
     
     @staticmethod

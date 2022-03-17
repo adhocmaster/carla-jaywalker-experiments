@@ -26,6 +26,11 @@ class PedestrianFactory(ClientUser):
         self.logger = LoggerFactory.create(self.name)
         super().__init__(client)
 
+        
+        self.walkers = []
+        self.collisionSensors = {}
+        self.obstacleDetectors = {}
+
         self.visualizer = visualizer
         self.time_delta = time_delta
 
@@ -39,7 +44,7 @@ class PedestrianFactory(ClientUser):
 
     
     def getWalkers(self):
-        return PedestrianFactory.walkers
+        return self.walkers
 
     def create(self):
         walkerBp = random.choice(self.pedBps)
@@ -47,15 +52,20 @@ class PedestrianFactory(ClientUser):
 
     
     def destroy(self, walker: carla.Walker):
-        PedestrianFactory.walkers.remove(walker)
+        self.walkers.remove(walker)
         walker.destroy()
+
+
+    def reset(self):
+        for walker in self.walkers:
+            self.destroy(walker)
 
     
     def spawn(self, spawnPoint):
         walkerBp = self.create()
         # walkerBp.set_attribute('is_invincible', 'true')  
         walker = self.world.spawn_actor(walkerBp, spawnPoint)
-        PedestrianFactory.walkers.append(walker)
+        self.walkers.append(walker)
         return walker
     
     def spawnWithCollision(self, spawnPoint):

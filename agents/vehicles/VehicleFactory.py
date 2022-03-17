@@ -15,13 +15,15 @@ from lib import LoggerFactory
 
 class VehicleFactory(ClientUser):
 
-    vehicles = []
     
     def __init__(self, client: carla.Client, time_delta=0.1, visualizer=None):
         
         self.name = "VehicleFactory"
         self.logger = LoggerFactory.create(self.name)
         super().__init__(client)
+
+        
+        self.vehicles = []
 
         self.visualizer = visualizer
         self.time_delta = time_delta
@@ -31,7 +33,7 @@ class VehicleFactory(ClientUser):
 
         
     def getVehicles(self):
-        return VehicleFactory.vehicles
+        return self.vehicles
 
         
     def create(self):
@@ -40,14 +42,19 @@ class VehicleFactory(ClientUser):
 
     
     def destroy(self, vehicle: carla.Vehicle):
-        VehicleFactory.vehicles.remove(vehicle)
+        self.vehicles.remove(vehicle)
         vehicle.destroy()
+
+
+    def reset(self):
+        for vehicle in self.vehicles:
+            self.destroy(vehicle)
 
     
     def spawn(self, spawnPoint):
         vehicleBp = self.create()
         vehicle = self.world.spawn_actor(vehicleBp, spawnPoint)
-        VehicleFactory.vehicles.append(vehicle)
+        self.vehicles.append(vehicle)
         return vehicle
 
     

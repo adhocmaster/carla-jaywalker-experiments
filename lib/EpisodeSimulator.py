@@ -31,7 +31,7 @@ class EpisodeSimulator(Simulator):
             self.terminalSignalers = terminalSignalers # this methods needs to be called to check for terminal states
 
     
-    def _isDone(self):
+    def isDone(self):
         for terminalSignaler in self.terminalSignalers:
             if terminalSignaler():
                 return True
@@ -53,11 +53,10 @@ class EpisodeSimulator(Simulator):
         try:
             for i in range(maxTicks):
                 self.tick(i)
-                if self._isDone():
+                if self.isDone():
                     # raise Exception("Episode finished")
                     self.logger.info("Episode finished")
                     return True
-                time.sleep(self.sleep)
                 
         except Exception as e:
             # traceback.print_exc()
@@ -79,3 +78,5 @@ class EpisodeSimulator(Simulator):
             print(f"world ticks {i}")
         for onTicker in self.onTickers:
             onTicker(world_snapshot)
+
+        time.sleep(self.sleep)

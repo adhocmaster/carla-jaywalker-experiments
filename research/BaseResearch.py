@@ -8,9 +8,11 @@ class BaseResearch(ClientUser):
     def __init__(self, name, client: carla.Client, mapName, logLevel, outputDir:str = "logs", simulationMode = SimulationMode.ASYNCHRONOUS) -> None:
         super().__init__(client)
 
+        self.name = name
         self.mapName = mapName
-        
+        self.logLevel = logLevel
         self.outputDir = outputDir
+
         logPath = os.path.join(outputDir, f"{name}.log")
         self.logger = LoggerFactory.getBaseLogger(name, defaultLevel=logLevel, file=logPath)
 
@@ -31,6 +33,8 @@ class BaseResearch(ClientUser):
         self.mapManager = MapManager(self.client)
         self.mapManager.load(self.mapName)
 
+    def reset(self):
+        self.client.reload_world(False)
 
 
     def initWorldSettings(self):
@@ -76,5 +80,9 @@ class BaseResearch(ClientUser):
     @abstractmethod
     def createDynamicAgents(self):
         raise NotImplementedInterface("createDynamicAgents")
+
+    @abstractmethod
+    def setupSimulator(self):
+        raise NotImplementedInterface("setupSimulator")
 
     
