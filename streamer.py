@@ -3,6 +3,7 @@ import carla
 from carla import ColorConverter as cc
 import os
 import numpy as np
+import time
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -26,21 +27,19 @@ if not os.path.exists(path):
 
 imW = 1000
 imH = 562
+lastTime = time.time()
 
-def process_img_wrapper(q):
+def process_img_wrapper(q, resetCameraQ):
 
 
     def process_img(image):
-        nonlocal q
+        nonlocal q, resetCameraQ
         print("process img called")
         image.convert(cc.Raw)
         array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
         array = np.reshape(array, (image.height, image.width, 4))
         array = array[:, :, :3]
         array = array[:, :, ::-1]
-        # print(type(image.raw_data))
-        # image.save_to_disk(f'{path}/image.frame_number')
-        # plt.imshow(array)
         im = Image.fromarray(array)
         im = im.crop((imW * 0.2, 0, imW * 0.8, imH))
         # im.save(f'{path}/{image.frame_number}.png')
@@ -55,16 +54,17 @@ def main():
     #Create a queue to share data between process
     global q
     q = multiprocessing.Queue()
+    resetCameraQ = multiprocessing.Queue()
 
     #Create and start the simulation process
-    simulate=multiprocessing.Process(None,simulation,args=(q,))
+    simulate=multiprocessing.Process(None,simulation,args=(q, resetCameraQ))
     simulate.start()
 
     #Create the base plot
     plot()
 
     #Call a function to update the plot when there is new data
-    updateplot(q)
+    updateplot(q, resetCameraQ)
 
     window.mainloop()
     # simulate.join()
@@ -84,8 +84,8 @@ def plot():    #Function to create the base plot, make sure to make global the l
     # canvas.image = img
     pass
 
-def updateplot(q):
-    global window, canvas
+def updateplot(q, resetCameraQ):
+    global window, canvas, lastTime
     # print(f"updateplot queue size {q.qsize()}")
     try:       #Try to check if there is data in the queue
         result=q.get_nowait()
@@ -104,21 +104,22 @@ def updateplot(q):
         # img = ImageTk.PhotoImage(file=f'{path}/225196.png')
         canvas.create_image(0, 0, anchor=NW, image=img)
         canvas.image = img
-        # imgLabel = Label(image=img)
-        
-        # imgLabel.place(x=50, y=50)
+        lastTime = time.time()
+
     except queue.Empty:
         # print("empty")
-        window.after(100, updateplot, q)
+        window.after(100, updateplot, q, resetCameraQ)
+        if (time.time() - lastTime) > 2:
+            resetCameraQ.put(True)
         return
     except:
         # something else happened with queue. shut down.
         print("Shutting down update plot")
         return
-    window.after(100, updateplot, q)
+    window.after(100, updateplot, q, resetCameraQ)
 
 
-def simulation(q):
+def simulation(q, resetCameraQ):
     # iterations = xrange(100)
     # for i in iterations:
     #     if not i % 10:
@@ -128,8 +129,30 @@ def simulation(q):
     # q.put('Q')
 
 
+    world, camera = initCamera(q, resetCameraQ)
+
+    print("started simulation")
+
+    while True:
+        try:
+            simulatorWait(world, q, resetCameraQ)
+        except KeyboardInterrupt:
+            camera.destroy()
+            q.close()
+            resetCameraQ.close()
+            return
+        except RuntimeError:
+            print(f"runtime error, recreating world and camera")
+            camera.stop()
+            camera.destroy()
+            world, camera = initCamera(q, resetCameraQ)
+
+def initCamera(q, resetCameraQ):
+
+    print(f"creating camera")
+    
     client = carla.Client('127.0.0.1', 2000)
-    client.set_timeout(5.0)
+    client.set_timeout(2.0)
 
     world = client.get_world()
     spectator = world.get_actors().filter('spectator')[0]
@@ -141,16 +164,22 @@ def simulation(q):
     camera_bp.set_attribute('sensor_tick', '0.15')
 
     camera = world.spawn_actor(camera_bp, spectator.get_transform())
-    process_img = process_img_wrapper(q)
+    process_img = process_img_wrapper(q, resetCameraQ)
     camera.listen(process_img)
-    print("started simulation")
 
+    return world, camera
+
+
+def simulatorWait(world, q, resetCameraQ):
+    print(f"simulatorWait")
+    world.wait_for_tick()
     try:
-        while True:
-            world.wait_for_tick()
-    except KeyboardInterrupt:
-        camera.destroy
-        q.close()
+        result=resetCameraQ.get_nowait()
+        # means camera no longder exists
+        world, camera = initCamera(q, resetCameraQ)
+    except queue.Empty:
+        simulatorWait(world, q, resetCameraQ)
+        pass
 
 if __name__ == '__main__':
     main()
