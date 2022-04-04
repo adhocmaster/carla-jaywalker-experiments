@@ -1,3 +1,4 @@
+from http import client
 import tkinter
 import carla
 from carla import ColorConverter as cc
@@ -34,7 +35,7 @@ def process_img_wrapper(q, resetCameraQ):
 
     def process_img(image):
         nonlocal q, resetCameraQ
-        print("process img called")
+        # print("process img called")
         image.convert(cc.Raw)
         array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
         array = np.reshape(array, (image.height, image.width, 4))
@@ -44,7 +45,7 @@ def process_img_wrapper(q, resetCameraQ):
         im = im.crop((imW * 0.2, 0, imW * 0.8, imH))
         # im.save(f'{path}/{image.frame_number}.png')
         q.put(im)
-        print(f"process_img qsize {q.qsize()}")
+        # print(f"process_img qsize {q.qsize()}")
 
     return process_img
 
@@ -109,7 +110,8 @@ def updateplot(q, resetCameraQ):
     except queue.Empty:
         # print("empty")
         window.after(100, updateplot, q, resetCameraQ)
-        if (time.time() - lastTime) > 2:
+        if (time.time() - lastTime) > 5:
+            lastTime = time.time()
             resetCameraQ.put(True)
         return
     except:
@@ -131,12 +133,13 @@ def simulation(q, resetCameraQ):
 
     world, camera = initCamera(q, resetCameraQ)
 
-    print("started simulation")
+    print("started streaming")
 
     while True:
         try:
-            simulatorWait(world, q, resetCameraQ)
+            simulatorWait(world, camera, q, resetCameraQ)
         except KeyboardInterrupt:
+            camera.stop()
             camera.destroy()
             q.close()
             resetCameraQ.close()
@@ -166,19 +169,22 @@ def initCamera(q, resetCameraQ):
     camera = world.spawn_actor(camera_bp, spectator.get_transform())
     process_img = process_img_wrapper(q, resetCameraQ)
     camera.listen(process_img)
+    print(f"new camera created with id {camera.id}")
 
     return world, camera
 
 
-def simulatorWait(world, q, resetCameraQ):
-    print(f"simulatorWait")
+def simulatorWait(world, camera, q, resetCameraQ):
+    # print(f"simulatorWait")
     world.wait_for_tick()
     try:
         result=resetCameraQ.get_nowait()
         # means camera no longder exists
+        camera.stop()
+        camera.destroy()
         world, camera = initCamera(q, resetCameraQ)
     except queue.Empty:
-        simulatorWait(world, q, resetCameraQ)
+        simulatorWait(world, camera, q, resetCameraQ)
         pass
 
 if __name__ == '__main__':
