@@ -95,10 +95,13 @@ def updateplot(q, resetCameraQ):
 
     except queue.Empty:
         # print("empty")
-        window.after(100, updateplot, q, resetCameraQ)
-        if (time.time() - lastTime) > 5:
+        resetTime = 10
+        if (time.time() - lastTime) > resetTime:
             lastTime = time.time()
             resetCameraQ.put(True)
+            window.after(resetTime * 1000, updateplot, q, resetCameraQ)
+        else:
+            window.after(100, updateplot, q, resetCameraQ)
         return
     except:
         # something else happened with queue. shut down.
@@ -150,19 +153,26 @@ def initCamera(q, resetCameraQ):
 
     print(f"connecting to remote: {ghost}:{gport}")
     client = carla.Client(ghost, gport)
-    client.set_timeout(2.0)
+    client.set_timeout(5.0)
+    print(f"connected to remote: {ghost}:{gport}")
 
+    print(f"fetching world and spectator")
     world = client.get_world()
     spectator = world.get_actors().filter('spectator')[0]
 
+    print(f"fetching blueprint_library")
     bp_library = world.get_blueprint_library()
     camera_bp = bp_library.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', f'{imW}')
     camera_bp.set_attribute('image_size_y', f'{imH}')
     camera_bp.set_attribute('sensor_tick', '0.15')
 
+    print(f"spawning camera")
+
     camera = world.spawn_actor(camera_bp, spectator.get_transform())
     process_img = process_img_wrapper(q, resetCameraQ)
+
+    print(f"attaching camera listener")
     camera.listen(process_img)
     print(f"new camera created with id {camera.id}")
 
@@ -212,6 +222,9 @@ def main(host, port):
     #Create and start the simulation process
     simulate=multiprocessing.Process(None,simulation,args=(q, resetCameraQ, host, port))
     simulate.start()
+
+    print(f"connecting to remote. Waiting 20 seconds to start streaming")
+    time.sleep(20)
 
     #Create the base plot
     plot()
