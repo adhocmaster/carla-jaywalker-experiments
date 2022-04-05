@@ -16,6 +16,12 @@ import random
 from tkinter import *
 from PIL import Image, ImageTk
 
+import click
+
+#defaul config
+ghost = '128.114.53.19'
+gport = 2000
+
 #Create a window
 window=Tk()
 
@@ -50,26 +56,6 @@ def process_img_wrapper(q, resetCameraQ):
     return process_img
 
 
-
-def main():
-    #Create a queue to share data between process
-    global q
-    q = multiprocessing.Queue()
-    resetCameraQ = multiprocessing.Queue()
-
-    #Create and start the simulation process
-    simulate=multiprocessing.Process(None,simulation,args=(q, resetCameraQ))
-    simulate.start()
-
-    #Create the base plot
-    plot()
-
-    #Call a function to update the plot when there is new data
-    updateplot(q, resetCameraQ)
-
-    window.mainloop()
-    # simulate.join()
-    print('Done')
 
 def plot():    #Function to create the base plot, make sure to make global the lines, axes, canvas and any part that you would want to update later
 
@@ -121,7 +107,7 @@ def updateplot(q, resetCameraQ):
     window.after(100, updateplot, q, resetCameraQ)
 
 
-def simulation(q, resetCameraQ):
+def simulation(q, resetCameraQ, host, port):
     # iterations = xrange(100)
     # for i in iterations:
     #     if not i % 10:
@@ -129,7 +115,10 @@ def simulation(q, resetCameraQ):
     #             #here send any data you want to send to the other process, can be any pickable object
     #         q.put(random.randint(1,10))
     # q.put('Q')
+    global ghost, gport
 
+    ghost = host
+    gport = port
 
     world, camera = initCamera(q, resetCameraQ)
 
@@ -152,11 +141,15 @@ def simulation(q, resetCameraQ):
 
 def initCamera(q, resetCameraQ):
 
+    global ghost, gport
+
     print(f"creating camera")
     
     # client = carla.Client('127.0.0.1', 2000)
     # client = carla.Client('128.114.53.19', 2000)
-    client = carla.Client('128.114.53.19', 8090)
+
+    print(f"connecting to remote: {ghost}:{gport}")
+    client = carla.Client(ghost, gport)
     client.set_timeout(2.0)
 
     world = client.get_world()
@@ -188,6 +181,47 @@ def simulatorWait(world, camera, q, resetCameraQ):
     except queue.Empty:
         simulatorWait(world, camera, q, resetCameraQ)
         pass
+
+@click.command()
+
+@click.option(
+    '-h', '--host',
+    metavar='ip address',
+    default='127.0.0.1',
+    help='IP of the host server (default: 127.0.0.1)',
+    prompt=True
+    )
+@click.option(
+    '-p', '--port',
+    metavar='number',
+    default=2000,
+    type=int,
+    help='TCP port to listen to (default: 2000)', 
+    prompt=True
+    )
+
+def main(host, port):
+    #Create a queue to share data between process
+    global q, ghost, gport
+
+    ghost = host
+    gport = port
+    q = multiprocessing.Queue()
+    resetCameraQ = multiprocessing.Queue()
+
+    #Create and start the simulation process
+    simulate=multiprocessing.Process(None,simulation,args=(q, resetCameraQ, host, port))
+    simulate.start()
+
+    #Create the base plot
+    plot()
+
+    #Call a function to update the plot when there is new data
+    updateplot(q, resetCameraQ)
+
+    window.mainloop()
+    # simulate.join()
+    print('Done')
 
 if __name__ == '__main__':
     main()
