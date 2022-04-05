@@ -154,7 +154,9 @@ def initCamera(q, resetCameraQ):
 
     print(f"creating camera")
     
-    client = carla.Client('127.0.0.1', 2000)
+    # client = carla.Client('127.0.0.1', 2000)
+    # client = carla.Client('128.114.53.19', 2000)
+    client = carla.Client('128.114.53.19', 8090)
     client.set_timeout(2.0)
 
     world = client.get_world()
