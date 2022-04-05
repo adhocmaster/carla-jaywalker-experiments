@@ -19,7 +19,7 @@ from PIL import Image, ImageTk
 import click
 
 #defaul config
-ghost = '128.114.53.19'
+ghost = '127.0.0.1'
 gport = 2000
 
 #Create a window
@@ -149,7 +149,6 @@ def initCamera(q, resetCameraQ):
     print(f"creating camera")
     
     # client = carla.Client('127.0.0.1', 2000)
-    # client = carla.Client('128.114.53.19', 2000)
 
     print(f"connecting to remote: {ghost}:{gport}")
     client = carla.Client(ghost, gport)

@@ -10,3 +10,14 @@ Step 3: Update the environment with all the necessary packages needed for this r
     conda env update -n carla37 --file environment.yml
 
 Now you can run the experiments
+
+# Running experiments
+
+## Streaming
+You can use the streamer.py file to stream from the spectator in a remote server. Issue this command in the terminal:
+    python streamer.py
+
+It will prompt for ip and port.
+
+## Running carla examples
+Navigate to the carla examples folder from your carla installation folder. Run any experiment. The streamer should be able to show the simulation.
