@@ -1,4 +1,3 @@
-from msilib.schema import Error
 from random import random
 import numpy as np
 import time
