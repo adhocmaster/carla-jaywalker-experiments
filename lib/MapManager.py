@@ -1,6 +1,3 @@
-from msilib.schema import Error
-from re import X
-from turtle import distance
 import carla
 import math
 from typing import List
