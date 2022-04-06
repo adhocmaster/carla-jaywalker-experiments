@@ -1,4 +1,6 @@
-# Installation
+# Installation -
+
+## windows
 
 Step 1: create a conda environment named "carla37" with python version 3.7.9 and activate it
 ```
@@ -14,6 +16,21 @@ conda env update -n carla37 --file environment.yml
 ```
 Now you can run the experiments
 
+## Ubuntu
+
+```
+conda install numpy
+conda install matplotlib
+
+conda install -c anaconda click
+conda install -c anaconda eventlet
+conda install -c intel networkx
+conda install -c cogsci pygame
+conda install -c conda-forge pandas
+conda install -c cctbx202008 pyyaml
+conda install -c cctbx202112 scipy
+conda install -c conda-forge shapely
+```
 # Running experiments
 
 ## Streaming
