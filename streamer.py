@@ -164,7 +164,7 @@ def initCamera(q, resetCameraQ):
     camera_bp = bp_library.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', f'{imW}')
     camera_bp.set_attribute('image_size_y', f'{imH}')
-    camera_bp.set_attribute('sensor_tick', '0.15')
+    camera_bp.set_attribute('sensor_tick', '0.5')
 
     print(f"spawning camera")
 
