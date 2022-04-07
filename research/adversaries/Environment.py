@@ -5,7 +5,12 @@ from ...lib import EpisodeSimulator, LoggerFactory
 import carla
 from SimulationMode import SimulationMode
 
-class Environment:
+import gym
+from typing import Generic, Optional, SupportsFloat, Tuple, TypeVar, Union
+ObsType = TypeVar("ObsType")
+ActType = TypeVar("ActType")
+
+class Environment(gym.Env):
 
     """
     Environment has no relation with the RL agent. It's sole job is to provide 3 methods: reset, close, and step. It contains the research object
@@ -25,18 +30,31 @@ class Environment:
         raise NotImplementedInterface("create")
 
     # @abstractmethod
-    def reset(self):
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
+    ) -> Union[ObsType, Tuple[ObsType, dict]]:
+
         self.tickCounter = 0
         self.research.reset()
         # raise NotImplementedInterface("reset")
+        if not return_info:
+            return self.state()
+        else:
+            return self.state(), {}
 
     # @abstractmethod
     def close(self):
         self.research.reset()
-        # raise NotImplementedInterface("close")
+
+    def render(self, mode="human"):
+        raise NotImplementedError("render")
 
     # @abstractmethod
-    def step(self, action):
+    def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         """
             executes the step (changes the behavior parameters). ticks, and returns the new state
             returns new_state, reward, done, _
