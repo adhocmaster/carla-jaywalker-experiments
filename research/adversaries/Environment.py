@@ -1,9 +1,9 @@
-from ...lib import NotImplementedInterface
+from lib import NotImplementedInterface
 from abc import abstractmethod, abstractclassmethod
-from ...research import BaseResearch
-from ...lib import EpisodeSimulator, LoggerFactory
+from research import BaseResearch
+from lib import EpisodeSimulator, LoggerFactory
 import carla
-from SimulationMode import SimulationMode
+from ..SimulationMode import SimulationMode
 
 import gym
 from typing import Generic, Optional, SupportsFloat, Tuple, TypeVar, Union

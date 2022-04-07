@@ -6,8 +6,8 @@ class R1V1Env1(Environment):
 
 
     @staticmethod
-    def create():
-        research = ResearchFactory.createResearch1v1(stats=False, simulationMode=SimulationMode.SYNCHRONOUS)
+    def create(host="127.0.0.1", port=2000):
+        research = ResearchFactory.createResearch1v1(stats=False, host=host, port=port, simulationMode=SimulationMode.SYNCHRONOUS, stats=False)
         return R1V1Env1(
             research=research
         )
