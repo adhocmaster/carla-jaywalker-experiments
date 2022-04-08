@@ -152,7 +152,7 @@ def initCamera(q, resetCameraQ):
 
     print(f"connecting to remote: {ghost}:{gport}")
     client = carla.Client(ghost, gport)
-    client.set_timeout(5.0)
+    client.set_timeout(15.0)
     print(f"connected to remote: {ghost}:{gport}")
 
     print(f"fetching world and spectator")
