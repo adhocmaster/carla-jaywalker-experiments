@@ -10,9 +10,8 @@ from settings.t_junction_settings import t_junction_settings
 from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.vehicles import VehicleFactory
-from lib import Simulator
+from lib import Simulator, SimulationMode
 from lib import Utils
-from .SimulationMode import SimulationMode
 
 class ResearchCogMod(BaseResearch):
 

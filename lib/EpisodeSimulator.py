@@ -3,7 +3,7 @@ from .Simulator import Simulator
 import time
 
 
-from research.SimulationMode import SimulationMode
+from .SimulationMode import SimulationMode
 
 class EpisodeSimulator(Simulator):
 

@@ -13,11 +13,10 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
-from lib import Simulator, EpisodeSimulator
+from lib import Simulator, EpisodeSimulator, SimulationMode
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
-from .SimulationMode import SimulationMode
 
 class Research1v1(BaseResearch):
     

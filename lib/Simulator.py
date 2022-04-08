@@ -4,7 +4,7 @@ from .ClientUser import ClientUser
 from .LoggerFactory import LoggerFactory
 import traceback
 
-from research.SimulationMode import SimulationMode
+from .SimulationMode import SimulationMode
 
 class Simulator(ClientUser):
 
