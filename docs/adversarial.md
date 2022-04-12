@@ -12,3 +12,9 @@
 # Implementation
 
 We follow the similar structure to Gym environments so that existing ML libraries can easily use the environment and also extend the functionality.
+
+# Action periods
+When an action is chosen, there should be some period when no other action can be taken. How fast can a pedestrian make a decision change? If they can change decision every second, then we need to wait (1/time_delta) ticks.
+So, we do not need to produce a state where the agent cannot take an action?
+
+so, env.step(action) -> returns next state when the agent can take next action.

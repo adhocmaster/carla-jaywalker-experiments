@@ -10,7 +10,8 @@ from research import ResearchFactory
     help='Number of ticks the simulator will run'
     )
 def r1v1Default(max_ticks):
-    research = ResearchFactory.createResearch1v1(maxTicks=max_ticks)
+    research = ResearchFactory.createResearch1v1()
+    research.run(maxTicks=max_ticks)
 
 
 if __name__ == '__main__':

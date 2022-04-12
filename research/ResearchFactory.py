@@ -34,7 +34,9 @@ class ResearchFactory:
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
         research = Research1v1(client, defaultLogLevel, output_dir, simulationMode=simulationMode, stats=stats)
-        research.run(maxTicks=maxTicks)
+        # research.run(maxTicks=maxTicks)
+
+        return research
     
     @staticmethod
     def createResearchCogMod(maxTicks=100, 

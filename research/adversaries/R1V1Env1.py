@@ -16,8 +16,11 @@ class R1V1Env1(Environment):
         return R1V1Env1(
             research=research
         )
+        
+    def getActionTicks(self, action):
+        """actionTime/time_delta"""
 
-    def updateBehavior(self):
+    def updateBehavior(self, action):
         self.logger.info("Updating behavior")
         # raise NotImplementedInterface("updateBehavior")
 
@@ -25,8 +28,6 @@ class R1V1Env1(Environment):
         # raise NotImplementedInterface("reward")
         return None
 
-    # def isEpisodeDone(self):
-    #     return False
 
     def state(self):
         return None

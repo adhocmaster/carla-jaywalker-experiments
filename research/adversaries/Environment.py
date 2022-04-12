@@ -18,6 +18,7 @@ class Environment(gym.Env):
                  research: BaseResearch
                  ) -> None:
                  
+        super().__init__()
         self.logger = research.logger
         self.research = research
         self.tickCounter = None
@@ -55,23 +56,35 @@ class Environment(gym.Env):
     # @abstractmethod
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         """
-            executes the step (changes the behavior parameters). ticks, and returns the new state
+            executes the step (changes the behavior parameters). ticks, and returns the new state. 
+            However an action may need multiple ticks to be completed. So, this method must not return a new state every tick.
             returns new_state, reward, done, _
         """
         self.tickCounter += 1
         self.updateBehavior(action)
-        self.research.simulator.tick(self.tickCounter) #episodic
+        self.tickUntilActionIsFinished()
         newState = self.state()
         done = self.isEpisodeDone()
         reward = self.reward()
         return newState, reward, done, None
         # raise NotImplementedInterface("action")
 
+    
+    def tickUntilActionIsFinished(self):
+        self.research.simulator.tick(self.tickCounter) #episodic
+
     def isEpisodeDone(self):
         return self.research.simulator.isDone()
 
+    
     @abstractmethod
-    def updateBehavior(self):
+    def getActionTicks(self, action):
+        """actionTime/time_delta"""
+        raise NotImplementedInterface("getActionTicks")
+
+
+    @abstractmethod
+    def updateBehavior(self, action: ActType):
         # self.logger.info("Updating behavior")
         raise NotImplementedInterface("updateBehavior")
 
