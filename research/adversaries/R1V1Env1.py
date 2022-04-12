@@ -1,4 +1,4 @@
-from research.SimulationMode import SimulationMode
+from lib.SimulationMode import SimulationMode
 from .Environment import Environment
 from ..ResearchFactory import ResearchFactory
 
@@ -6,13 +6,21 @@ class R1V1Env1(Environment):
 
 
     @staticmethod
-    def create():
-        research = ResearchFactory.createResearch1v1(stats=False, simulationMode=SimulationMode.SYNCHRONOUS)
+    def create(host="127.0.0.1", port=2000):
+        research = ResearchFactory.createResearch1v1(
+            host=host, 
+            port=port, 
+            simulationMode=SimulationMode.SYNCHRONOUS, 
+            stats=False
+            )
         return R1V1Env1(
             research=research
         )
+        
+    def getActionTicks(self, action):
+        """actionTime/time_delta"""
 
-    def updateBehavior(self):
+    def updateBehavior(self, action):
         self.logger.info("Updating behavior")
         # raise NotImplementedInterface("updateBehavior")
 
@@ -20,8 +28,6 @@ class R1V1Env1(Environment):
         # raise NotImplementedInterface("reward")
         return None
 
-    # def isEpisodeDone(self):
-    #     return False
 
     def state(self):
         return None

@@ -1,8 +1,8 @@
 from abc import abstractmethod
 import carla
 import os
-from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, NotImplementedInterface
-from .SimulationMode import SimulationMode
+from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, NotImplementedInterface, SimulationMode
+# from lib.SimulationMode import SimulationMode
 
 class BaseResearch(ClientUser):
     def __init__(self, name, client: carla.Client, mapName, logLevel, outputDir:str = "logs", simulationMode = SimulationMode.ASYNCHRONOUS) -> None:

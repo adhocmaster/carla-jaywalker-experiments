@@ -1,4 +1,4 @@
-from ...lib import NotImplementedInterface
+from lib import NotImplementedInterface
 
 class BaseOnEpisodeAgent:
     """

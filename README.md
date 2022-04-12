@@ -39,6 +39,7 @@ conda install -c conda-forge shapely
 conda install -c anaconda seaborn
 pip install pygame==1.9.6
 
+conda install -c conda-forge gym
 ```
 
 

@@ -36,6 +36,7 @@ class Utils:
     @staticmethod
     def getTimeDelta(world):
         settings = world.get_settings()
+        print(settings)
         return settings.fixed_delta_seconds 
 
     #region geometries and vector ops

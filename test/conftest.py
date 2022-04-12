@@ -14,3 +14,11 @@ def client(request):
         client.load_world(map)
 
     return client
+
+@pytest.fixture
+def host():
+    return "127.0.0.1"
+
+@pytest.fixture
+def port():
+    return 2000
