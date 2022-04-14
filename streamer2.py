@@ -130,7 +130,7 @@ def simulation(q, resetCameraQ, host, port):
 
     while True:
         try:
-            world = simulatorWait(world, camera, q, resetCameraQ)
+            world, camera = simulatorWait(world, camera, q, resetCameraQ)
         except KeyboardInterrupt:
             safeDeleteCamera(world)
             q.close()
@@ -239,9 +239,9 @@ def simulatorWait(world, camera, q, resetCameraQ):
     existingCamera = world.get_actors().find(camera.id)
     if existingCamera is None or existingCamera.type_id != camera.type_id:
         world, camera = initCamera(q, resetCameraQ)
-        return world
+        # return world
     
-    return world
+    return world, camera
 
 
     # result=resetCameraQ.get_nowait() 
