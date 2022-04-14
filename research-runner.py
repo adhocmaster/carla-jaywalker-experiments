@@ -47,7 +47,8 @@ def chooseResearch():
     metavar='number',
     default=100,
     type=int,
-    help='Number of ticks the simulator will run'
+    help='Number of ticks the simulator will run',
+    prompt=True
     )
 def r1v1(host, port, log, output_dir, max_ticks):
     # sample command: python research-runner.py r1v1 -h 127.0.0.1 -p 2000 --log INFO --output_dir logs

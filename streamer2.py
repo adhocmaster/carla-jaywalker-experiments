@@ -179,7 +179,7 @@ def getSepectatorCamera(world):
     camera_bp = bp_library.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', f'{imW}')
     camera_bp.set_attribute('image_size_y', f'{imH}')
-    camera_bp.set_attribute('sensor_tick', '0.5')
+    camera_bp.set_attribute('sensor_tick', '0.2')
 
     print(f"spawning camera")
 
