@@ -13,5 +13,11 @@ Inside engine /Game is an alias for the content folder.
 
 # rpc and streaming port & off-screen rendering
 
-.\CarlaUE4.exe -RenderOffScreen -carla-rpc-port=2000
+    \CarlaUE4.exe -RenderOffScreen -carla-rpc-port=2000
+
+# Video memory error
+
+    .\CarlaUE4.exe -ResX=800 -ResY=600 -quality-level=Low
+    or
+    .\CarlaUE4.exe -dx11 -ResX=800 -ResY=600 -quality-level=Low
 
