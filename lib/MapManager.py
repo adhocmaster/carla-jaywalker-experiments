@@ -41,8 +41,13 @@ class MapManager(ClientUser):
     @property
     def waypoints(self):
         if self._waypoints is None:
-            raise Error("waypoint accessed before loading a map")
+            raise Exception("waypoint accessed before loading a map")
         return self._waypoints
+
+    def getMapName(self, map):
+        path = map.name
+        pathArr = path.split('/')
+        return pathArr[-1]
 
     def generateNavPoints(self, count=20):
         nav_points = []
@@ -55,7 +60,11 @@ class MapManager(ClientUser):
 
     
     def load(self, mapName: MapNames, layers=carla.MapLayer.NONE):
-        self.client.load_world(mapName.value, map_layers=layers)
+        
+        currentMapName = self.getMapName(self.map)
+        if mapName.value != currentMapName:
+            print(f"loading new map {mapName.value}")
+            self.client.load_world(mapName.value, map_layers=layers)
 
         self.currentMapName = mapName
 
@@ -79,6 +88,9 @@ class MapManager(ClientUser):
         # else:
         #     transform = carla.Transform(carla.Location(x=x, y=y, z=z*3), carla.Rotation(pitch=-90)) 
 
+        if self.currentMapName == MapNames.Town02_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.4), carla.Rotation(pitch=-90)) 
+            
         
         spectator = self.world.get_spectator()
         spectator.set_transform(transform)

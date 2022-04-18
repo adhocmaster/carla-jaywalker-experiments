@@ -24,9 +24,9 @@ argparser.add_argument(
 argparser.add_argument(
     '-p', '--port',
     metavar='P',
-    default=2000,
+    default=2020,
     type=int,
-    help='TCP port to listen to (default: 3000)')
+    help='TCP port to listen to (default: 2020)')
 argparser.add_argument(
     '--tm-port',
     metavar='P',
@@ -44,12 +44,13 @@ client.set_timeout(5.0)
 logging.info(f"Client carla version: {client.get_client_version()}")
 logging.info(f"Server carla version: {client.get_server_version()}")
 
-print(client.get_available_maps())
+# print(client.get_available_maps())
 
 if client.get_client_version() != client.get_server_version():
     logging.warning("Client and server version mistmatch. May not work properly.")
 
 SpawnActor = carla.command.SpawnActor
+
 
 mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
@@ -72,7 +73,7 @@ visualizer = SimulationVisualization(client, mapManager)
 map = mapManager.map
 
 
-visualizer.drawSpawnPoints()
+visualizer.drawSpawnPoints(dropout=0.8)
 visualizer.drawSpectatorPoint()
 visualizer.drawAllWaypoints(life_time=0.0)
 
