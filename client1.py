@@ -53,7 +53,7 @@ mapManager.load(MapNames.circle_t_junctions)
 
 world = mapManager.world
 
-visualizer = SimulationVisualization(client)
+visualizer = SimulationVisualization(client, mapManager)
 # visualizer.draw00()
 
 map = mapManager.map
