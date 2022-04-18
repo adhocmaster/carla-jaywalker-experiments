@@ -149,13 +149,18 @@ class SimulationVisualization(ClientUser):
             self.drawPoint(location=location, size=0.05, color=(0, 255, 0))
             self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
-    def drawSpawnPoints(self):
+    def drawSpawnPoints(self, dropout=0.0):
+        """
+        Arguments:
+            dropout : probability that a point will be drawn on the map.
+        """
         spawn_points = self.map.get_spawn_points()
         for point in spawn_points:
-            location = point.location
-            self.logger.debug(f"spawn_point position ({location.x}, {location.y})")
-            self.drawPoint(location=location, size=0.05)
-            self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
+            if random.uniform(0,1) > dropout:
+                location = point.location
+                self.logger.debug(f"spawn_point position ({location.x}, {location.y})")
+                self.drawPoint(location=location, size=0.05)
+                self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
 
     def drawSpectatorPoint(self):
