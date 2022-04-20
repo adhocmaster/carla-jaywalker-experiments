@@ -24,9 +24,9 @@ argparser.add_argument(
 argparser.add_argument(
     '-p', '--port',
     metavar='P',
-    default=2020,
+    default=2000,
     type=int,
-    help='TCP port to listen to (default: 2020)')
+    help='TCP port to listen to (default: 2000)')
 argparser.add_argument(
     '--tm-port',
     metavar='P',
@@ -73,7 +73,7 @@ visualizer = SimulationVisualization(client, mapManager)
 map = mapManager.map
 
 
-visualizer.drawSpawnPoints(dropout=0.8)
+visualizer.drawSpawnPoints(dropout=0.3)
 visualizer.drawSpectatorPoint()
 visualizer.drawAllWaypoints(life_time=0.0)
 

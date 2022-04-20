@@ -24,9 +24,9 @@ argparser.add_argument(
 argparser.add_argument(
     '-p', '--port',
     metavar='P',
-    default=2020,
+    default=2000,
     type=int,
-    help='TCP port to listen to (default: 2020)')
+    help='TCP port to listen to (default: 2000)')
 argparser.add_argument(
     '--tm-port',
     metavar='P',
@@ -56,6 +56,7 @@ mapManager = MapManager(client)
 
 # mapManager.load(MapNames.Town02_Opt, carla.MapLayer.GROUND)
 mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 
 # world = mapManager.world
 

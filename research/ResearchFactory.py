@@ -33,7 +33,13 @@ class ResearchFactory:
         logPath = os.path.join(output_dir, f"{name}.log")
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
-        research = Research1v1(client, defaultLogLevel, output_dir, simulationMode=simulationMode, stats=stats)
+        research = Research1v1(client, 
+                         mapName=map, 
+                         logLevel=defaultLogLevel, 
+                         outputDir=output_dir,
+                         simulationMode=simulationMode, 
+                         stats=stats
+                         )
         # research.run(maxTicks=maxTicks)
 
         return research
