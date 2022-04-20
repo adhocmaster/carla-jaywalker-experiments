@@ -1,0 +1,1 @@
+from .StaticSpeedModel import StaticSpeedModel

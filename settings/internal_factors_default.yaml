@@ -1,9 +1,10 @@
 risk_level: "risky"
 
 # Destination related factors
-relaxation_time: 2
+relaxation_time: 0.1
 desired_speed: 2
 desired_distance_gap: 2
+speed_model: "static"
 # desired_time_gap: 1
 
 # speed change related factor.
@@ -14,8 +15,8 @@ speed_change_probability: 0.1
 
 # set this to 0 for no change
 oncoming_vehicle_speed_force: 2000
-acceleration_positive_max: 100
-acceleration_negative_min: -100
+acceleration_positive_max: 1000
+acceleration_negative_min: -1000
 
 # GAP params
 # for TG_multiplier underestimate TG if less than 1 and overestimate TG if > 1

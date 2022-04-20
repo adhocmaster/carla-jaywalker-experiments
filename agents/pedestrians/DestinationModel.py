@@ -5,6 +5,7 @@ from .ForceModel import ForceModel
 from .PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
 from .PedUtils import PedUtils
+from .speed_models.SpeedModel import SpeedModel
 
 
 class DestinationModel(ForceModel):
@@ -22,7 +23,11 @@ class DestinationModel(ForceModel):
 
         self.initFactors()
 
+        self.speedModel: SpeedModel = None
+
         pass
+
+
 
     @property
     def name(self):
@@ -36,6 +41,9 @@ class DestinationModel(ForceModel):
             self.internalFactors["relaxation_time"] = 0.1 
         
         pass
+
+    def applySpeedModel(self, speedModel):
+        self.speedModel = speedModel
 
     # def skipNextTicks(self, n):
     #     """We can skip n next ticks
@@ -89,7 +97,15 @@ class DestinationModel(ForceModel):
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:
-        return self.getDesiredDirection() * self.internalFactors["desired_speed"] 
+
+        if self.speedModel is None:
+            speed = self.internalFactors["desired_speed"]
+        else:
+            speed = self.speedModel.desiredSpeed
+
+        self.agent.logger.info(f"Desired speed is {speed}")
+
+        return self.getDesiredDirection() * speed 
 
     def getDesiredSpeed(self) -> carla.Vector3D:
         return self.internalFactors["desired_speed"] 

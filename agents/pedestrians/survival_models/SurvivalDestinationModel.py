@@ -143,9 +143,15 @@ class SurvivalDestinationModel(ForceModel, SurvivalModel):
 
 
         backwardVector = prevLocations[-1] - self.agent.location
-        safeDestination = self.agent.location + backwardVector.make_unit_vector() * distance
+        if backwardVector.length() < 0.000001:
+            # raise Exception(f"No backward vector")
+            self.agent.logger.info(f"No backward vector. setting to current location")
+            safeDestination = self.agent.location
+        else:
+            safeDestination = self.agent.location + backwardVector.make_unit_vector() * distance
+        
+        
         self._destination = safeDestination
-
         self.agent.logger.info(safeDestination)
 
         # if len(prevLocations) == 1:

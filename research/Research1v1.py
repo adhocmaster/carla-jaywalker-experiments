@@ -53,6 +53,9 @@ class Research1v1(BaseResearch):
         self.stats = stats
         self.settingsId = settingsId
 
+        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
+        self.optionalFactors = [Factors.SURVIVAL_DESTINATION]
+
         self.setup()
 
 
@@ -131,14 +134,13 @@ class Research1v1(BaseResearch):
         
         self.world.wait_for_tick() # otherwise we can get wrong agent location!
 
-        optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
 
         config = {
             "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
             "visualizationInfoLocation": carla.Location(x=-155.0, y=0.0, z=1.5)
         }
 
-        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG, optionalFactors=optionalFactors, config=config)
+        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG, optionalFactors=self.optionalFactors, config=config)
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)
