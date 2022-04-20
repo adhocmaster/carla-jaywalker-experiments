@@ -71,6 +71,7 @@ class Research1v1(BaseResearch):
 
     def setup(self):
         # self.settingsManager.load("setting3")
+        # return 
         self.settingsManager.load(self.settingsId)
 
         self.walker = None
@@ -94,6 +95,7 @@ class Research1v1(BaseResearch):
     def reset(self):
         """Does not reset episode number
         """
+        self.logger.info(f"Resetting environment")
         self.pedFactory.reset()
         self.vehicleFactory.reset()
         self.episodeTimeStep = 0
@@ -101,6 +103,7 @@ class Research1v1(BaseResearch):
         super().reset()
         self.episodeTimeStep = 0
         self.createDynamicAgents()
+        self.setupSimulator(episodic=True)
 
         
     
@@ -132,7 +135,8 @@ class Research1v1(BaseResearch):
             
             # visualizer.trackOnTick(walker.id, {"life_time": 1})      
         
-        self.world.wait_for_tick() # otherwise we can get wrong agent location!
+        # self.world.wait_for_tick() # otherwise we can get wrong agent location!
+        self.tickOrWait()
 
 
         config = {
@@ -171,7 +175,7 @@ class Research1v1(BaseResearch):
         else:
             self.logger.info(f"successfully spawn vehicle at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")
 
-        self.world.wait_for_tick() # otherwise we can get wrong vehicle location!
+        self.tickOrWait() # otherwise we can get wrong vehicle location!
 
         # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
         self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
@@ -246,7 +250,7 @@ class Research1v1(BaseResearch):
 
     #region simulation
 
-    def setupSimulator(self, episodic=False, simulationMode: SimulationMode=SimulationMode.ASYNCHRONOUS):
+    def setupSimulator(self, episodic=False):
         """Must be called after all actors are created.
 
         Args:
@@ -259,10 +263,10 @@ class Research1v1(BaseResearch):
         terminalSignalers = [self.walkerAgent.isFinished]
 
         if episodic:
-            self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders, simulationMode=simulationMode)
+            self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
         else:
             onTickers.append(self.restart)
-            self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=simulationMode)
+            self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
 
 
 
@@ -282,7 +286,9 @@ class Research1v1(BaseResearch):
         # return
 
         self.createDynamicAgents()
-        self.world.wait_for_tick()
+        
+        # self.world.wait_for_tick()
+        self.tickOrWait()
 
         # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
         # onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart

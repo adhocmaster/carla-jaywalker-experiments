@@ -71,6 +71,12 @@ class MapManager(ClientUser):
         self.generateWaypoints()
         self.configureSpectator()
 
+    
+    def reload(self):
+        self.client.reload_world(False)
+        self.generateWaypoints()
+        self.configureSpectator()
+
 
     def generateWaypoints(self):
         self._waypoints = self.map.generate_waypoints(distance=5.0)
@@ -121,8 +127,8 @@ class MapManager(ClientUser):
 
 
         diag = math.sqrt((minX - maxX)**2 + (minY - maxY)**2)
-        print(f"Map bb: ({minX}, {minY}) ({maxX, maxY})" )
-        print(f"Map bb diag: ({diag})" )
+        # print(f"Map bb: ({minX}, {minY}) ({maxX, maxY})" )
+        # print(f"Map bb diag: ({diag})" )
 
         return ((minX + maxX) / 2, (minY + maxY) / 2, diag)
             

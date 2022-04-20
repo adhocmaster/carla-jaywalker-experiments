@@ -1,3 +1,4 @@
+from math import ceil
 from lib.SimulationMode import SimulationMode
 from .Environment import Environment
 from ..ResearchFactory import ResearchFactory
@@ -17,16 +18,20 @@ class R1V1Env1(Environment):
             research=research
         )
         
-    def getActionTicks(self, action):
+    def getActionTicks(self, action) -> int:
         """actionTime/time_delta"""
+        actionTime = 1 # one second
+        return int(max(actionTime // self.research.time_delta, 1))
+
+        
 
     def updateBehavior(self, action):
-        self.logger.info("Updating behavior")
+        self.logger.warn("Updating behavior")
         # raise NotImplementedInterface("updateBehavior")
 
     def reward(self):
         # raise NotImplementedInterface("reward")
-        return None
+        return 100
 
 
     def state(self):
