@@ -53,7 +53,7 @@ class BaseResearch(ClientUser):
     
     def initVisualizer(self):
         self.visualizer = SimulationVisualization(self.client, self.mapManager)
-        self.visualizer.drawSpawnPoints()
+        self.visualizer.drawSpawnPoints(life_time=1.0)
         self.visualizer.drawSpectatorPoint()
         # self.visualizer.drawAllWaypoints(life_time=1.0)
         pass

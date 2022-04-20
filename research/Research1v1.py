@@ -9,6 +9,7 @@ from datetime import date
 
 from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
+from settings.town02_settings import town02_settings
 from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
@@ -21,28 +22,36 @@ from lib.MapManager import MapNames
 class Research1v1(BaseResearch):
     
     def __init__(self, client: carla.Client, 
-                 logLevel, 
+                 mapName=MapNames.circle_t_junctions, 
+                 logLevel="INFO", 
                  outputDir:str = "logs", 
                  simulationMode = SimulationMode.ASYNCHRONOUS,
-                 simulation_id = "setting1",
+                 settingsId = "setting1",
                  stats=False):
 
         self.name = "Research1v1"
 
         super().__init__(name=self.name, 
                          client=client, 
-                         mapName=MapNames.circle_t_junctions, 
+                         mapName=mapName, 
                          logLevel=logLevel, 
                          outputDir=outputDir,
                          simulationMode=simulationMode)
 
-        self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
+        settings = None
+        if mapName == MapNames.circle_t_junctions:
+            settings = circular_t_junction_settings
+        elif mapName == MapNames.Town02_Opt:
+            settings = town02_settings
+
+        self.settingsManager = SettingsManager(self.client, settings)
         self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
         self.episodeNumber = 0
         self.episodeTimeStep = 0
         self.stats = stats
+        self.settingsId = settingsId
 
         self.setup()
 
@@ -58,7 +67,8 @@ class Research1v1(BaseResearch):
             self.vehicleFactory.destroy(self.vehicle)
 
     def setup(self):
-        self.settingsManager.load("setting3")
+        # self.settingsManager.load("setting3")
+        self.settingsManager.load(self.settingsId)
 
         self.walker = None
         self.walkerAgent = None
@@ -95,7 +105,7 @@ class Research1v1(BaseResearch):
 
     def getWalkerSetting(self):
         walkerSettings = self.settingsManager.getWalkerSettings()
-        walkerSetting = walkerSettings[1]
+        walkerSetting = walkerSettings[0]
         return walkerSetting
 
     def getVehicleSetting(self):
