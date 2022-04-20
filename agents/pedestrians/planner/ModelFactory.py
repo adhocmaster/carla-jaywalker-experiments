@@ -10,6 +10,7 @@ from ..gap_models import *
 from agents.pedestrians.StopGoModel import StopGoModel
 from ..factors.CrossingOncomingFactorModel import CrossingOncomingFactorModel
 from ..survival_models.SurvivalDestinationModel import SurvivalDestinationModel
+from .SpeedModelFactory import SpeedModelFactory
 
 class ModelFactory:
 
@@ -35,10 +36,22 @@ class ModelFactory:
         
         self.planner.destinationModel = DestinationModel(
                                     self.agent, 
-                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    actorManager=self.actorManager, 
+                                    obstacleManager=self.obstacleManager, 
                                     internalFactors=self.internalFactors
                                     )
-        # pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
+        if "speed_model" in self.internalFactors:
+            speedModel = SpeedModelFactory.createSpeedModel(
+                self.internalFactors["speed_model"], 
+                agent=self.agent,
+                actorManager=self.actorManager, 
+                obstacleManager=self.obstacleManager,
+                internalFactors=self.internalFactors
+                )
+            self.planner.destinationModel.applySpeedModel(speedModel)
+            self._logger.info(f"{self.internalFactors['speed_model']} SpeedModel applied")
+            
+
         pedGapModel = BrewerGapModel(
                                     self.agent, 
                                     actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
