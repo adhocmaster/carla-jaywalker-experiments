@@ -25,7 +25,7 @@ class InternalFactors:
             dict = yaml.safe_load(stream)
         if dict is None:
             raise Exception(f"No config found in {defaultFactorFile}")
-        print("parsed dict", dict)
+        # print("parsed dict", dict)
         return dict
 
     def __contains__(self, name):

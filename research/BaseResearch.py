@@ -81,7 +81,10 @@ class BaseResearch(ClientUser):
         self.configureMap()
         pass
 
-    def tickOrWait(self):
+    def tickOrWaitBeforeSimulation(self):
+        """
+        It will not call simulation events. Only purpose is for some intializations which needs to be applied before simulation runs, e.g., actor creation.
+        """
         if self.simulationMode == SimulationMode.ASYNCHRONOUS:
             self.world.wait_for_tick()
         else:

@@ -27,12 +27,6 @@ argparser.add_argument(
     default=2000,
     type=int,
     help='TCP port to listen to (default: 2000)')
-argparser.add_argument(
-    '--tm-port',
-    metavar='P',
-    default=8000,
-    type=int,
-    help='Port to communicate with TM (default: 8000)')
 
 args = argparser.parse_args()
 
@@ -81,7 +75,7 @@ visualizer.drawAllWaypoints(life_time=0.0)
 
 
 bpLib = world.get_blueprint_library()
-vehicleBps = bpLib.filter('vehicle.*')
+vehicleBps = bpLib.filter('vehicle.carlamotors.firetruck')
 blueprint = random.choice(vehicleBps)
 
 
@@ -151,7 +145,7 @@ onTickers = [visualizer.onTick, stateManager.onTick, agentUpdate]
 onEnders = [destoryActors]
 simulator = Simulator(client, onTickers=onTickers, onEnders=onEnders)
 
-simulator.run(100)
+simulator.run(200)
 
 
 
