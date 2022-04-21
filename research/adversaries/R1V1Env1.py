@@ -1,3 +1,4 @@
+import logging
 from math import ceil
 from lib.SimulationMode import SimulationMode
 from .Environment import Environment
@@ -11,6 +12,7 @@ class R1V1Env1(Environment):
         research = ResearchFactory.createResearch1v1(
             host=host, 
             port=port, 
+            defaultLogLevel=logging.WARNING,
             simulationMode=SimulationMode.SYNCHRONOUS, 
             stats=False
             )

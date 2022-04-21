@@ -136,7 +136,7 @@ class Research1v1(BaseResearch):
             # visualizer.trackOnTick(walker.id, {"life_time": 1})      
         
         # self.world.wait_for_tick() # otherwise we can get wrong agent location!
-        self.tickOrWait()
+        self.tickOrWaitBeforeSimulation()
 
 
         config = {
@@ -175,7 +175,7 @@ class Research1v1(BaseResearch):
         else:
             self.logger.info(f"successfully spawn vehicle at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")
 
-        self.tickOrWait() # otherwise we can get wrong vehicle location!
+        self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
 
         # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
         self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
@@ -288,7 +288,7 @@ class Research1v1(BaseResearch):
         self.createDynamicAgents()
         
         # self.world.wait_for_tick()
-        self.tickOrWait()
+        self.tickOrWaitBeforeSimulation()
 
         # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
         # onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
