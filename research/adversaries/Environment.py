@@ -60,9 +60,9 @@ class Environment(gym.Env):
             However an action may need multiple ticks to be completed. So, this method must not return a new state every tick.
             returns new_state, reward, done, _
         """
-        self.tickCounter += 1
+        # self.tickCounter += 1
         self.updateBehavior(action)
-        self.tickUntilActionIsFinished()
+        self.tickUntilActionIsFinished(action)
         newState = self.state()
         done = self.isEpisodeDone()
         reward = self.reward()
@@ -70,15 +70,19 @@ class Environment(gym.Env):
         # raise NotImplementedInterface("action")
 
     
-    def tickUntilActionIsFinished(self):
-        self.research.simulator.tick(self.tickCounter) #episodic
+    def tickUntilActionIsFinished(self, action: ActType):
+        n = self.getActionTicks(action)
+        self.logger.info(f"tickUntilActionIsFinished n={n}")
+        for _ in range(n):
+            self.tickCounter += 1
+            self.research.simulator.tick(self.tickCounter) #episodic
 
     def isEpisodeDone(self):
         return self.research.simulator.isDone()
 
     
     @abstractmethod
-    def getActionTicks(self, action):
+    def getActionTicks(self, action) -> int:
         """actionTime/time_delta"""
         raise NotImplementedInterface("getActionTicks")
 

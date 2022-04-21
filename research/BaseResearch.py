@@ -34,7 +34,8 @@ class BaseResearch(ClientUser):
         self.mapManager.load(self.mapName)
 
     def reset(self):
-        self.client.reload_world(False)
+        # self.client.reload_world(False)
+        self.mapManager.reload()
 
 
     def initWorldSettings(self):
@@ -44,8 +45,10 @@ class BaseResearch(ClientUser):
         # self.world.apply_settings(settings)
         
         if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+            self.logger.warn(f"Starting simulation in asynchronous mode")
             self.initWorldSettingsAsynchronousMode()
         else:
+            self.logger.warn(f"Starting simulation in synchronous mode")
             self.initWorldSettingsSynchronousMode()
 
         pass
@@ -62,6 +65,7 @@ class BaseResearch(ClientUser):
         self.configureMap()
         self.time_delta = 0.007
         settings = self.world.get_settings()
+        settings.synchronous_mode = False # Enables synchronous mode
         settings.substepping = False
         settings.fixed_delta_seconds = self.time_delta
         self.world.apply_settings(settings)
@@ -76,6 +80,12 @@ class BaseResearch(ClientUser):
         self.world.apply_settings(settings)
         self.configureMap()
         pass
+
+    def tickOrWait(self):
+        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+            self.world.wait_for_tick()
+        else:
+            self.world.tick()
 
     @abstractmethod
     def createDynamicAgents(self):
