@@ -48,8 +48,9 @@ class ModelFactory:
                 obstacleManager=self.obstacleManager,
                 internalFactors=self.internalFactors
                 )
-            self.planner.destinationModel.applySpeedModel(speedModel)
-            self._logger.info(f"{self.internalFactors['speed_model']} SpeedModel applied")
+            if speedModel is not None:
+                self.planner.destinationModel.applySpeedModel(speedModel)
+                self._logger.info(f"{self.internalFactors['speed_model']} SpeedModel applied")
             
 
         pedGapModel = BrewerGapModel(
