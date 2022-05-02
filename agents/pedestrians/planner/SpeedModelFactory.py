@@ -5,7 +5,8 @@ from ..speed_models import *
 class SpeedModelFactory:
 
     modelNameMap = {
-        "static": RandomSpeedModel
+        "static": StaticSpeedModel,
+        "random": RandomSpeedModel
     }
 
     @staticmethod
