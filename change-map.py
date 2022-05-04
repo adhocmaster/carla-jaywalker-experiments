@@ -56,7 +56,7 @@ mapManager = MapManager(client)
 
 # mapManager.load(MapNames.Town02_Opt, carla.MapLayer.GROUND)
 mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
-mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 
 # world = mapManager.world
 

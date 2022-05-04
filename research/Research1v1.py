@@ -77,7 +77,7 @@ class Research1v1(BaseResearch):
         self.walker = None
         self.walkerAgent = None
         self.walkerSetting = self.getWalkerSetting()
-        self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source)
+        self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source, rotation = carla.Rotation(pitch = 0, yaw = -90, roll = 0))
         self.walkerDestination = self.walkerSetting.destination
 
         self.vehicle = None

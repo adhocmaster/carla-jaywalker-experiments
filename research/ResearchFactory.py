@@ -8,7 +8,7 @@ from research import *
 from research.ResearchCogMod import ResearchCogMod
 
 class ResearchFactory:
-    def __init__(self, host="76.126.1.170", port=2000, output_dir="logs", map=MapNames.circle_t_junctions) -> None:
+    def __init__(self, host="127.0.0.1", port=2000, output_dir="logs", map=MapNames.circle_t_junctions) -> None:
         self.map = map
         self.host = host
         self.port = int(port)
@@ -18,7 +18,7 @@ class ResearchFactory:
     @staticmethod
     def createResearch1v1(
                             maxTicks=100, 
-                            host="76.126.1.170", 
+                            host="127.0.0.1", 
                             port=2000, 
                             defaultLogLevel=logging.INFO, 
                             output_dir="logs", 

@@ -37,7 +37,7 @@ class PedestrianAgent(InfoAgent):
         self.visualizer = visualizer
 
 
-        self._last_jumped = time.time_ns()
+        self._last_jumped = time.time()
 
         self.collisionSensor = None
         self.obstacleDetector = None
@@ -270,10 +270,10 @@ class PedestrianAgent(InfoAgent):
         return False
 
     def updateJumped(self):
-        self._last_jumped = time.time_ns()
+        self._last_jumped = time.time()
 
     def timeSinceLastJumpMS(self):
-        diff = (time.time_ns() - self._last_jumped) // 1_000_000 
+        diff = (time.time() - self._last_jumped) // 1_000_000 
         return diff
 
     def climbSidewalkIfNeeded(self):

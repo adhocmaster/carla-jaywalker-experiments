@@ -15,6 +15,7 @@ import time
 import random
 from tkinter import *
 from PIL import Image, ImageTk
+import imageio
 
 import click
 
@@ -25,6 +26,7 @@ gTimeout = 15.0
 
 #Create a window
 window=Tk()
+images = []
 
 # directory
 
@@ -38,20 +40,25 @@ imH = 562
 lastTime = time.time()
 
 def process_img_wrapper(q, resetCameraQ):
-
+    
 
     def process_img(image):
         nonlocal q, resetCameraQ
+        fname = 'output/%.6d.jpg' % image.frame
+        image.save_to_disk(fname)
+   
+        images.append(imageio.imread(fname))
+        
         # print("process img called")
-        image.convert(cc.Raw)
-        array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
-        array = np.reshape(array, (image.height, image.width, 4))
-        array = array[:, :, :3]
-        array = array[:, :, ::-1]
-        im = Image.fromarray(array)
-        im = im.crop((imW * 0.2, 0, imW * 0.8, imH))
-        # im.save(f'{path}/{image.frame_number}.png')
-        q.put(im)
+        # image.convert(cc.Raw)
+        # array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
+        # array = np.reshape(array, (image.height, image.width, 4))
+        # array = array[:, :, :3]
+        # array = array[:, :, ::-1]
+        # im = Image.fromarray(array)
+        # im = im.crop((imW * 0.2, 0, imW * 0.8, imH))
+        # # im.save(f'{path}/{image.frame_number}.png')
+        # q.put(im)
         # print(f"process_img qsize {q.qsize()}")
 
     return process_img
@@ -74,6 +81,7 @@ def plot():    #Function to create the base plot, make sure to make global the l
 
 def updateplot(q, resetCameraQ):
     global window, canvas, lastTime
+    return
     # print(f"updateplot queue size {q.qsize()}")
     try:       #Try to check if there is data in the queue
         result=q.get_nowait()
@@ -96,11 +104,11 @@ def updateplot(q, resetCameraQ):
 
     except queue.Empty:
         # print("empty")
-        resetTime = 10
+        resetTime = .2
         if (time.time() - lastTime) > resetTime:
             lastTime = time.time()
             resetCameraQ.put(True)
-            window.after(resetTime * 1000, updateplot, q, resetCameraQ)
+            window.after(int(resetTime * 1000), updateplot, q, resetCameraQ)
         else:
             window.after(100, updateplot, q, resetCameraQ)
         return
@@ -132,6 +140,7 @@ def simulation(q, resetCameraQ, host, port):
         try:
             world, camera = simulatorWait(world, camera, q, resetCameraQ)
         except KeyboardInterrupt:
+            imageio.mimsave(f'gifs/{time.time()}', images)
             safeDeleteCamera(world)
             q.close()
             resetCameraQ.close()
@@ -153,7 +162,8 @@ def safeDeleteCamera(world, camera):
 
 def getExistingSepectatorCamera(world):
     spectator = world.get_actors().filter('spectator')[0]
-    cameras = world.get_actors().filter('camera')
+    cameras = world.get_actors().filter('sensor.camera.rgb')
+    return cameras[len(cameras)-1]
     for camera in cameras:
         if camera.parent.id == spectator.id:
             print("found existing camera with the spectator")
@@ -162,7 +172,8 @@ def getExistingSepectatorCamera(world):
 
 
 def getSepectatorCamera(world):
-    spectator = world.get_actors().filter('spectator')[0]
+    print(world.get_actors())
+    spectator = world.get_actors().filter('sensor.camera.rgb')[0]
 
     # check if a camera already exists.
 

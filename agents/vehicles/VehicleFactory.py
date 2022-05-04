@@ -42,6 +42,11 @@ class VehicleFactory(ClientUser):
 
     
     def destroy(self, vehicle: carla.Vehicle):
+        cameras = self.world.get_actors().filter('sensor.camera.rgb')
+        for camera in cameras:
+            camera.stop()
+            camera.destroy()
+
         self.vehicles.remove(vehicle)
         vehicle.destroy()
 
@@ -53,7 +58,20 @@ class VehicleFactory(ClientUser):
     
     def spawn(self, spawnPoint):
         vehicleBp = self.create()
+        blueprint = self.world.get_blueprint_library().find('sensor.camera.rgb')
+        blueprint.set_attribute('image_size_x', '1200')
+        blueprint.set_attribute('image_size_y', '800')
+        blueprint.set_attribute('fov', '90')
+
+        blueprint.set_attribute('sensor_tick', '1.0')
+        transform = carla.Transform(carla.Location(x=0.8, z=1.7), carla.Rotation(pitch = -5, yaw = 0, roll = 0))
+
         vehicle = self.world.spawn_actor(vehicleBp, spawnPoint)
+        sensor = self.world.spawn_actor(blueprint, transform, attach_to = vehicle)
+        # self.world.get_spectator().set_transform(spawnPoint)
+        
+        sensor.listen(lambda image: image.save_to_disk('../output/%06d.png' % image.frame))
+        
         self.vehicles.append(vehicle)
         return vehicle
 
