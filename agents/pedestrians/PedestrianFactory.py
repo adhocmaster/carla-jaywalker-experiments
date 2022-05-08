@@ -66,6 +66,8 @@ class PedestrianFactory(ClientUser):
         # walkerBp.set_attribute('is_invincible', 'true')  
         walker = self.world.spawn_actor(walkerBp, spawnPoint)
         self.world.get_spectator().set_transform(spawnPoint)
+        # spec = carla.Location(z = 30)
+        # self.world.get_spectator().set_transform(location = spec)
         self.walkers.append(walker)
         return walker
     

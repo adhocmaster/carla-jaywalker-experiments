@@ -77,7 +77,7 @@ class Research1v1(BaseResearch):
         self.walker = None
         self.walkerAgent = None
         self.walkerSetting = self.getWalkerSetting()
-        self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source, rotation = carla.Rotation(pitch = 0, yaw = -90, roll = 0))
+        self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source + carla.Location(z = 30), rotation = carla.Rotation(pitch = 0, yaw = -90, roll = 0))
         self.walkerDestination = self.walkerSetting.destination
 
         self.vehicle = None
@@ -345,6 +345,7 @@ class Research1v1(BaseResearch):
 
         walkerWp = self.map.get_waypoint(self.walkerAgent.location).transform.location
         waypoints = Utils.getWaypointsToDestination(self.vehicle, walkerWp)
+        #yellow lines
         self.visualizer.drawWaypoints(waypoints, color=(0, 0, 0), z=1, life_time=0.1)
         self.logger.info(f"Linear distance to pedestrian {self.walkerAgent.actorManager.distanceFromNearestOncomingVehicle()}")
         self.logger.info(f"Arc distance to pedestrian {Utils.getDistanceCoveredByWaypoints(waypoints)}")
