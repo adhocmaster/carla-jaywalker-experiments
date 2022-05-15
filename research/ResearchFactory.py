@@ -24,6 +24,7 @@ class ResearchFactory:
                             output_dir="logs", 
                             map=MapNames.circle_t_junctions,
                             simulationMode = SimulationMode.ASYNCHRONOUS,
+                            settingsId = "setting1",
                             stats=True
                             ) -> Research1v1:
 
@@ -38,6 +39,7 @@ class ResearchFactory:
                          logLevel=defaultLogLevel, 
                          outputDir=output_dir,
                          simulationMode=simulationMode, 
+                         settingsId=settingsId,
                          stats=stats
                          )
         # research.run(maxTicks=maxTicks)
