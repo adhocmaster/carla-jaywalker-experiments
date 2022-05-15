@@ -33,6 +33,7 @@ class R1V1Env1(Environment):
         ):
 
         self.coordinateSystem = coordinateSystem
+        self._roadState = None
         super().__init__(research)
 
 
@@ -66,24 +67,24 @@ class R1V1Env1(Environment):
         speedHigh = 4
 
         self.observation_space = spaces.Dict({
-            "ped": spaces.Dict({
+            "pedestrian": spaces.Dict({
                 'position': spaces.Box(low=-100, high=100, shape=(2,)), # 0,0 when coordinate system is ped, should be under 100 meter when cs is wp.
                 'source': spaces.Box(low=-100, high=100, shape=(2,)),
                 'dest': spaces.Box(low=-100, high=100, shape=(2,)),
                 'relaxation_time': spaces.Box(low=relaxLow, high=relaxHigh, shape=(1,)),
                 'risk_level': spaces.Discrete(4),
                 'velocity': spaces.Box(low=-speedHigh, high=speedHigh, shape=(2,)),
-                "lane": spaces.Discrete(nLanes, start=1)
+                # "lane": spaces.Discrete(nLanes, start=1)
 
             }),
             "vehicle": spaces.Dict({
                 'position': spaces.Box(low=-np.inf, high=np.inf, shape=(2,)), 
                 'velocity': spaces.Box(low=-150, high=150, shape=(2,)),
-                "lane": spaces.Discrete(nLanes, start=1)
+                # "lane": spaces.Discrete(nLanes, start=1)
             }),
             "road": spaces.Dict({
                 "nLanes": spaces.Discrete(nLanes, start=1) # maximum 4 lanes
-                "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
+                # "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
             })
         })
 
@@ -98,6 +99,42 @@ class R1V1Env1(Environment):
         # raise NotImplementedInterface("reward")
         return 100
 
+    def roadState(self): 
+
+        if self._roadState is None:
+            self._roadState = {
+                "nLanes" = 2,
+                # "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
+            }
+
+        return self._roadState
+
+    
+    def vehicleState(self):
+        absPosition = self.research.vehicleAgent.position
+        
+
 
     def state(self):
-        return None
+        walkerAgent = self.research.walkerAgent
+        vehicleAgent = self.research.vehicleAgent
+
+        state = {
+            "pedestrian": {
+                
+                'position': np.array([0.0, 0.0]),
+                'source': np.array([self.research.walkerSpawnPoint.location.x, self.research.walkerSpawnPoint.location.y]),
+                'dest': np.array([self.research.walkerDestination.x, self.research.walkerDestination.y]),
+                'relaxation_time': walkerAgent.getInternalFactor('relaxation_time'),
+                'risk_level': walkerAgent.getInternalFactor('risk_level'),
+                'velocity': np.array([walkerAgent.velocity.x, walkerAgent.velocity.y]),
+                # "lane": spaces.Discrete(nLanes, start=1)
+            }
+            "vehicle": spaces.Dict({
+                'position': spaces.Box(low=-np.inf, high=np.inf, shape=(2,)), 
+                'velocity': spaces.Box(low=-150, high=150, shape=(2,)),
+                # "lane": spaces.Discrete(nLanes, start=1)
+            }),
+            "road": self.roadState()
+        }
+

@@ -61,6 +61,9 @@ class PedestrianPlanner:
     def getInternalFactor(self, name):
         return self.internalFactors[name] 
 
+    def setInternalFactor(self, name, val):
+        self.internalFactors[name] = val
+
     @property
     def desiredSpeed(self):
         return self.internalFactors["desired_speed"] 

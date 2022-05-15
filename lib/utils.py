@@ -5,6 +5,7 @@ from shapely.geometry import LineString, Point
 from typing import List, Dict
 import matplotlib.pyplot as plt
 import numpy as np
+import copy
 
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
@@ -314,6 +315,25 @@ class Utils:
         return direction * newSpeed
 
 
+    @staticmethod
+    def translate(subject: carla.Vector3D, center: carla.Vector3D) -> carla.Vector3D:
+        clone = copy.deepcopy(subject)
+        clone.x -= center.x
+        clone.y -= center.y
+        clone.z -= center.z
+
+        return clone
+    
+
+    @staticmethod
+    def rotate(subject: carla.Vector3D, center: carla.Vector3D) -> carla.Vector3D:
+
+        alpha = math.atan2(subject.y, subject.x)
+        
+        a = np.array([[np.cos(alpha), -np.sin(alpha)],
+                    [np.sin(alpha), np.cos(alpha)]])
+        
+        #TODO
 
 
 

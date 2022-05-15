@@ -11,6 +11,13 @@ class InfoAgent:
 
         self._logger = LoggerFactory.create(name, config)
 
+
+    def getInternalFactor(self, name):
+        return self._localPlanner.getInternalFactor(name)
+
+    def setInternalFactor(self, name, val):
+        self._localPlanner.setInternalFactor(name, val)
+
     @property
     def id(self):
         return self.walker.id
