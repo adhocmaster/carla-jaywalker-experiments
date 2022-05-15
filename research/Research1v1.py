@@ -369,7 +369,7 @@ class Research1v1(BaseResearch):
             return
 
         if self.walkerAgent.isFinished():
-            print(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
+            self.logger.warn(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
             # if walkerAgent.destination == walkerSetting.destination:
             #     walkerAgent.set_destination(walkerSetting.source)
             #     visualizer.drawDestinationPoint(destination)

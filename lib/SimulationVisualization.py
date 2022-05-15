@@ -381,7 +381,7 @@ class SimulationVisualization(ClientUser):
         steering_vector = carla.Vector3D(steering_vector_x*line_size, steering_vector_y*line_size, 1.5)
         steering_end_point = (steering_vector + vehicle_location)
 
-        # print(f'vehicle_location : {vehicle_location}, end_point : {end_point}')
+        # self.logger.debug(f'vehicle_location : {vehicle_location}, end_point : {end_point}')
 
         vehicleAgent.world.debug.draw_line(vehicle_location, steering_end_point, life_time=0.5, color=carla.Color(0, 255, 0), thickness=0.2)
         vehicleAgent.world.debug.draw_line(vehicle_location, vehicle_forward_vector_end_point, life_time=0.5, color=carla.Color(255, 0, 0), thickness=0.2)

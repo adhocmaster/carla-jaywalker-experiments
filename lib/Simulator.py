@@ -70,12 +70,12 @@ class Simulator(ClientUser):
 
         if self.simulationMode == SimulationMode.SYNCHRONOUS:
             world_snapshot = self.world.tick() # synchronous mode
-            # print(f'world_snapshot: {world_snapshot}, i: {i}')
+            # print(f'Simulator: world_snapshot: {world_snapshot}, i: {i}')
         if self.simulationMode == SimulationMode.ASYNCHRONOUS:
             world_snapshot = self.world.wait_for_tick() # asynchronous mode 
         
         if i % 100 == 0:
-            print(f"world ticks {i}")
+            print(f"Simulator: world ticks {i}")
         for onTicker in self.onTickers:
             onTicker(world_snapshot)
 

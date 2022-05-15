@@ -63,7 +63,7 @@ class MapManager(ClientUser):
         
         currentMapName = self.getMapName(self.map)
         if mapName.value != currentMapName:
-            print(f"loading new map {mapName.value}")
+            print(f"MapManager: loading new map {mapName.value}")
             self.client.load_world(mapName.value, map_layers=layers)
 
         self.currentMapName = mapName
@@ -85,7 +85,7 @@ class MapManager(ClientUser):
     def configureSpectator(self):
 
         (x, y, z) = self.getSpectatorPos()
-        print(f"setting spectator position to ({x}, {y}, {z})")
+        print(f"MapManager: setting spectator position to ({x}, {y}, {z})")
         transform = carla.Transform(carla.Location(x=x, y=y, z=z), carla.Rotation(pitch=-90)) 
         if self.currentMapName == MapNames.circle_t_junctions:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.8), carla.Rotation(pitch=-90)) 
@@ -114,7 +114,7 @@ class MapManager(ClientUser):
             location = point.transform.location
             x = location.x
             y = location.y
-            # print(f"point: ({x}, {y})" )
+            # print(f"MapManager: point: ({x}, {y})" )
 
             if x < minX:
                 minX = x
@@ -127,8 +127,8 @@ class MapManager(ClientUser):
 
 
         diag = math.sqrt((minX - maxX)**2 + (minY - maxY)**2)
-        # print(f"Map bb: ({minX}, {minY}) ({maxX, maxY})" )
-        # print(f"Map bb diag: ({diag})" )
+        # print(f"MapManager: Map bb: ({minX}, {minY}) ({maxX, maxY})" )
+        # print(f"MapManager: Map bb diag: ({diag})" )
 
         return ((minX + maxX) / 2, (minY + maxY) / 2, diag)
             
