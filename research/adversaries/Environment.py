@@ -29,7 +29,8 @@ class Environment(gym.Env):
     def create():
         raise NotImplementedInterface("create")
 
-    # @abstractmethod
+
+
     def reset(
         self,
         *,
@@ -46,14 +47,12 @@ class Environment(gym.Env):
         else:
             return self.state(), {}
 
-    # @abstractmethod
     def close(self):
         self.research.reset()
 
     def render(self, mode="human"):
         raise NotImplementedError("render")
 
-    # @abstractmethod
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         """
             executes the step (changes the behavior parameters). ticks, and returns the new state. 
@@ -80,6 +79,18 @@ class Environment(gym.Env):
     def isEpisodeDone(self):
         return self.research.simulator.isDone()
 
+    @abstractmethod
+    def setObsActionSpaces(self):
+        raise NotImplementedInterface("setObsActionSpaces")
+
+    @abstractmethod
+    def reward(self):
+        raise NotImplementedInterface("reward")
+
+    @abstractmethod
+    def state(self):
+        raise NotImplementedInterface("state")
+
     
     @abstractmethod
     def getActionTicks(self, action) -> int:
@@ -92,11 +103,4 @@ class Environment(gym.Env):
         # self.logger.info("Updating behavior")
         raise NotImplementedInterface("updateBehavior")
 
-    @abstractmethod
-    def reward(self):
-        raise NotImplementedInterface("reward")
-
-    @abstractmethod
-    def state(self):
-        raise NotImplementedInterface("state")
 
