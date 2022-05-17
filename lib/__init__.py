@@ -1,6 +1,7 @@
 
 from .exceptions import *
 from .utils import Utils
+from .Geometry import Geometry
 from .SimulationMode import SimulationMode
 from .ClientUser import ClientUser
 from .SimulationVisualization import SimulationVisualization

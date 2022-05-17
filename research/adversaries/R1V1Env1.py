@@ -3,6 +3,7 @@ from math import ceil
 from lib.SimulationMode import SimulationMode
 from .Environment import Environment
 from ..ResearchFactory import ResearchFactory
+from ..BaseResearch import BaseResearch
 from gym.spaces import *
 
 class R1V1Env1(Environment):
@@ -103,7 +104,7 @@ class R1V1Env1(Environment):
 
         if self._roadState is None:
             self._roadState = {
-                "nLanes" = 2,
+                "nLanes": 2,
                 # "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
             }
 
@@ -112,6 +113,7 @@ class R1V1Env1(Environment):
     
     def vehicleState(self):
         absPosition = self.research.vehicleAgent.position
+        # TODO
         
 
 
@@ -129,7 +131,7 @@ class R1V1Env1(Environment):
                 'risk_level': walkerAgent.getInternalFactor('risk_level'),
                 'velocity': np.array([walkerAgent.velocity.x, walkerAgent.velocity.y]),
                 # "lane": spaces.Discrete(nLanes, start=1)
-            }
+            },
             "vehicle": spaces.Dict({
                 'position': spaces.Box(low=-np.inf, high=np.inf, shape=(2,)), 
                 'velocity': spaces.Box(low=-150, high=150, shape=(2,)),
