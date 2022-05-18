@@ -76,8 +76,10 @@ class ModelFactory:
 
     def createOptionalModels(self, optionalFactors: List[Factors]):
 
-        self.createCrossingModels(optionalFactors)
+        if optionalFactors is None:
+            return
 
+        self.createCrossingModels(optionalFactors)
         self.createSurvivalModels(optionalFactors)
 
 

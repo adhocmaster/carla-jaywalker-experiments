@@ -35,6 +35,8 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
                                     )
         # self.initModels()
         self.modelFactory.createRequiredModels()
+
+        self.reset()
         pass
 
     # def initModels(self): # maybe create a factory
@@ -72,6 +74,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
     def createOptionalModels(self, optionalFactors: List[Factors]):
         self.modelFactory.createOptionalModels(optionalFactors)
+        self.reset()
 
 
     

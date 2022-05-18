@@ -1,5 +1,6 @@
 import carla
 from lib import LoggerFactory
+from .PedState import PedState
 # from .planner.PedestrianPlanner import PedestrianPlanner
 
 class InfoAgent:
@@ -69,22 +70,6 @@ class InfoAgent:
     def onTickStart(self, world_snapshot):
         self._localPlanner.onTickStart(world_snapshot)
 
-    # region planning
-
-    def setLocalPlanner(self, planner: any):
-        self._localPlanner = planner
-
-        
-    @property
-    def destination(self):
-        return self._localPlanner.destination
-
-    def setDestination(self, destination: carla.Location):
-        self._localPlanner.setDestination(destination)
-
-    @property
-    def previousLocations(self):
-        return self._localPlanner.locations
 
     
     # def set_destination(self, destination):
@@ -142,3 +127,48 @@ class InfoAgent:
         oldControl = self._walker.get_control()
         direction = oldControl.direction
         return carla.Vector3D(direction.x * speed, direction.y * speed, direction.z * speed)
+
+
+    #region planner interfaces
+
+    def setLocalPlanner(self, planner: any):
+        self._localPlanner = planner
+
+        
+    @property
+    def destination(self):
+        return self._localPlanner.destination
+
+    def setDestination(self, destination: carla.Location):
+        self._localPlanner.setDestination(destination)
+
+    @property
+    def previousLocations(self):
+        return self._localPlanner.locations
+
+    
+    def updateModelCoeff(self, name, val):
+        self._localPlanner.updateModelCoeff(name, val)
+    
+    def getModels(self, state=None):
+
+        if state is None:
+            return self._localPlanner.models
+        elif state == PedState.CROSSING:
+            return self.getCrossingFactorModels()
+        elif state == PedState.SURVIVAL:
+            return self.getSurvivalModels()
+        else:
+            raise Exception(f"No model for the state {state.value}")
+        
+
+    def getStateTransitionModels(self):
+        return self._localPlanner.stateTransitionModels
+
+    def getCrossingFactorModels(self):
+        return self._localPlanner.crossingFactorModels
+
+    def getSurvivalModels(self):
+        return self._localPlanner.survivalModels
+
+    #endregion

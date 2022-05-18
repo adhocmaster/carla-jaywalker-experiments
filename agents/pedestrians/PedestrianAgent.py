@@ -186,6 +186,9 @@ class PedestrianAgent(InfoAgent):
 
     def reset(self, newStartPoint:carla.Location=None):
         self.logger.info(f"Resetting")
+        
+        self._localPlanner.reset()
+
         if newStartPoint is not None:
             self._walker.set_location(newStartPoint)
 
