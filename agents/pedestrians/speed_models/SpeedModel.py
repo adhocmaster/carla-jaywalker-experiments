@@ -9,11 +9,15 @@ class SpeedModel:
     def __init__(self, agent: any,  actorManager: ActorManager, obstacleManager: ObstacleManager,
                     internalFactors: InternalFactors) -> None:
 
+        self.agent = agent
+        self.actorManager = actorManager
+        self.obstacleManager = obstacleManager
+        self.internalFactors = internalFactors
+
         self._desiredSpeed = None
         self._minSpeed = None
         self._maxSpeed = None
 
-        self.internalFactors = internalFactors
 
         self.initialize()
 
