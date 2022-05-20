@@ -3,9 +3,15 @@ import copy
 import math
 
 class Geometry: 
+
+    @staticmethod
+    def getGlobalYaw(subject: carla.Vector3D): 
+        """Returns rotation around Z"""
+        return math.atan2(subject.y, subject.x)
+
     
     @staticmethod
-    def changeCartesianCenter(subject: carla.Vector3D, center: carla.Vector3D, centerDirection: carla.Vector3D = None) -> carla.Vector3D:
+    def changeCartesianCenter(subject: carla.Vector3D, center: carla.Vector3D, centerDirection: carla.Vector3D=None, centerRotation=None) -> carla.Vector3D:
 
         clone = subject - center 
         # clone = carla.Vector3D(x=subject.x, y=subject.y, z=subject.z)
@@ -14,8 +20,12 @@ class Geometry:
         # clone.z -= center.z
 
         if centerDirection is not None:
-            alpha = math.atan2(centerDirection.y, centerDirection.x)
-            clone = Utils.rotateAroundZ(clone, alpha)
+            angle = -Geometry.getGlobalYaw(centerDirection)
+            clone = Geometry.rotateAroundZ(clone, angle)
+        elif centerRotation is not None:
+            angle = -centerRotation
+            clone = Geometry.rotateAroundZ(clone, angle)
+
 
         return clone
     
@@ -37,3 +47,5 @@ class Geometry:
         clone.y = subject.x * math.sin(angle) + subject.y * math.cos(angle)
         
         return clone
+
+    

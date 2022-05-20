@@ -22,6 +22,7 @@ class Environment(gym.Env):
         self.logger = research.logger
         self.research = research
         self.tickCounter = None
+        self.setObsActionSpaces()
         self.reset()
         pass
 

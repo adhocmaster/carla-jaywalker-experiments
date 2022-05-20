@@ -52,6 +52,7 @@ class InfoAgent:
 
     @property
     def direction(self):
+        # TODO: we can use transform
         direction = self.control.direction
         if direction is None:
             return self.velocity.make_unit_vector()

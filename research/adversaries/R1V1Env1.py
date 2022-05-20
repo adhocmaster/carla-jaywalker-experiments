@@ -4,7 +4,9 @@ from lib.SimulationMode import SimulationMode
 from .Environment import Environment
 from ..ResearchFactory import ResearchFactory
 from ..BaseResearch import BaseResearch
-from gym.spaces import *
+import gym.spaces as spaces
+import numpy as np
+from lib.Geometry import Geometry
 
 class R1V1Env1(Environment):
 
@@ -90,32 +92,21 @@ class R1V1Env1(Environment):
         })
 
         self.action_space = spaces.Box(
-            low=[relaxLow, speedLow], 
-            high=[relaxHigh, speedHigh]
+            low=np.array([relaxLow, speedLow]), 
+            high=np.array([relaxHigh, speedHigh])
         )
 
 
+
+    #region reward 
 
     def reward(self):
         # raise NotImplementedInterface("reward")
         return 100
 
-    def roadState(self): 
+    #endregion
 
-        if self._roadState is None:
-            self._roadState = {
-                "nLanes": 2,
-                # "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
-            }
-
-        return self._roadState
-
-    
-    def vehicleState(self):
-        absPosition = self.research.vehicleAgent.position
-        # TODO
-        
-
+    #region state
 
     def state(self):
         walkerAgent = self.research.walkerAgent
@@ -132,11 +123,53 @@ class R1V1Env1(Environment):
                 'velocity': np.array([walkerAgent.velocity.x, walkerAgent.velocity.y]),
                 # "lane": spaces.Discrete(nLanes, start=1)
             },
-            "vehicle": spaces.Dict({
-                'position': spaces.Box(low=-np.inf, high=np.inf, shape=(2,)), 
-                'velocity': spaces.Box(low=-150, high=150, shape=(2,)),
-                # "lane": spaces.Discrete(nLanes, start=1)
-            }),
+            "vehicle": self.vehicleState(),
             "road": self.roadState()
         }
 
+        return state
+
+    def getCenter(self):
+        if self.coordinateSystem == "ped":
+            return self.research.walkerAgent.location, Geometry.getGlobalYaw(self.research.walkerAgent.direction)
+        else:
+            raise Exception("getCenter: coordinateSystem unknown")
+
+    def roadState(self): 
+
+        if self._roadState is None:
+            self._roadState = {
+                "nLanes": 2,
+                # "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
+            }
+
+        return self._roadState
+
+    
+    def vehicleState(self):
+        vehicleAgent = self.research.vehicleAgent
+        absPosition = vehicleAgent.position
+        center, centerRotation = self.getCenter()
+
+        position = Geometry.changeCartesianCenter(absPosition, center, centerRotation=centerRotation)
+
+        self.logger.info(f"vehicleState: Vehicle global position x={absPosition.x}, y={absPosition.y}, z={absPosition.z}")
+
+        self.logger.info(f"vehicleState: Vehicle position x={position.x}, y={position.y}, z={position.z}")
+
+        velocity = Geometry.changeCartesianCenter(vehicleAgent.velocity, center, centerRotation=centerRotation)
+
+        self.logger.info(f"vehicleState: Vehicle global velocity x={vehicleAgent.velocity.x}, y={vehicleAgent.velocity.y}, z={vehicleAgent.velocity.z}")
+
+        self.logger.info(f"vehicleState: Vehicle velocity x={velocity.x}, y={velocity.y}, z={velocity.z}")
+
+        return spaces.Dict({
+                'position': position, 
+                'velocity': np.array([velocity.x, velocity.y]),
+                # "lane": spaces.Discrete(nLanes, start=1)
+            })
+        
+
+
+
+    #endregion
