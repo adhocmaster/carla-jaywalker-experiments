@@ -1,1 +1,2 @@
 from .StaticSpeedModel import StaticSpeedModel
+from .RelaxationSpeedModel  import RelaxationSpeedModel
