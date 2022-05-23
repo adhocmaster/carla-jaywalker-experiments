@@ -46,7 +46,7 @@ class DistanceGapModel(GapModel):
         
         d = self.distanceFromOncomingVehicle()
         if d is None:
-            return True
+            return False
 
         # TODO implement the actual gap model. This is very straight forward
         print("distance", d)
