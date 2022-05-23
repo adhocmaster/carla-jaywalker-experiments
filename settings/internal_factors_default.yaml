@@ -1,17 +1,17 @@
 risk_level: "risky"
 
 # Destination related factors
-relaxation_time: 0.5
+relaxation_time: 0.1
 desired_speed: 2
-desired_distance_gap: 2
+desired_distance_gap: 10
 # desired_time_gap: 1
 
 # speed model
-speed_model: "relaxation"
-min_crossing_speed: 0.5
+speed_model: "none"
+min_crossing_speed: 3
 # set max to Usain Bolt's speed
-max_crossing_speed: 10
-median_crossing_speed: 1 
+max_crossing_speed: 6
+median_crossing_speed: 4
 speed_change_probability: 0.1
 
 # relaxation speed model

@@ -58,8 +58,15 @@ class ModelFactory:
                                     actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
                                     internalFactors=self.internalFactors
                                     )
+        antisurvivalGapModel = DistanceGapModel(self.agent, actorManager= self.actorManager, obstacleManager= self.obstacleManager, internalFactors= self.internalFactors)
+        # self.planner.stopGoModel = StopGoModel(         
+        #                             pedGapModel,
+        #                             self.agent, 
+        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+        #                             internalFactors=self.internalFactors
+        #                             )
         self.planner.stopGoModel = StopGoModel(         
-                                    pedGapModel,
+                                    antisurvivalGapModel,
                                     self.agent, 
                                     actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
                                     internalFactors=self.internalFactors
@@ -79,8 +86,8 @@ class ModelFactory:
         if optionalFactors is None:
             return
 
-        self.createCrossingModels(optionalFactors)
-        self.createSurvivalModels(optionalFactors)
+        #self.createCrossingModels(optionalFactors)
+        #self.createSurvivalModels(optionalFactors)
 
 
     #region crossing models

@@ -9,7 +9,7 @@ class DistanceGapModel(GapModel):
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
-        self.name = f"DistanceGapModel #{agent.id}"
+        # self.name = f"DistanceGapModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
         self.initFactors()
 
@@ -41,7 +41,6 @@ class DistanceGapModel(GapModel):
 
     
     def canCross(self):
-
         if self.agent.isCrossing():
             True
         
@@ -50,7 +49,9 @@ class DistanceGapModel(GapModel):
             return True
 
         # TODO implement the actual gap model. This is very straight forward
-        if d > self.desiredGap:
+        print("distance", d)
+        print(self.desiredGap)
+        if d < self.desiredGap:
             return True
 
         self.logger.info(f"Cannot cross as distance distance to oncoming vehicle {d} <= {self.desiredGap}")
