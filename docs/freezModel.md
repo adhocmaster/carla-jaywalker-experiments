@@ -22,3 +22,18 @@ SurvivalDestinationModel.py: goes back and forth base on a safe distance.
    would be where the force equation is calculated.
 
 Pedutils.py: Find how long to freeze base on the waypoint. Explanation on Waypoint.
+
+
+
+
+> 5/23 Notes:
+- use research logs to see the weights of the forces
+- default skeleton just has calc force to return none, will need to be replaced by a 3D carla vector (x, y, z)
+- two functions to work on which will be freeze and unfreeze
+  - have ped frozen for some amount of ticks then unfreeze
+  - ttc and tg to randomize tick threshold, should be a value under tg
+  - ex) randomizing the range of  (0 - ttc) 
+- calculate force runs every tick, a counter can be implemented here (have while loop to count)
+
+USE CONFLICT POINTS TO FREEZE AND TO UNFREEZE WOULD BE THE RANGE OF 0 - TCC
+
