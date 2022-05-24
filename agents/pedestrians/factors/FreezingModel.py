@@ -7,6 +7,7 @@ from ..PedState import PedState
 
 
 class FreezingModel(StateTransitionModel):
+    # create an init to declare counter variable 
 
     @property
     def name(self):
@@ -20,13 +21,23 @@ class FreezingModel(StateTransitionModel):
 
     
     def calculateForce(self):
+        #TODO
+
         return None
 
     
     def canfreeze(self):
-        return False
+        #TODO
+        conflictPoint = self.agent.getPredictedConflictPoint()
+        # figure outwhere get predictedcofnlictp oint and potentially modify 
+        if conflictPoint is None:
+            return None
+        return True
 
 
     def canUnfreeze(self):
+        #TODO
+        # decrease counter 
+        # decide if we want to range from 0 - tcc or tg or just tcc or all at once since we want random
         return False
 
