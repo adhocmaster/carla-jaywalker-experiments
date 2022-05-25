@@ -58,7 +58,7 @@ class ModelFactory:
                                     actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
                                     internalFactors=self.internalFactors
                                     )
-        antisurvivalGapModel = DistanceGapModel(self.agent, actorManager= self.actorManager, obstacleManager= self.obstacleManager, internalFactors= self.internalFactors)
+        antisurvivalGapModel = AntiSurvivalTimeGapModel(self.agent, actorManager= self.actorManager, obstacleManager= self.obstacleManager, internalFactors= self.internalFactors)
         # self.planner.stopGoModel = StopGoModel(         
         #                             pedGapModel,
         #                             self.agent, 
