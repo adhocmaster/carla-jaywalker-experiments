@@ -54,8 +54,8 @@ mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
 # mapManager.load(MapNames.circle_t_junctions)
 
-# mapManager.load(MapNames.Town02_Opt, carla.MapLayer.GROUND)
-mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
+mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+#mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 
 # world = mapManager.world
