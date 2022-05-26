@@ -25,17 +25,20 @@ class AggressiveCrossingFactorModel(CrossingFactorModel, StateTransitionModel):
         veh = self.actorManager.getVehicles()[0]
         ped_transform = ped.get_transform()
         veh_transform = veh.get_transform()
-        ped_loc = ped_transform.get_location()
-        veh_loc = veh_transform.get_location() 
+        ped_loc = ped_transform.location
+        veh_loc = veh_transform.location
+        # ped_loc = ped_transform.get_location()
+        # veh_loc = veh_transform.get_location() 
         # apply algorithm to calculate directional vector
         d_x = (veh_loc.x - ped_loc.x) / veh_loc.distance(ped_loc)
         d_y = (veh_loc.y - ped_loc.y) / veh_loc.distance(ped_loc)
         d_z = (veh_loc.z - ped_loc.z) / veh_loc.distance(ped_loc)
-        d = [d_x, d_y, d_z]
+        d =carla.Vector3D(d_x, d_y, d_z)
+        
         
 
-
-        force = d * magnitude ###
+        # force = d * magnitude ###
+        force = self.destDirection * magnitude
         return force
             
 
@@ -45,3 +48,6 @@ class AggressiveCrossingFactorModel(CrossingFactorModel, StateTransitionModel):
             return self.getOncomingVehicleForce()
             
         return None # in other states this model does not produce force
+    
+    def getNewState(self):
+        return None

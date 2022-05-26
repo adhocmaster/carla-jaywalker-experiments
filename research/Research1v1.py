@@ -59,7 +59,7 @@ class Research1v1(BaseResearch):
 #         self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]]
 
         # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
-        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.AGGRESSIVE_WALKER]
+        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR, Factors.AGGRESSIVE_WALKER]
         self.setup()
 
 
