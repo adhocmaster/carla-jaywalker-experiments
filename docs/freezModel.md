@@ -37,3 +37,7 @@ Pedutils.py: Find how long to freeze base on the waypoint. Explanation on Waypoi
 
 USE CONFLICT POINTS TO FREEZE AND TO UNFREEZE WOULD BE THE RANGE OF 0 - TCC
 
+
+5/25
+- implementing the pedestrian to freeze near the TTC (around when TTC is at 2 or less)
+- then have pedestrian unfreeze after TTC > 10
