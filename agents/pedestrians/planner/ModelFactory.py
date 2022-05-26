@@ -66,7 +66,7 @@ class ModelFactory:
                                     internalFactors=self.internalFactors
                                     )
         # factor models
-
+    
 
         self.planner.models = [
                         self.planner.destinationModel, 
@@ -81,7 +81,7 @@ class ModelFactory:
             return
 
         self.createCrossingModels(optionalFactors)
-        self.createSurvivalModels(optionalFactors)
+        #self.createSurvivalModels(optionalFactors)
         self.createFreezingModels(optionalFactors)
 
 
