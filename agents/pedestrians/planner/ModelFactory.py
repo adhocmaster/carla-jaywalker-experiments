@@ -13,6 +13,7 @@ from ..factors.CrossingOncomingFactorModel import CrossingOncomingFactorModel
 from ..factors.FreezingModel import FreezingModel
 from ..survival_models.SurvivalDestinationModel import SurvivalDestinationModel
 from .SpeedModelFactory import SpeedModelFactory
+from ..factors.AggressiveCrossingFactorModel import AggressiveCrossingFactorModel
 
 class ModelFactory:
 
@@ -84,6 +85,7 @@ class ModelFactory:
         self.createCrossingModels(optionalFactors)
         self.createSurvivalModels(optionalFactors)
         self.createFreezingModels(optionalFactors)
+        self.createAggressiveModel(optionalFactors)
 
 
     #region crossing models
@@ -93,6 +95,8 @@ class ModelFactory:
             self.createCrossingOncomingVehicleModel(optionalFactors)
         if Factors.DRUNKEN_WALKER in optionalFactors:
             self.createDrunkinWalkModels(optionalFactors)
+        if Factors.AGGRESSIVE_WALKER in optionalFactors:
+            self.createAggressiveModel(optionalFactors)
 
 
     def createCrossingOncomingVehicleModel(self, optionalFactors: List[Factors]):
@@ -148,4 +152,16 @@ class ModelFactory:
         self.planner.models.append(freezingModel)
         self.planner.freezingModels.append(freezingModel)
         self.planner.stateTransitionModels.append(freezingModel)
+        
+    
+    def createAggressiveModel(self, optionalFactors: List[Factors]):
+            
+        self.planner.AggressiveCrossingFactorModel = AggressiveCrossingFactorModel(
+                                    self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                                    )
+        self.planner.models.append(self.planner.AggressiveCrossingFactorModel)
+        self.planner.crossingFactorModels.append(self.planner.AggressiveCrossingFactorModel)
+        self.planner.stateTransitionModels.append(self.planner.AggressiveCrossingFactorModel)
 
