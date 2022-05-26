@@ -8,6 +8,7 @@ from agents.pedestrians.factors import InternalFactors
 from lib import NotImplementedInterface
 from .GapModel import GapModel
 import numpy as np
+import math
 
 class AntiSurvivalTimeGapModel(GapModel):
 
@@ -43,11 +44,16 @@ class AntiSurvivalTimeGapModel(GapModel):
 
         distance_relaxation = (desired_speed/2) * relaxation_time
 
-        time_to_cross = (5 - distance_relaxation)/desired_speed
+        time_to_cross = (5 - distance_relaxation)/desired_speed if (5 - distance_relaxation)/desired_speed > 0 else 0
+
         self.logger.info(f"Time gap is {timeGap} seconds")
         self.logger.info(f"Total time is {time_to_cross + relaxation_time} seconds")
-        if timeGap <= (time_to_cross + relaxation_time) * 2.5 and timeGap >= time_to_cross + relaxation_time:
+        # if timeGap <= (time_to_cross + relaxation_time) * 2.5 and timeGap >= time_to_cross + relaxation_time:
+        #     return True
+        roadTimeGap = math.sqrt(timeGap**2 - (time_to_cross + relaxation_time)**2)
+        if roadTimeGap <= time_to_cross + relaxation_time:
             return True
+        
 
 
         return False
@@ -70,6 +76,9 @@ class AntiSurvivalTimeGapModel(GapModel):
 
     def getAvailableGap(self):
         return self.agent.getAvailableTimeGapWithClosestVehicle()
+
+    def distanceFromOncomingVehicle(self):
+        return self.actorManager.distanceFromNearestOncomingVehicle()
 
 
     @abstractmethod
