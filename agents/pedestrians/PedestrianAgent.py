@@ -121,6 +121,11 @@ class PedestrianAgent(InfoAgent):
             return True
         return False
 
+    def isFrozen(self):
+        if self.state == PedState.FROZEN:
+            return True
+        return False
+
     def isFinished(self):
         if self.state == PedState.FINISHED:
             return True

@@ -10,6 +10,7 @@ from ..factors.DrunkenWalkModel import DrunkenWalkModel
 from ..gap_models import *
 from agents.pedestrians.StopGoModel import StopGoModel
 from ..factors.CrossingOncomingFactorModel import CrossingOncomingFactorModel
+from ..factors.FreezingModel import FreezingModel
 from ..survival_models.SurvivalDestinationModel import SurvivalDestinationModel
 from .SpeedModelFactory import SpeedModelFactory
 
@@ -82,6 +83,7 @@ class ModelFactory:
 
         self.createCrossingModels(optionalFactors)
         self.createSurvivalModels(optionalFactors)
+        self.createFreezingModels(optionalFactors)
 
 
     #region crossing models
@@ -123,8 +125,27 @@ class ModelFactory:
         self.planner.survivalModels.append(survivalDestModel)
         self.planner.stateTransitionModels.append(survivalDestModel)
         pass
+      
     def createDrunkinWalkModels(self, optionalFactors: List[Factors]):
         if Factors.DRUNKEN_WALKER in optionalFactors:
             drunkenwalk = DrunkenWalkModel(self.agent, self.actorManager, self.obstacleManager, self.internalFactors)
             self.planner.models.append(drunkenwalk)
             
+            
+
+    #endregion
+
+    #region freezing models
+    
+    def createFreezingModels(self, optionalFactors: List[Factors]):
+        if Factors.FREEZING_FACTOR in optionalFactors:
+            freezingModel = FreezingModel(
+                                    self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                            )
+
+        self.planner.models.append(freezingModel)
+        self.planner.freezingModels.append(freezingModel)
+        self.planner.stateTransitionModels.append(freezingModel)
+

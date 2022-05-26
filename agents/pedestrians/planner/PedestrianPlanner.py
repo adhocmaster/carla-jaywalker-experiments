@@ -31,6 +31,7 @@ class PedestrianPlanner:
         self.stateTransitionModels: List[StateTransitionModel] = []
         self.crossingFactorModels: List[CrossingFactorModel] = []
         self.survivalModels: List[SurvivalModel] = []
+        self.freezingModels: List[SurvivalModel] = []
 
         self.modelCoeff: Dict[str, float] = {}
 
