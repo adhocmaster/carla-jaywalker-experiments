@@ -1,4 +1,3 @@
-from turtle import color
 import carla
 import numpy as np
 import random
