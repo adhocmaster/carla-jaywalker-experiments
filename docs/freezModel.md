@@ -41,3 +41,12 @@ USE CONFLICT POINTS TO FREEZE AND TO UNFREEZE WOULD BE THE RANGE OF 0 - TCC
 5/25
 - implementing the pedestrian to freeze near the TTC (around when TTC is at 2 or less)
 - then have pedestrian unfreeze after TTC > 10
+
+5/30
+- This model would freeze as TTC gets close. It would freeze for a randomized time. 
+- Implemented the freezing zone near TTC as stated previously.
+- Modified the freezingperiod from a randomized range from 5 to 20. 
+- The model could unfreeze when the freezing period of zero and there is no threat (TTC is none or greater than 12) else we can want to decrease the unfreeze period.
+TODO:
+- figure out how to decrease according to simulation's clock
+- define the unfreeze period range base on papers

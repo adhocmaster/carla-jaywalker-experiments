@@ -1,8 +1,8 @@
 risk_level: "risky"
 
 # Destination related factors
-relaxation_time: 0.5
-desired_speed: 2
+relaxation_time: 0.3
+desired_speed: 2.5
 desired_distance_gap: 2
 # desired_time_gap: 1
 frozen_speed: 0
