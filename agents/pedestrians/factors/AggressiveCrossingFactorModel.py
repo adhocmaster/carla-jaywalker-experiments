@@ -34,11 +34,16 @@ class AggressiveCrossingFactorModel(CrossingFactorModel, StateTransitionModel):
         d_y = (veh_loc.y - ped_loc.y) / veh_loc.distance(ped_loc)
         d_z = (veh_loc.z - ped_loc.z) / veh_loc.distance(ped_loc)
         d =carla.Vector3D(d_x, d_y, d_z)
-        
+        # move toward original destination after passing conflict point
+        # nearest_distance = self.actorManager.distanceFromNearestOncomingVehicle()
+        # if nearest_distance < 5:
+        #     force = self.destDirection * magnitude
+        # else:
+        #     force = d * magnitude
         
 
         # force = d * magnitude ###
-        force = self.destDirection * magnitude
+        # force = self.destDirection * magnitude
         return force
             
 
