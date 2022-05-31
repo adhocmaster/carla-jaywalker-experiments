@@ -60,6 +60,7 @@ class Research1v1(BaseResearch):
 
 #        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
 
+
         self.setup()
 
 
