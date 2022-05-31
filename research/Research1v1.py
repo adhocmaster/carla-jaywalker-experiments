@@ -480,7 +480,7 @@ class Research1v1(BaseResearch):
         if not self.stats:
             return
 
-        dateStr = date.today().strftime("%m-%d-%Y")
+        dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
         statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
         # df = pd.DataFrame.from_dict(self.statDict)
         # df.to_csv(statsPath, index=False)

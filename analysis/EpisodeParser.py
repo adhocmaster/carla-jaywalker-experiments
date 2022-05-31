@@ -1,6 +1,5 @@
 import math
 import os
-from turtle import distance
 import pandas as pd
 import numpy as np
 
