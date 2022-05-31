@@ -6,6 +6,7 @@ from ..PedestrianAgent import PedestrianAgent
 from lib import ActorManager, ObstacleManager, LoggerFactory, TooManyNewStates
 from agents.pedestrians.factors import *
 from ..DestinationModel import DestinationModel
+from ..factors.DrunkenWalkModel import DrunkenWalkModel
 from ..gap_models import *
 from agents.pedestrians.StopGoModel import StopGoModel
 from ..factors.CrossingOncomingFactorModel import CrossingOncomingFactorModel
@@ -90,6 +91,8 @@ class ModelFactory:
 
         if Factors.CROSSING_ON_COMING_VEHICLE in optionalFactors:
             self.createCrossingOncomingVehicleModel(optionalFactors)
+        if Factors.DRUNKEN_WALKER in optionalFactors:
+            self.createDrunkinWalkModels(optionalFactors)
 
 
     def createCrossingOncomingVehicleModel(self, optionalFactors: List[Factors]):
@@ -122,6 +125,13 @@ class ModelFactory:
         self.planner.survivalModels.append(survivalDestModel)
         self.planner.stateTransitionModels.append(survivalDestModel)
         pass
+      
+    def createDrunkinWalkModels(self, optionalFactors: List[Factors]):
+        if Factors.DRUNKEN_WALKER in optionalFactors:
+            drunkenwalk = DrunkenWalkModel(self.agent, self.actorManager, self.obstacleManager, self.internalFactors)
+            self.planner.models.append(drunkenwalk)
+            
+            
 
     #endregion
 
@@ -138,3 +148,4 @@ class ModelFactory:
         self.planner.models.append(freezingModel)
         self.planner.freezingModels.append(freezingModel)
         self.planner.stateTransitionModels.append(freezingModel)
+
