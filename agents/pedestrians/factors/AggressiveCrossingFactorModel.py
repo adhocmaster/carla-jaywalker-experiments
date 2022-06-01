@@ -43,7 +43,7 @@ class AggressiveCrossingFactorModel(CrossingFactorModel, StateTransitionModel):
         
 
         # force = d * magnitude ###
-        # force = self.destDirection * magnitude
+        force = self.destDirection * magnitude
         return force
             
 
