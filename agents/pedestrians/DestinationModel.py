@@ -25,6 +25,8 @@ class DestinationModel(ForceModel):
 
         self.speedModel: SpeedModel = None
 
+        self.crossTick = 0
+
         pass
 
 
@@ -122,11 +124,12 @@ class DestinationModel(ForceModel):
 
 
     def calculateForce(self):
-
         # return None
         if self.agent.isCrossing() == False:
+            self.crossTick = 0
             return None
 
+        self.crossTick += 1
 
         self.agent.logger.info(f"Collecting state from {self.name}")
         
@@ -168,8 +171,17 @@ class DestinationModel(ForceModel):
     def calculateForceForDesiredVelocity(self):
         desiredVelocity = self.getDesiredVelocity()
         oldVelocity = self.agent.getOldVelocity()
+        self.agent.logger.info(f"desiredV: {desiredVelocity.length()}")
+        self.agent.logger.info(f"oldV: {oldVelocity.length()}")
+        self.agent.logger.info(f"crossTick: {self.crossTick}")
 
-        return (desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"]
+        # if self.crossTick * 0.007 >= self.internalFactors["relaxation_time"]:
+        #     self.agent.logger.info(f"if oldV: {oldVelocity.length()}")
+        #     return desiredVelocity
+
+        dv = (desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"] * self.crossTick
+        self.agent.logger.info(f"calculate dv: {dv.length()}")
+        return ((desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"]) * self.crossTick
 
     
 

@@ -17,7 +17,7 @@ class AntiSurvivalTimeGapModel(GapModel):
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
         self.logger = LoggerFactory.create(self.name)
         # self.initFactors()
-
+        self.crossTick = 0
 
         pass
 
@@ -29,9 +29,12 @@ class AntiSurvivalTimeGapModel(GapModel):
 
     #     pass
     def calculateForce(self):
+        print("CALCULATE FORCE")
+        self.crossTick +=1
+        
         return
+
     def canCross(self):
-        print("WEEWOOWEEWOO")
         #riskLevel = self.internalFactors["risk_level"]
         # if riskLevel == "extreme":
         #     return True

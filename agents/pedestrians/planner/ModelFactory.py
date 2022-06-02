@@ -75,7 +75,7 @@ class ModelFactory:
 
 
         self.planner.models = [
-                        self.planner.destinationModel, 
+                        self.planner.destinationModel,
                         self.planner.stopGoModel
                       ]
         self.planner.stateTransitionModels = [self.planner.stopGoModel]
