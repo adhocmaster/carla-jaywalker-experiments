@@ -53,6 +53,7 @@ class Research1v1(BaseResearch):
         self.episodeTimeStep = 0
         self.stats = stats
         self.settingsId = settingsId
+        self.closestDistance = 999
 
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
 
@@ -218,17 +219,8 @@ class Research1v1(BaseResearch):
                 raise Exception("Cannot find a destination")
         return destination
 
-    def recreateVehicle(self):
-        # destroy current one
-        # self.simulator.removeOnTicker()
-        self.logger.warn(f"Recreating vehicle")
-        self.vehicleFactory.destroy(self.vehicle)
-        self.vehicleAgent = None
-        self.vehicle = None
-        self.createVehicle()
-
     def resetWalker(self, sameOrigin=True):
-
+    
         if sameOrigin == True:
             
             self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
@@ -251,10 +243,19 @@ class Research1v1(BaseResearch):
 
     def recreateDynamicAgents(self):
         # 1. recreated vehicle
-        self.recreateVehicle()
+        # destroy current one
+        # self.simulator.removeOnTicker()
+        self.logger.warn(f"Recreating vehicle")
+        self.vehicleFactory.destroy(self.vehicle)
+        self.vehicleAgent = None
+        self.vehicle = None
 
         # 2. reset walker
         self.resetWalker(sameOrigin=True)
+        
+        # 3. recreate vehicle (we have to do this after resetting the walker,
+        #    in case the walker was at the new vehicle spawn point)
+        self.createVehicle()
 
         pass
     
@@ -322,16 +323,21 @@ class Research1v1(BaseResearch):
         killCurrentEpisode = False
         
         if self.walkerAgent.isFinished():
-            self.episodeNumber += 1
-            self.episodeTimeStep = 0
+            killCurrentEpisode = True
+            
+        dist = self.walkerAgent.location.distance_2d(self.vehicle.get_location())
+        # self.closestDistance = min(self.closestDistance, dist)
+        # self.logger.info(f"Distqance between walker and vehicle: {dist}; minimum: {self.closestDistance}")
+        if dist < 2.8:
             killCurrentEpisode = True
 
         if self.episodeTimeStep > 200:
-            self.episodeTimeStep = 0
             killCurrentEpisode = True
             self.logger.info("Killing current episode as it takes more than 200 ticks")
         
         if killCurrentEpisode:
+            self.episodeNumber += 1
+            self.episodeTimeStep = 0
 
             self.recreateDynamicAgents()
             # 3. update statDataframe

@@ -7,6 +7,7 @@ import random
 class DrunkenWalkModel(ForceModel):
     def __init__(self, agent: any,  actorManager: ActorManager, obstacleManager: ObstacleManager,
                     internalFactors: InternalFactors) -> None:
+        
         super().__init__(agent, actorManager, obstacleManager, internalFactors)
         self.curr_direction = 1 #1 for right, -1 for left
         self.curr_tick = 0

@@ -7,7 +7,7 @@ from ..PedState import PedState
 
 
 class FreezingModel(StateTransitionModel):
-
+    
     @property
     def name(self):
         return f"FreezingModel #{self.agent.id}"
