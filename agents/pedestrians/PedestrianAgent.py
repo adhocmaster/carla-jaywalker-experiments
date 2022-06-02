@@ -92,18 +92,18 @@ class PedestrianAgent(InfoAgent):
         #     return None # already pass the conflict zone
 
 
-        TG = self.addError(TG)
+        TG = self._addErrorToTimeEstimtion(TG)
 
         self.logger.info(f"Perceived TG (Time gap) = {TG} seconds")
 
         return TG
 
-    def addError(self, TTC):
+    def _addErrorToTimeEstimtion(self, T):
         # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
         # noiseFactor = np.random.uniform(0.8, 1.2) NOISE CANNOT BE RANDOM
         noiseFactor = self._localPlanner.getInternalFactor("TG_multiplier")
 
-        return TTC * noiseFactor # TODO error modeling in Gap
+        return T * noiseFactor # TODO error modeling in Gap
 
     
     def getPredictedConflictPoint(self):

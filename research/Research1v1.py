@@ -56,8 +56,11 @@ class Research1v1(BaseResearch):
         self.closestDistance = 999
 
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
+        self.optionalFactors = []
 
-#         self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]]
+        # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]
+
+#        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
 
         # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
         self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR, Factors.AGGRESSIVE_WALKER]
@@ -485,7 +488,7 @@ class Research1v1(BaseResearch):
         if not self.stats:
             return
 
-        dateStr = date.today().strftime("%m-%d-%Y")
+        dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
         statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
         # df = pd.DataFrame.from_dict(self.statDict)
         # df.to_csv(statsPath, index=False)

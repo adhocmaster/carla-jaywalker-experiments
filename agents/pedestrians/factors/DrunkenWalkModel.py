@@ -29,6 +29,8 @@ class DrunkenWalkModel(ForceModel):
 
     def calculateForce(self):
         print("CALCULATING FORCE OF STUFFn\n\n\n\n\n\n", self.curr_tick)
+        if not self.agent.isCrossing():
+            return None
         if self.curr_tick >= self.max_period:
             self.reset_period()
         self.curr_vector = self.max_vector*math.cos(self.period_scalar*self.curr_tick)

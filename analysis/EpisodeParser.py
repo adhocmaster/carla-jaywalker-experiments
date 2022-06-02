@@ -1,6 +1,5 @@
 import math
 import os
-from turtle import distance
 import pandas as pd
 import numpy as np
 
@@ -13,7 +12,7 @@ class EpisodeParser:
         self.preComputeR1V1()
         pass
 
-
+    
     def preComputeR1V1(self):
         epDf = self.df.groupby("episode")
         self.df['w_x_diff'] = epDf['w_y'].diff()
@@ -48,3 +47,35 @@ class EpisodeParser:
     
     def getDistanceCoveredByEpisode(self, episodeNo, dCol):
         return self.df.groupby("episode")[dCol].sum()
+
+    
+
+    def getPedestrianSourceDest(self, xCol, yCol):
+        # right now we will return the start and endpoints having greatest distance across all the episodes.
+        episodeNos = self.getEpisodeNos()
+
+        maxSrc = None
+        maxDest = None
+        maxD = 0
+
+        for ep in episodeNos:
+            epDf = self.getEpisodeDF(ep)
+            first = epDf.iloc[0]
+            last = epDf.iloc[-1]
+            src = (first[xCol], first[yCol])
+            dest = (last[xCol], last[yCol])
+
+            distance = Geometry.distance(src, dest)
+
+            if distance > maxD:
+                maxD = distance
+                maxSrc = src
+                maxDest = dest
+
+        
+        return maxSrc, maxDest
+
+
+
+    
+    
