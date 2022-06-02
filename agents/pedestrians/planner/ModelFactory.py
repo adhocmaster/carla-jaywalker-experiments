@@ -145,7 +145,7 @@ class ModelFactory:
                                     internalFactors=self.internalFactors
                             )
 
-        self.planner.models.append(freezingModel)
-        self.planner.freezingModels.append(freezingModel)
-        self.planner.stateTransitionModels.append(freezingModel)
+            self.planner.models.append(freezingModel)
+            self.planner.freezingModels.append(freezingModel)
+            self.planner.stateTransitionModels.append(freezingModel)
 

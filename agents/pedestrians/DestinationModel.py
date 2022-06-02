@@ -166,10 +166,23 @@ class DestinationModel(ForceModel):
 
     
     def calculateForceForDesiredVelocity(self):
+
+        """We changed the relationship between change in speed and relaxation time (made it linear so that the pedestrian can linearly increase the speed to the desired velocity)
+
+        Returns:
+            _type_: _description_
+        """
         desiredVelocity = self.getDesiredVelocity()
         oldVelocity = self.agent.getOldVelocity()
 
-        return (desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"]
+        requiredChangeInVelocity = (desiredVelocity - oldVelocity)
+
+        maxChangeInSpeed = desiredVelocity.length()
+        requiredChangeInSpeed = requiredChangeInVelocity.length()
+
+        relaxationTime = (requiredChangeInSpeed / maxChangeInSpeed) * self.internalFactors["relaxation_time"]
+        
+        return requiredChangeInVelocity / relaxationTime
 
     
 
