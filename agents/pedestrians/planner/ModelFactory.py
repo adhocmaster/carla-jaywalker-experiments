@@ -11,6 +11,7 @@ from ..gap_models import *
 from agents.pedestrians.StopGoModel import StopGoModel
 from ..factors.CrossingOncomingFactorModel import CrossingOncomingFactorModel
 from ..factors.FreezingModel import FreezingModel
+from ..factors.AntiSurvivalTimeGapModel import AntiSurvivalTimeGapModel
 from ..survival_models.SurvivalDestinationModel import SurvivalDestinationModel
 from .SpeedModelFactory import SpeedModelFactory
 
@@ -84,7 +85,28 @@ class ModelFactory:
         self.createCrossingModels(optionalFactors)
         self.createSurvivalModels(optionalFactors)
         self.createFreezingModels(optionalFactors)
+        self.createAntiSurvivalModel(optionalFactors)
 
+
+    def createAntiSurvivalModel(self, optionalFactors: List[Factors]):
+        if Factors.ANTISURVIVAL in optionalFactors:
+            antiSurvivalTimeGapModel = AntiSurvivalTimeGapModel(self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                                    )
+
+            self.planner.stopGoModel = StopGoModel(         
+                                    antiSurvivalTimeGapModel,
+                                    self.agent, 
+                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                    internalFactors=self.internalFactors
+                                    )
+
+            self.planner.models = [
+                            self.planner.destinationModel, 
+                            self.planner.stopGoModel
+                        ]
+            self.planner.stateTransitionModels = [self.planner.stopGoModel]
 
     #region crossing models
     def createCrossingModels(self, optionalFactors: List[Factors]):
