@@ -66,7 +66,7 @@ class MapManager(ClientUser):
             print(f"MapManager: loading new map {mapName.value}")
             self.client.load_world(mapName.value, map_layers=layers)
 
-        self.client.load_world(mapName.value, map_layers=layers)
+        # self.client.load_world(mapName.value, map_layers=layers)
         self.currentMapName = mapName
 
         self.generateWaypoints()
