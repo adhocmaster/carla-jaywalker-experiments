@@ -85,7 +85,7 @@ class MapManager(ClientUser):
     def configureSpectator(self):
 
         (x, y, z) = self.getSpectatorPos()
-        (x, y, z) = (63, 200, 10)
+        (x, y, z) = (-110, -5, 10)
         print(f"MapManager: setting spectator position to ({x}, {y}, {z})")
         transform = carla.Transform(carla.Location(x=x, y=y, z=z), carla.Rotation(yaw=-90)) 
         if self.currentMapName == MapNames.circle_t_junctions:

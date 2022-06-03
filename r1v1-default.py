@@ -5,7 +5,7 @@ from research import ResearchFactory
 @click.option(
     '--max_ticks',
     metavar='number',
-    default=100,
+    default=10000,
     type=int,
     help='Number of ticks the simulator will run'
     )

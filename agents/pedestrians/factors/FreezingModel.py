@@ -53,7 +53,7 @@ class FreezingModel(StateTransitionModel):
         # as the TTC decreases close to 2 seconds, we want to freeze
         # if TTC increases up to 10 seconds then we want to unfreeze
         if TTC != None:
-            if TTC <= random.randint(1,3):
+            if TTC == random.randint(1,4):
                 return True
             if TTC > 10:
                 return False
@@ -62,11 +62,12 @@ class FreezingModel(StateTransitionModel):
         return False 
 
     def canUnfreeze(self, TTC):
-        #self.agent.logger.info(f"TTX: {self.TTX}")
         if self.unfreezePeriod == 0  and (TTC == None or TTC > 12):
             return True
         else:
             if self.unfreezePeriod > 0:
-                self.unfreezePeriod -= 0.5
+                self.unfreezePeriod -= 0.5 # just testing the 0.007 sec/tick 
         return False
 
+# runtime error when using -= 0.007
+# runtime error when using -= 0.007 * 0.5
