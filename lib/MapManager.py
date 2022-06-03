@@ -66,6 +66,7 @@ class MapManager(ClientUser):
             print(f"MapManager: loading new map {mapName.value}")
             self.client.load_world(mapName.value, map_layers=layers)
 
+        # self.client.load_world(mapName.value, map_layers=layers)
         self.currentMapName = mapName
 
         self.generateWaypoints()
@@ -95,7 +96,7 @@ class MapManager(ClientUser):
         #     transform = carla.Transform(carla.Location(x=x, y=y, z=z*3), carla.Rotation(pitch=-90)) 
 
         if self.currentMapName == MapNames.Town02_Opt:
-            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.4), carla.Rotation(pitch=-90)) 
+            transform = carla.Transform(carla.Location(x=x-20, y=y-10, z=10), carla.Rotation(pitch=-30, yaw=190)) 
             
         
         spectator = self.world.get_spectator()
