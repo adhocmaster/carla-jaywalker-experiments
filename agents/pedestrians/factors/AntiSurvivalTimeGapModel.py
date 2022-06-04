@@ -5,10 +5,8 @@ from agents.pedestrians.PedUtils import PedUtils
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
-from lib import NotImplementedInterface
 from ..gap_models.GapModel import GapModel
-import numpy as np
-import math
+import random
 
 class AntiSurvivalTimeGapModel(GapModel):
 
@@ -16,69 +14,33 @@ class AntiSurvivalTimeGapModel(GapModel):
 
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
         self.logger = LoggerFactory.create(self.name)
-        # self.initFactors()
-        self.crossTick = 0
-
-        pass
+        self.timeGap_error = 1
 
     @property
     def name(self):
         return f"AntiSurvivalTimeGapModel #{self.agent.id}"
     
-    # def initFactors(self):
-
-    #     pass
     def calculateForce(self):
-        print("CALCULATE FORCE")
-        self.crossTick +=1
-        
-        return
+        pass
 
     def canCross(self):
-        #riskLevel = self.internalFactors["risk_level"]
-        # if riskLevel == "extreme":
-        #     return True
-
         timeGap = self.getAvailableGap()
         if timeGap is None:
+            self.timeGap_error = random.uniform(0.9, 1.1)
             return False
 
         relaxation_time, desired_speed = self.internalFactors["relaxation_time"], self.internalFactors["desired_speed"]
-
         distance_relaxation = (desired_speed/2) * relaxation_time
-
         time_to_cross = (5 - distance_relaxation)/desired_speed if (5 - distance_relaxation)/desired_speed > 0 else 0
 
         self.logger.info(f"Time gap is {timeGap} seconds")
         self.logger.info(f"Total time is {time_to_cross + relaxation_time} seconds")
+        self.logger.info(f"TG error is {self.timeGap_error}")
 
-        if time_to_cross + relaxation_time >= timeGap:
+        if time_to_cross + relaxation_time >= timeGap * self.timeGap_error:
             return True
-        # if timeGap <= (time_to_cross + relaxation_time) * 2.5 and timeGap >= time_to_cross + relaxation_time:
-        #     return True
-        #roadTimeGap = math.sqrt(timeGap**2 - (time_to_cross + relaxation_time)**2)
-        #if roadTimeGap <= time_to_cross + relaxation_time:
-         #   return True
-        
-
 
         return False
-        # p_go = self.p_go(timeGap)
-
-        # if riskLevel == "cautious":
-        #     p_go = 0.8 * p_go
-
-        # if riskLevel == "risky":
-        #     p_go = p_go * 2
-
-
-
-        # if p_go > 0.85:
-        #     return True
-
-        # return np.random.choice([True, False], p=[p_go, 1-p_go])
-
-
 
     def getAvailableGap(self):
         return self.agent.getAvailableTimeGapWithClosestVehicle()
@@ -90,13 +52,4 @@ class AntiSurvivalTimeGapModel(GapModel):
     @abstractmethod
     def p_go(self, gap):
         return 1
-        #raise NotImplementedInterface("getGoProbability")
-
-    # @abstractmethod
-    # def getCriticalGap(self):
-    #     raise NotImplementedInterface("getCriticalGap")
-
-    # @abstractmethod
-    # def getAvailableGap(self):
-    #     raise NotImplementedInterface("getAvailableGap")
 
