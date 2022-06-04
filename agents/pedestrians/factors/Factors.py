@@ -6,4 +6,4 @@ class Factors(Enum):
     FREEZING_FACTOR = auto()
     MAGNETIC_VEHICLE = auto()
     DRUNKEN_WALKER = auto()
-    
+    AGGRESSIVE_WALKER = auto()
