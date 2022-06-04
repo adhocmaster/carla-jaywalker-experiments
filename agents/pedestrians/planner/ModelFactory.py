@@ -149,13 +149,13 @@ class ModelFactory:
                                     internalFactors=self.internalFactors
                             )
 
-        self.planner.models.append(freezingModel)
-        self.planner.freezingModels.append(freezingModel)
-        self.planner.stateTransitionModels.append(freezingModel)
-        
+            self.planner.models.append(freezingModel)
+            self.planner.freezingModels.append(freezingModel)
+            self.planner.stateTransitionModels.append(freezingModel)
+            
     
     def createAggressiveModel(self, optionalFactors: List[Factors]):
-            
+        
         self.planner.AggressiveCrossingFactorModel = AggressiveCrossingFactorModel(
                                     self.agent, 
                                     actorManager=self.actorManager, obstacleManager=self.obstacleManager, 

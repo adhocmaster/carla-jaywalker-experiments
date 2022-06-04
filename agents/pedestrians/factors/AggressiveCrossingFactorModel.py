@@ -38,7 +38,7 @@ class AggressiveCrossingFactorModel(CrossingFactorModel, StateTransitionModel):
         force = d * magnitude
         # nearest_distance = self.actorManager.distanceFromNearestOncomingVehicle()
         # v_vel = veh.get_velocity()
-        if v_vel.x < 2 and v_vel.y < 2 and v_vel.z < 2:
+        if v_vel.x == 0 and v_vel.y == 0 and v_vel.z == 0:
             force = self.destDirection * magnitude
             return force
         

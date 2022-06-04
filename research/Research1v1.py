@@ -55,7 +55,7 @@ class Research1v1(BaseResearch):
         self.settingsId = settingsId
         self.closestDistance = 999
 
-        self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
+        #self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.DRUNKEN_WALKER]
         # self.optionalFactors = []
@@ -65,7 +65,8 @@ class Research1v1(BaseResearch):
 #        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
 
         # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
-        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR, Factors.AGGRESSIVE_WALKER]
+        #self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR, Factors.AGGRESSIVE_WALKER]
+        self.optionalFactors = [Factors.AGGRESSIVE_WALKER]
         self.setup()
 
 
