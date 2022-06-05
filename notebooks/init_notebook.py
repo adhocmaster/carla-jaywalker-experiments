@@ -8,7 +8,7 @@ except ValueError: # Already removed
 #projectFolder = 'C:/AV/Carla/CARLA_0.9.13/WindowsNoEditor/PythonAPI/experiments'
 # projectFolder = 'E:\\AV\\Carla\\CARLA_0.9.13\\WindowsNoEditor\\PythonAPI\\experiments'
 
-projectFolder = "C:/Users/carla/carla-jaywalker-experiments"
+# projectFolder = "C:/Users/carla/carla-jaywalker-experiments"
 projectFolder = 'C:\\Users\\carla\\carla-jaywalker-experiments'
 
 sys.path.append(str(projectFolder))
