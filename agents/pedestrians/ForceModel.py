@@ -68,12 +68,12 @@ class ForceModel:
         
         # clip force
         if force.length() > self.maxAcceleration:
-            self.logger.info(f"Clipping {force.length()} to {self.maxAcceleration}")
+            self.agent.logger.info(f"{self.name}: Clipping {force.length()} to {self.maxAcceleration}")
             force = force.make_unit_vector() *  self.maxAcceleration
 
         # clip force
         if force.length() < self.minAcceleration:
-            self.logger.info(f"Clipping {force.length()} to {self.minAcceleration}")
+            self.agent.logger.info(f"{self.name}: Clipping {force.length()} to {self.minAcceleration}")
             force = force.make_unit_vector() *  self.minAcceleration
         
         return force
