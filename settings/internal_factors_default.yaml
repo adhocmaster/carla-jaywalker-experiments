@@ -24,7 +24,7 @@ acceleration_negative_min: -100
 
 # GAP params
 # for TG_multiplier underestimate TG if less than 1 and overestimate TG if > 1
-TG_multiplier: 0.9
+TG_multiplier: 1
 brewer_beta0: 6.2064
 brewer_beta1: -0.9420
 
