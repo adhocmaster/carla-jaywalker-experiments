@@ -27,3 +27,9 @@ sequenceDiagram
 
 
 ```
+
+# TODO:
+1. Build the crosswalk model with areaPolygon and goalline as inputs 
+2. automate the caculation of the goal line
+3. automate the calculation of the areaPolygon
+4. Integrate crosswalk model with DestinationModel
