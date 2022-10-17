@@ -1,4 +1,5 @@
 import carla
+import shapely
 
 class CrosswalkModel:
     def __init__(self, source, idealDestination, areaPolygon=None, goalLine=None):
@@ -16,12 +17,18 @@ class CrosswalkModel:
         # TODO: we make a generic one which may be based on real world dataset. Also create a goal line
         pass
 
+    def createGoalLine(self, length):
+        goal = self.idealDestination
+        goalLine = shapely.LineString([goal.coords[0]-length, goal.coords[0]+length])
+        return goalLine
+
+
     def generateIntermediatePoints(self):
         # TODO
         # 1. find the points
 
         # 2. set nextIntermediatePoint to the first one
-        self.nextIntermediatePoint = 0
+        self.nextIntermediatePointIdx = 0
 
         # 3. set self.finalDestination
 
