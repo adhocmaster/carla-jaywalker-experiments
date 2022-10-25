@@ -156,7 +156,6 @@ class CrosswalkModel:
         # 3. set self.finalDestination
         self.finalDestination = new_points[-1]
 
-        pass
 
 
     def getNextDestinationPoint(self, agentLocation: carla.Location):
