@@ -23,6 +23,10 @@ class EpisodeParser:
             # TODO we need to do P2P distance.
             self.df["distance"] = ((self.df["w_x"] - self.df["v_x"]) ** 2 + (self.df["w_y"] - self.df["v_y"]) ** 2) ** 0.5
         
+    
+    def deriveAngularSpeed(self, xCol, yCol, newColName):
+        # TODO: Suematsu. add a derived column with the name "newColName"
+        pass
 
 
     def getEpisodeNos(self):
