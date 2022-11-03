@@ -7,4 +7,5 @@ class Factors(Enum):
     MAGNETIC_VEHICLE = auto()
     DRUNKEN_WALKER = auto()
     ANTISURVIVAL = auto()
+    # CROSSWALK_MODEL = auto()
     

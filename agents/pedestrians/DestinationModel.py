@@ -6,11 +6,19 @@ from .PedestrianAgent import PedestrianAgent
 from agents.pedestrians.factors import InternalFactors
 from .PedUtils import PedUtils
 from .speed_models.SpeedModel import SpeedModel
+from .destination import CrosswalkModel
 
 
 class DestinationModel(ForceModel):
 
-    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors, final_destination=None) -> None:
+    def __init__(
+        self, 
+        agent: PedestrianAgent, 
+        actorManager: ActorManager, 
+        obstacleManager: ObstacleManager, 
+        internalFactors: InternalFactors, 
+        final_destination=None
+        ) -> None:
 
         super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
 
@@ -24,6 +32,15 @@ class DestinationModel(ForceModel):
         self.initFactors()
 
         self.speedModel: SpeedModel = None
+        self.crosswalkModel: CrosswalkModel = None
+
+        if self.internalFactors["use_crosswalk_area_model"]:
+            self.crosswalkModel = CrosswalkModel(
+                source = self.agent.location,
+                idealDestination = None,
+                areaPolygon = None,
+                goalLine = None
+            )
 
         pass
 
@@ -39,6 +56,9 @@ class DestinationModel(ForceModel):
 
         if "relaxation_time" not in self.internalFactors:
             self.internalFactors["relaxation_time"] = 0.1 
+
+        if "use_crosswalk_area_model" not in self.internalFactors:
+            self.internalFactors["use_crosswalk_area_model"] = False
         
         pass
 

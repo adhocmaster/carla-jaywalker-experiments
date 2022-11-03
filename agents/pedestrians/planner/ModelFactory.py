@@ -6,6 +6,7 @@ from ..PedestrianAgent import PedestrianAgent
 from lib import ActorManager, ObstacleManager, LoggerFactory, TooManyNewStates
 from agents.pedestrians.factors import *
 from ..DestinationModel import DestinationModel
+from ..destination import CrosswalkModel
 from ..factors.DrunkenWalkModel import DrunkenWalkModel
 from ..gap_models import *
 from agents.pedestrians.StopGoModel import StopGoModel
@@ -86,6 +87,7 @@ class ModelFactory:
         self.createSurvivalModels(optionalFactors)
         self.createFreezingModels(optionalFactors)
         self.createAntiSurvivalModel(optionalFactors)
+        
 
 
     def createAntiSurvivalModel(self, optionalFactors: List[Factors]):
@@ -116,6 +118,9 @@ class ModelFactory:
         if Factors.DRUNKEN_WALKER in optionalFactors:
             self.createDrunkinWalkModels(optionalFactors)
 
+        # if Factors.CROSSWALK_MODEL in optionalFactors:
+        #     self.attachCrossWalkModelToDestinationModel()
+
 
     def createCrossingOncomingVehicleModel(self, optionalFactors: List[Factors]):
         
@@ -127,6 +132,16 @@ class ModelFactory:
         self.planner.models.append(self.planner.crossingOncomingVehicleModel)
         self.planner.crossingFactorModels.append(self.planner.crossingOncomingVehicleModel)
         self.planner.stateTransitionModels.append(self.planner.crossingOncomingVehicleModel)
+
+    
+    # def attachCrossWalkModelToDestinationModel(self):
+    #     crosswalkModel = CrosswalkModel(
+    #         source = self.agent.location,
+    #         idealDestination = None,
+    #         areaPolygon = None,
+    #         goalLine = None
+    #     )
+    #     self.planner.destinationModel.addModel(crosswalkModel)
 
     #endregion
 

@@ -2,6 +2,8 @@ import carla
 
 class CrosswalkModel:
 
+    def __init__(self, source, idealDestination, areaPolygon=None, goalLine=None):
+        pass
     def createGoalLine(self, length):
         goal = self.idealDestination
         #goalLine = shapely.LineString([goal.coords[0]-length, goal.coords[0]+length])
