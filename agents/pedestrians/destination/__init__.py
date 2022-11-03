@@ -1,1 +1,2 @@
 from .CrosswalkModel import CrosswalkModel
+from .CrosswalkGeometry import CrosswalkGeometry
