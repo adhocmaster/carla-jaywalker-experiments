@@ -6,7 +6,7 @@ import random
 class CrosswalkGeometry:
     '''
     CONSTANTS:
-        MAX_ABSOLUTE_DEGREE: the maximum degree between the new line and the verticle line that shares the same start point.
+        MAX_ABSOLUTE_DEGREE: the maximum degree between the new line and the vertical line that shares the same start point.
         MAX_RELATIVE_DEGREE: the maximum degree between the new line and the extended previous line. The end point of the previous line is the start point of the new line.
         
     '''
@@ -38,22 +38,19 @@ class CrosswalkGeometry:
         # Extract goalLine information
         goalLine_x1, goalLine_y1 = goalLine.coords[0][0], goalLine.coords[0][1] 
         goalLine_x2, goalLine_y2 = goalLine.coords[1][0], goalLine.coords[1][1]
-
-        # Generate base as perpendicular to the verticle line
-        verticleLine = LineString([start, end])
-        baseRight = rotate(verticleLine, -90, origin=start)
-        baseLeft = rotate(verticleLine, 90, origin=start)
+        # Generate base as perpendicular to the vertical line
+        verticalLine = LineString([start, end])
+        baseRight = rotate(verticalLine, -90, origin=start)
+        baseLeft = rotate(verticalLine, 90, origin=start)
         
         # Bottom left point
         botLeft = baseLeft.interpolate(0.5, normalized=False)
         botLeft_x = botLeft.coords[0][0]
         botLeft_y = botLeft.coords[0][1]
-
         # Bottom right point
         botRight = baseRight.interpolate(0.5, normalized=False)
         botRight_x = botRight.coords[0][0]
         botRight_y = botRight.coords[0][1]
-
         # Top left point
         topLeft_x = goalLine_x1
         topLeft_y = goalLine_y1
@@ -65,13 +62,11 @@ class CrosswalkGeometry:
         # Mid left point
         midLeft_x = min(botLeft_x, topLeft_x) + (max(botLeft_x, topLeft_x) - min(botLeft_x, topLeft_x))/1.5
         midLeft_y = (topLeft_y - botLeft_y)/2
-        print(topLeft_y, botLeft_y)
         midLeft = Point((midLeft_x, midLeft_y))
         # Mid right point
         midRight_x = min(botRight_x, topRight_x) + (max(botRight_x, topRight_x) - min(botRight_x, topRight_x))/3
         midRight_y = (topRight_y - botRight_y) / 2
         midRight = Point((midRight_x, midRight_y))
-        print(midRight)
 
         # Build areaPolygon
         areaPolygon = Polygon([botLeft, midLeft, topLeft, topRight, midRight, botRight])
@@ -110,11 +105,11 @@ class CrosswalkGeometry:
                         if prev_line == None:
                             done = True
                         else:
-                            # Find verticle line
+                            # Find vertical line
                             vert_start = new_points[-1]
                             vert_end = self.closestEnd(vert_start, goalLine)
                             vert_line = LineString([vert_start, vert_end])
-                            # Calculate the angle between the new line and the verticle line
+                            # Calculate the angle between the new line and the vertical line
                             a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
                             # Calculate the angle between the new line and the extended previous line
                             d_theta = self.degreeFromX(prev_line) - self.degreeFromX(new_line)
@@ -150,11 +145,11 @@ class CrosswalkGeometry:
             new_line = LineString([new_points[-1], final_rot])
             prev_line = LineString([new_points[-2], new_points[-1]])
             if new_line.length <= segment.length*maxInterPointsDistance:
-                # Find verticle line
+                # Find vertical line
                 vert_start = new_points[-1]
                 vert_end = self.closestEnd(vert_start, goalLine)
                 vert_line = LineString([vert_start, vert_end])
-                # Calculate the angle between the new line and the verticle line
+                # Calculate the angle between the new line and the vertical line
                 a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
                 # Calculate the angle between the new line and the extended previous line
                 d_theta = self.degreeFromX(prev_line) - self.degreeFromX(new_line)
