@@ -1,5 +1,5 @@
 
-import shapely
+from shapely.affinity import rotate
 from shapely.geometry import LineString, Point, Polygon
 import math
 import random
@@ -117,11 +117,11 @@ class CrosswalkGeometry:
                     new_point = self.pointRotate(pointToRot, start, degree=-90)
                 # Check constraints
                 if crosswalk.contains(new_point):
-                    segment = shapely.geometry.LineString([start, end])
-                    new_line = shapely.geometry.LineString([new_points[-1], new_point])
+                    segment = LineString([start, end])
+                    new_line = LineString([new_points[-1], new_point])
                     prev_line = None
                     if i > 0:
-                        prev_line = shapely.geometry.LineString([new_points[-2], new_points[-1]])
+                        prev_line = LineString([new_points[-2], new_points[-1]])
                     if new_line.length <= segment.length*maxInterPointsDistance:
                         if prev_line == None:
                             done = True
@@ -129,7 +129,7 @@ class CrosswalkGeometry:
                             # Find verticle line
                             vert_start = new_points[-1]
                             vert_end = self.closestEnd(vert_start, goalLine)
-                            vert_line = shapely.geometry.LineString([vert_start, vert_end])
+                            vert_line = LineString([vert_start, vert_end])
                             # Calculate the angle between the new line and the verticle line
                             a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
                             # Calculate the angle between the new line and the extended previous line
@@ -162,14 +162,14 @@ class CrosswalkGeometry:
             else:
                 final_rot = self.pointRotate(pointToRot, final_start, degree=-90)
             
-            segment = shapely.geometry.LineString([final_start, final_end])
-            new_line = shapely.geometry.LineString([new_points[-1], final_rot])
-            prev_line = shapely.geometry.LineString([new_points[-2], new_points[-1]])
+            segment = LineString([final_start, final_end])
+            new_line = LineString([new_points[-1], final_rot])
+            prev_line = LineString([new_points[-2], new_points[-1]])
             if new_line.length <= segment.length*maxInterPointsDistance:
                 # Find verticle line
                 vert_start = new_points[-1]
                 vert_end = self.closestEnd(vert_start, goalLine)
-                vert_line = shapely.geometry.LineString([vert_start, vert_end])
+                vert_line = LineString([vert_start, vert_end])
                 # Calculate the angle between the new line and the verticle line
                 a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
                 # Calculate the angle between the new line and the extended previous line
@@ -248,7 +248,7 @@ class CrosswalkGeometry:
             _type_: _description_
         """
         # Given start point A and end point B, find a point C in between AB that is d distance away from A
-        line = shapely.geometry.LineString([start, end])
+        line = LineString([start, end])
         point = line.interpolate(d, normalized=True)
         return point
 
@@ -264,7 +264,7 @@ class CrosswalkGeometry:
             _type_: _description_
         """
         # Given a point A and an origin O, rotate A +-90 degrees around O.
-        rotated_point = shapely.affinity.rotate(point, degree, origin=origin)
+        rotated_point = rotate(point, degree, origin=origin)
         return rotated_point
 
 
