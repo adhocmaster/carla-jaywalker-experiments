@@ -1,15 +1,19 @@
-
 from shapely.affinity import rotate
 from shapely.geometry import LineString, Point, Polygon
 import math
 import random
 
 class CrosswalkGeometry:
-    # constants
+    '''
+    CONSTANTS:
+        MAX_ABSOLUTE_DEGREE: the maximum degree between the new line and the verticle line that shares the same start point.
+        MAX_RELATIVE_DEGREE: the maximum degree between the new line and the extended previous line. The end point of the previous line is the start point of the new line.
+        
+    '''
     MAX_ABSOLUTE_DEGREE = math.radians(60)
     MAX_RELATIVE_DEGREE = math.radians(45)
 
-    def __init__(self, source, idealDestination, areaPolygon=None, goalLine=None):
+    def __init__(self, source: Point, idealDestination: Point, areaPolygon: Polygon=None, goalLine: LineString=None):
         self.source = source
         self.idealDestination = idealDestination
         self.areaPolygon = areaPolygon
@@ -24,60 +28,39 @@ class CrosswalkGeometry:
         # TODO: we make a generic one which may be based on real world dataset. Also create a goal line
         if self.goalLine == None:
             self.createGoalLine(4)
-        # start_x, start_y = self.source.coords[0][0], self.source.coords[0][1]
-        # goalLine_x1, goalLine_y1 = self.goalLine.coords[0][0], self.goalLine.coords[0][1] 
-        # goalLine_x2, goalLine_y2 = self.goalLine.coords[1][0], self.goalLine.coords[1][1]
-        # # Bottom left point
-        # botLeft_x = start_x - 0.5
-        # botLeft_y = start_y
-        # botLeft = shapely.geometry.Point((botLeft_x, botLeft_y))
-        # # Bottom right point
-        # botRight_x = start_x + 0.5
-        # botRight_y = start_y
-        # botRight = shapely.geometry.Point((botRight_x, botRight_y))
-        # # Top left point
-        # topLeft_x = goalLine_x1
-        # topLeft_y = goalLine_y1
-        # topLeft = shapely.geometry.Point((topLeft_x, topLeft_y))
-        # # Top right point
-        # topRight_x = goalLine_x2
-        # topRight_y = goalLine_y2
-        # topRight = shapely.geometry.Point((topRight_x, topRight_y))
-        # # Mid left point
-        # midLeft_x = min(botLeft_x, topLeft_x) + (max(botLeft_x, topLeft_x) - min(botLeft_x, topLeft_x))/1.5
-        # midLeft_y = ((topLeft_y + topRight_y)/2 - botLeft_y)/2
-        # midLeft = shapely.geometry.Point((midLeft_x, midLeft_y))
-        # # Mid right point
-        # midRight_x = min(botRight_x, topRight_x) + (max(botRight_x, topRight_x) - min(botRight_x, topRight_x))/3
-        # midRight_y = ((topLeft_y + topRight_y)/2 - botRight_y)/2
-        # midRight = shapely.geometry.Point((midRight_x, midRight_y))
-        # # Build areaPolygon
-        # areaPolygon = shapely.geometry.Polygon([botLeft, midLeft, topLeft, topRight, midRight, botRight])
+       
         self.areaPolygon = self.genPolyArea(self.source, self.goalLine)
 
 
-    def genPolyArea(self, start, goalLine):
-        # Get start point coordinates
-        start_x, start_y = start.coords[0][0], start.coords[0][1]
+    # Generate areaPolygon given a start point and a goalLine
+    def genPolyArea(start, end, goalLine):
+
         # Extract goalLine information
         goalLine_x1, goalLine_y1 = goalLine.coords[0][0], goalLine.coords[0][1] 
         goalLine_x2, goalLine_y2 = goalLine.coords[1][0], goalLine.coords[1][1]
+
+        # Generate base as perpendicular to the verticle line
+        verticleLine = LineString([start, end])
+        baseRight = rotate(verticleLine, -90, origin=start)
+        baseLeft = rotate(verticleLine, 90, origin=start)
         
         # Bottom left point
-        botLeft_x = start_x - 0.5
-        botLeft_y = start_y
-        botLeft = Point((botLeft_x, botLeft_y))
+        botLeft = baseLeft.interpolate(0.5, normalized=False)
+        botLeft_x = botLeft.coords[0][0]
+        botLeft_y = botLeft.coords[0][1]
+
         # Bottom right point
-        botRight_x = start_x + 0.5
-        botRight_y = start_y
-        botRight = Point((botRight_x, botRight_y))
+        botRight = baseRight.interpolate(0.5, normalized=False)
+        botRight_x = botRight.coords[0][0]
+        botRight_y = botRight.coords[0][1]
+
         # Top left point
         topLeft_x = goalLine_x1
-        topLeft_y = (goalLine_y1 + goalLine_y2) / 2
+        topLeft_y = goalLine_y1
         topLeft = Point((topLeft_x, topLeft_y))
         # Top right point
         topRight_x = goalLine_x2
-        topRight_y = (goalLine_y2 + goalLine_y1) / 2
+        topRight_y = goalLine_y2
         topRight = Point((topRight_x, topRight_y))
         # Mid left point
         midLeft_x = min(botLeft_x, topLeft_x) + (max(botLeft_x, topLeft_x) - min(botLeft_x, topLeft_x))/1.5
@@ -93,6 +76,7 @@ class CrosswalkGeometry:
         # Build areaPolygon
         areaPolygon = Polygon([botLeft, midLeft, topLeft, topRight, midRight, botRight])
         return areaPolygon
+
 
     def generateIntermediatePoints(self, maxAbsDegree=MAX_ABSOLUTE_DEGREE, maxDeltaDegree=MAX_RELATIVE_DEGREE, nInterPoints=3, maxInterPointsDistance=1.5):
         # TODO
