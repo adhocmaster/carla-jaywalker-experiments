@@ -193,7 +193,7 @@ class CrosswalkGeometry:
 
     # region 
     def degreeFromX(self, line: LineString): # TODO move to lib/Geometry
-        """_summary_
+        """
         Find the angle in radian between a given line and the x-axis.
         
         Args:
@@ -202,10 +202,6 @@ class CrosswalkGeometry:
         Returns:
             theta (float): angle in radians
         """
-        # Find the angle in radian between two given lines
-        # Formula:
-        # atan2(vec2.y-vec1.y, vec2.x-vec1.x)
-        
         # Extract points from line1 and line2
         x = line.coords[1][0] - line.coords[0][0]
         y = line.coords[1][1] - line.coords[0][1]
@@ -216,32 +212,32 @@ class CrosswalkGeometry:
         return theta
 
     def closestEnd(self, point: Point, goalLine: LineString):
-        """_summary_
+        """
+        Given a point A and a line Y, find the point B on Y such that the line AB is the shortest.
 
         Args:
-            point (shaply.Point): _description_
-            goalLine (shapely.LineString): _description_
+            point (shapely.geometry.Point): point A
+            goalLine (shapely.geometry.LineString): line Y
 
         Returns:
-            _type_: _description_
+            end (shapely.geometry.Point): point B
         """
-        # Given a point A and a line Y, find the point B on Y such that the line AB is the shortest
         d = goalLine.project(point)
         end = goalLine.interpolate(d)
         return end
 
-    def pointBetween(self, start: Point, end: Point, d):
-        """_summary_
-
+    def pointBetween(self, start: Point, end: Point, d: float):
+        """
+        Given point A and point B, find a point C in between AB that is d distance away from A
+        
         Args:
-            start (shaply.Point): _description_
-            end (shaply.Point): _description_
-            d (_type_): _description_
+            start (shapely.geometry.Point): point A
+            end (shapely.geometry.Point): point B
+            d (float): a scalar multiplier to the normalized distance between point A and point B
 
         Returns:
-            _type_: _description_
+            point (shapely.geometry.Point): point C
         """
-        # Given start point A and end point B, find a point C in between AB that is d distance away from A
         line = LineString([start, end])
         point = line.interpolate(d, normalized=True)
         return point
@@ -250,8 +246,8 @@ class CrosswalkGeometry:
         """_summary_
 
         Args:
-            point (shaply.Point): _description_
-            origin (shaply.Point): _description_
+            point (shapely.Point): _description_
+            origin (shapely.Point): _description_
             degree (int, optional): _description_. Defaults to 90.
 
         Returns:
