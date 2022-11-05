@@ -6,12 +6,15 @@ import random
 class CrosswalkGeometry:
     '''
     CONSTANTS:
-        MAX_ABSOLUTE_DEGREE: the maximum degree between the new line and the vertical line that shares the same start point.
-        MAX_RELATIVE_DEGREE: the maximum degree between the new line and the extended previous line. The end point of the previous line is the start point of the new line.
-        
+        MAX_ABSOLUTE_DEGREE: float
+        MAX_RELATIVE_DEGREE: float
+        INTER_POINTS_NUM: int
+        INTER_POINTS_DISTANCE_MOD: float
     '''
     MAX_ABSOLUTE_DEGREE = math.radians(60)
     MAX_RELATIVE_DEGREE = math.radians(45)
+    INTER_POINTS_NUM = 3
+    INTER_POINTS_DISTANCE_MOD = 1.5
 
     def __init__(self, source: Point, idealDestination: Point, areaPolygon: Polygon=None, goalLine: LineString=None):
         self.source = source
@@ -21,7 +24,8 @@ class CrosswalkGeometry:
         self.intermediatePoints = []
         self.finalDestination = None
         self.nextIntermediatePointIdx = None
-        self.createPolygonIfNone()
+        if self.areaPolygon == None:
+            self.createPolygonIfNone()
         self.generateIntermediatePoints()
     
     def createPolygonIfNone(self):
@@ -29,12 +33,21 @@ class CrosswalkGeometry:
         if self.goalLine == None:
             self.createGoalLine(4)
        
-        self.areaPolygon = self.genPolyArea(self.source, self.goalLine)
+        self.areaPolygon = self.genPolyArea(self.source, self.idealDestination, self.goalLine)
 
 
-    # Generate areaPolygon given a start point and a goalLine
-    def genPolyArea(start, end, goalLine):
+    def genPolyArea(self, start: Point, end: Point, goalLine: LineString):
+        '''
+        Generate a generic areaPolygon given a start point, end point and a goalLine.
+        
+        Args:
+            start (shapely.geometry.Point): the point where the pedestrian enters the crosswalk.
+            end (shapely.geometry.Point): the ideal point where the pedestrian exits the crosswalk.
+            goalLine (shapely.geometry.LineString): the sidewalk which contains the end point.
 
+        Returns:
+            areaPolygon (shapely.geometry.Polygon): the generated polygon that forms the area of an abstract crosswalk space.
+        '''
         # Extract goalLine information
         goalLine_x1, goalLine_y1 = goalLine.coords[0][0], goalLine.coords[0][1] 
         goalLine_x2, goalLine_y2 = goalLine.coords[1][0], goalLine.coords[1][1]
@@ -42,7 +55,6 @@ class CrosswalkGeometry:
         verticalLine = LineString([start, end])
         baseRight = rotate(verticalLine, -90, origin=start)
         baseLeft = rotate(verticalLine, 90, origin=start)
-        
         # Bottom left point
         botLeft = baseLeft.interpolate(0.5, normalized=False)
         botLeft_x = botLeft.coords[0][0]
@@ -73,7 +85,20 @@ class CrosswalkGeometry:
         return areaPolygon
 
 
-    def generateIntermediatePoints(self, maxAbsDegree=MAX_ABSOLUTE_DEGREE, maxDeltaDegree=MAX_RELATIVE_DEGREE, nInterPoints=3, maxInterPointsDistance=1.5):
+    def generateIntermediatePoints(self, maxAbsDegree=MAX_ABSOLUTE_DEGREE, maxDeltaDegree=MAX_RELATIVE_DEGREE, nInterPoints=INTER_POINTS_NUM, maxInterPointsDistance=INTER_POINTS_DISTANCE_MOD):
+        '''
+        Generate intermediate points inside the crosswalk area to form pedestrian crossing trajectories. 
+
+        Args:
+            maxAbsDegree (float): the maximum degree between the new line and the vertical line that shares the same start point
+            maxDeltaDegree (float): the maximum degree between the new line and the extended previous line. The end point of the previous line is the start point of the new line
+            nInterPoints (int): the number of intermediates points to be generated
+            maxInterPointsDistance (float): the scalar modifier for the max distance between any two intermediate points
+
+        Returns:
+            TODO
+
+        '''
         # TODO
         # 1. find the points
         start = self.source
@@ -115,11 +140,6 @@ class CrosswalkGeometry:
                             d_theta = self.degreeFromX(prev_line) - self.degreeFromX(new_line)
 
                             if maxAbsDegree*(-1) <= a_theta <= maxAbsDegree and maxDeltaDegree*(-1) <= d_theta <= maxDeltaDegree:
-                                # print("new line degree:", math.degrees(self.degreeFromX(new_line)))
-                                # print("prev line degree:", math.degrees(self.degreeFromX(prev_line)))
-                                # print("a_theta:", math.degrees(a_theta), "max:", math.degrees(maxAbsDegree))
-                                # print("d_theta:", math.degrees(d_theta), "max:", math.degrees(maxDeltaDegree))
-                                # print("DONE")
                                 done = True
             
             new_points.append(new_point)
@@ -153,12 +173,6 @@ class CrosswalkGeometry:
                 a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
                 # Calculate the angle between the new line and the extended previous line
                 d_theta = self.degreeFromX(prev_line) - self.degreeFromX(new_line)
-            
-                # print("check end point...")
-                # print("new line degree:", math.degrees(self.degreeFromX(new_line)))
-                # print("prev line degree:", math.degrees(self.degreeFromX(prev_line)))
-                # print("a_theta:", math.degrees(a_theta), "max:", math.degrees(maxAbsDegree))
-                # print("d_theta:", math.degrees(d_theta), "max:", math.degrees(maxDeltaDegree))
                 if maxAbsDegree*(-1) <= a_theta <= maxAbsDegree and maxDeltaDegree*(-1) <= d_theta <= maxDeltaDegree:
                     done = True    
         
@@ -177,15 +191,16 @@ class CrosswalkGeometry:
 
 
 
-    #region  ------------------------------------------------------------------------------------------------------------
+    # region 
     def degreeFromX(self, line: LineString): # TODO move to lib/Geometry
         """_summary_
-
+        Find the angle in radian between a given line and the x-axis.
+        
         Args:
-            line (shapely.LineString): _description_
+            line (shapely.LineString): a line
 
         Returns:
-            _type_: _description_
+            theta (float): angle in radians
         """
         # Find the angle in radian between two given lines
         # Formula:
@@ -269,5 +284,4 @@ class CrosswalkGeometry:
             pointsOL.append(point)
         pointsOL.append(end)
         return pointsOL
-
-    #endregion
+    # endregion
