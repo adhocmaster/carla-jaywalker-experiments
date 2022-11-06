@@ -96,11 +96,8 @@ class CrosswalkGeometry:
             maxInterPointsDistance (float): the scalar modifier for the max distance between any two intermediate points
 
         Returns:
-            TODO
-
+            None
         '''
-        # TODO
-        # 1. find the points
         start = self.source
         end = self.idealDestination
         crosswalk = self.areaPolygon
@@ -179,13 +176,13 @@ class CrosswalkGeometry:
         if goalLine.contains(final_rot) == False:
             final_rot = self.closestEnd(final_rot, goalLine)
         new_points.append(final_rot)
-        
+        # 1. set intermediatePoints[] to the generated new_points[]
         self.intermediatePoints = new_points
 
-        # 2. set nextIntermediatePoint to the first one
+        # 2. set nextIntermediatePointIdx to index 0
         self.nextIntermediatePointIdx = 0
 
-        # 3. set self.finalDestination
+        # 3. set self.finalDestination to the last item in new_points[]
         self.finalDestination = new_points[-1]
 
 
@@ -228,7 +225,7 @@ class CrosswalkGeometry:
 
     def pointBetween(self, start: Point, end: Point, d: float):
         """
-        Given point A and point B, find a point C in between AB that is d distance away from A
+        Given point A and point B, find a point C in between AB that is d distance away from A.
         
         Args:
             start (shapely.geometry.Point): point A
@@ -243,33 +240,32 @@ class CrosswalkGeometry:
         return point
 
     def pointRotate(self, point: Point, origin: Point, degree=90):
-        """_summary_
+        """
+        Given a point A and an origin O, rotate A +-90 degrees around O to get point B.
 
         Args:
-            point (shapely.Point): _description_
-            origin (shapely.Point): _description_
-            degree (int, optional): _description_. Defaults to 90.
+            point (shapely.geometry.Point): point A
+            origin (shapely.geometry.Point): point O
+            degree (int, optional): degree of rotation. Defaults to 90
 
         Returns:
-            _type_: _description_
+            rotated_point (shapely.geometry.Point): point B
         """
-        # Given a point A and an origin O, rotate A +-90 degrees around O.
         rotated_point = rotate(point, degree, origin=origin)
         return rotated_point
 
-
-    def pointsOnLine(self, start: Point, end: Point, n):
-        """_summary_
+    def pointsOnLine(self, start: Point, end: Point, n: int):
+        """
+        Given a start point A and an end point B, generate n number of evenly spaced points between the line AB.
 
         Args:
-            start (shaply.Point): _description_
-            end (shaply.Point): _description_
-            n (_type_): _description_
+            start (shapely.geometry.Point): point A
+            end (shapely.geometry.Point): point B
+            n (int): number of points between the line AB
 
         Returns:
-            _type_: _description_
+            pointsOL[(shapely.geometry.Point)]: the array of generated points between AB
         """
-        # Given a start point A and an end point B, generate n number of evenly placed points between the line AB
         pointsOL = [start]
         line = LineString([start, end])
         gap = 1 / (n + 1)
