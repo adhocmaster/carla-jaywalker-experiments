@@ -5,6 +5,8 @@ import random
 
 class CrosswalkGeometry:
     '''
+    Geometric information of CrosswalkModel, including source, idealDestination, areaPolygon, and goalLine.
+
     CONSTANTS:
         MAX_ABSOLUTE_DEGREE: float
         MAX_RELATIVE_DEGREE: float
