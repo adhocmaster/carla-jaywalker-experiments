@@ -35,12 +35,7 @@ class DestinationModel(ForceModel):
         self.crosswalkModel: CrosswalkModel = None
 
         if self.internalFactors["use_crosswalk_area_model"]:
-            self.crosswalkModel = CrosswalkModel(
-                source = self.agent.location,
-                idealDestination = None,
-                areaPolygon = None,
-                goalLine = None
-            )
+            self.addCrossWalkAreaModel()
 
         pass
 
@@ -61,6 +56,14 @@ class DestinationModel(ForceModel):
             self.internalFactors["use_crosswalk_area_model"] = False
         
         pass
+
+    def addCrossWalkAreaModel(self):
+        self.crosswalkModel = CrosswalkModel(
+            source = self.agent.location,
+            idealDestination = None,
+            areaPolygon = None,
+            goalLine = None
+        )
 
     def applySpeedModel(self, speedModel):
         self.speedModel = speedModel
