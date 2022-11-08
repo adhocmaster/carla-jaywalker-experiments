@@ -251,7 +251,7 @@ class Research1v1(BaseResearch):
     
     def createDynamicAgents(self):
         
-        # self.createVehicle()
+        self.createVehicle()
         self.createWalker()
         pass
 
