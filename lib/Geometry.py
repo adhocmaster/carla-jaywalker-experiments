@@ -1,6 +1,7 @@
 import carla
 import copy
 import math
+from shapely.geometry import Point
 
 class Geometry: 
 
@@ -52,6 +53,10 @@ class Geometry:
     @staticmethod
     def distanceTuples(point1, point2):
         return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+    @staticmethod
+    def locationToPoint(location: carla.Location) -> Point:
+        return Point(location.x, location.y)
 
 
     

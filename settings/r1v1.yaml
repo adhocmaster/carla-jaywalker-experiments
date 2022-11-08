@@ -1,2 +1,3 @@
 lane_width = 3
 num_lanes = 2
+sidewalk_z = 0.1

@@ -2,6 +2,7 @@ import carla
 import numpy as np
 import random
 import math
+from shapely.geometry import LineString, Point, Polygon
 
 from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
@@ -60,8 +61,21 @@ class SimulationVisualization(ClientUser):
     
     def drawPoint(self, location, size=0.1, color=(255,0,0,100), life_time = 0):
         self.debug.draw_point(location, size, carla.Color(*color),  life_time)
+    
+    def drawShaplyPoint(self, point: Point, size=0.1, color=(255,0,0,100), life_time = 0):
+        location = carla.Location(point[0], point[1], 0.5)
+        self.drawPoint(location, size, color, life_time)
 
-    def drawBox(self, bb, rotation, thickness=0.1, color=(255,0,0, 100), life_time = 0):
+
+    def drawLine(self, begin, end, thickness=0.1, color=(255,0,0,100), life_time = 1.0):
+        self.debug.draw_line(begin, end, thickness, carla.Color(*color), life_time)
+
+    def drawShapelyLine(self, line: LineString, thickness=0.1, color=(255,0,0,100), life_time = 1.0):
+        a = carla.Location(line.coords[0][0], line.coords[0][1], 0.5)
+        b = carla.Location(line.coords[1][0], line.coords[1][1], 0.5)
+        self.drawLine(a, b, thickness, color, life_time)
+
+    def drawBox(self, bb, rotation = carla.Rotation(), thickness=0.1, color=(255,0,0, 100), life_time = 0):
         self.debug.draw_box(
                     bb,
                     rotation, 
@@ -105,7 +119,12 @@ class SimulationVisualization(ClientUser):
         #     )
 
 
-
+    def drawShapelyPolygon(self, polygon: Polygon, thickness=0.1, color=(255,0,0,100), life_time = 1.0):
+        prevPoint = polygon.exterior.coords[0]
+        for nextPoint in polygon.exterior.coords[1:]:
+            line = LineString([prevPoint, nextPoint])
+            self.drawShapelyLine(line, thickness, color, life_time)
+            prevPoint = nextPoint
     
     
     def draw00(self):
