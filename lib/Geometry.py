@@ -58,6 +58,10 @@ class Geometry:
     @staticmethod
     def locationToPoint(location: carla.Location) -> Point:
         return Point(location.x, location.y)
+    
+    @staticmethod 
+    def pointtoLocation(point: Point) -> carla.Location:
+        return carla.Location(point[0], point[1], 0.1)
 
 
     #region scanning for sidewalks
