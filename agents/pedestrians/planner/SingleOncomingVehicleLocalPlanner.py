@@ -39,38 +39,6 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         self.reset()
         pass
 
-    # def initModels(self): # maybe create a factory
-        # self.destinationModel = DestinationModel(
-        #                             self.agent, 
-        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-        #                             internalFactors=self.internalFactors
-        #                             )
-        # # pedGapModel = DistanceGapModel(self.agent, actorManager=self.actorManager, obstacleManager=self.obstacleManager, internalFactors=self.internalFactors)
-        # pedGapModel = BrewerGapModel(
-        #                             self.agent, 
-        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-        #                             internalFactors=self.internalFactors
-        #                             )
-        # self.stopGoModel = StopGoModel(         
-        #                             pedGapModel,
-        #                             self.agent, 
-        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-        #                             internalFactors=self.internalFactors
-        #                             )
-        # # factor models
-
-        # self.crossingOncomingVehicleModel = CrossingOncomingFactorModel(
-        #                             self.agent, 
-        #                             actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-        #                             internalFactors=self.internalFactors
-        #                             )
-
-        # self.models = [
-        #                 self.destinationModel, 
-        #                 self.stopGoModel
-        #               ]
-        # self.stateTransitionModels = [self.stopGoModel]
-
 
     def createOptionalModels(self, optionalFactors: List[Factors]):
         self.modelFactory.createOptionalModels(optionalFactors)

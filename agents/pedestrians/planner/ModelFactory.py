@@ -42,7 +42,8 @@ class ModelFactory:
                                     self.agent, 
                                     actorManager=self.actorManager, 
                                     obstacleManager=self.obstacleManager, 
-                                    internalFactors=self.internalFactors
+                                    internalFactors=self.internalFactors,
+                                    debug=True
                                     )
         if "speed_model" in self.internalFactors:
             speedModel = SpeedModelFactory.createSpeedModel(

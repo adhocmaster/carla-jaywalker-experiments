@@ -251,7 +251,7 @@ class Research1v1(BaseResearch):
     
     def createDynamicAgents(self):
         
-        self.createVehicle()
+        # self.createVehicle()
         self.createWalker()
         pass
 
@@ -304,19 +304,24 @@ class Research1v1(BaseResearch):
 
         # return
 
-        self.createDynamicAgents()
-        
-        # self.world.wait_for_tick()
-        self.tickOrWaitBeforeSimulation()
+        try:
 
-        # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
-        # onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
-        # onEnders = [self.onEnd]
-        # terminalSignalers = [self.walkerAgent.isFinished]
-        # self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders)
-        self.setupSimulator(False)
+            self.createDynamicAgents()
+            
+            # self.world.wait_for_tick()
+            self.tickOrWaitBeforeSimulation()
 
-        self.simulator.run(maxTicks)
+            # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
+            # onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
+            # onEnders = [self.onEnd]
+            # terminalSignalers = [self.walkerAgent.isFinished]
+            # self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders)
+            self.setupSimulator(False)
+
+            self.simulator.run(maxTicks)
+        except Exception as e:
+            self.logger.exception(e)
+            self.destoryActors()
 
         # try: 
         # except Exception as e:

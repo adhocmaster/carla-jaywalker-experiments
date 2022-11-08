@@ -17,10 +17,17 @@ class DestinationModel(ForceModel):
         actorManager: ActorManager, 
         obstacleManager: ObstacleManager, 
         internalFactors: InternalFactors, 
-        final_destination=None
+        final_destination=None,
+        debug=False
         ) -> None:
 
-        super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
+        super().__init__(
+            agent, 
+            actorManager, 
+            obstacleManager, 
+            internalFactors=internalFactors, 
+            debug=debug
+            )
 
         # self._source = source # source may not be current agent location
         self._finalDestination = final_destination
@@ -33,9 +40,6 @@ class DestinationModel(ForceModel):
 
         self.speedModel: SpeedModel = None
         self.crosswalkModel: CrosswalkModel = None
-
-        if self.internalFactors["use_crosswalk_area_model"]:
-            self.addCrossWalkAreaModel()
 
         pass
 
@@ -59,10 +63,12 @@ class DestinationModel(ForceModel):
 
     def addCrossWalkAreaModel(self):
         self.crosswalkModel = CrosswalkModel(
+            agent = self.agent,
             source = self.agent.location,
-            idealDestination = None,
+            idealDestination = self._finalDestination,
             areaPolygon = None,
-            goalLine = None
+            goalLine = None,
+            debug=self.debug
         )
 
     def applySpeedModel(self, speedModel):
@@ -110,6 +116,10 @@ class DestinationModel(ForceModel):
         # if self._nextDestination is None:
         #     self._nextDestination = destination
         self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
+        
+        if self.internalFactors["use_crosswalk_area_model"]:
+            if self.crosswalkModel is None:
+                self.addCrossWalkAreaModel()
         
             
     def setNextDestination(self, destination):

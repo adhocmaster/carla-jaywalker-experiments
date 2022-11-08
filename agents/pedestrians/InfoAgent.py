@@ -11,6 +11,10 @@ class InfoAgent:
         # self._localPlanner:PedestrianPlanner = None
 
         self._logger = LoggerFactory.create(name, config)
+        if "debug" in config:
+            self.debug = config["debug"]
+        else:
+            self.debug = False
 
 
     def getInternalFactor(self, name):

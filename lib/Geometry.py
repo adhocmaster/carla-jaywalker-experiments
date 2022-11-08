@@ -3,6 +3,7 @@ import copy
 import math
 from shapely.geometry import Point, LineString, Polygon
 from shapely.affinity import scale, rotate
+from typing import List, Tuple
 
 class Geometry: 
 
@@ -68,7 +69,7 @@ class Geometry:
 
     
     @staticmethod
-    def makeCenterScanLine(source: carla.Location, dest: carla.Location):
+    def makeCenterScanLine(source: carla.Location, dest: carla.Location) -> LineString:
 
         s = (source.x, source.y)
         d = (dest.x, dest.y)
@@ -95,7 +96,7 @@ class Geometry:
 
 
     @staticmethod
-    def getScanLinesAndSidewalkPoints(world:carla.World, centerScanLine: LineString):
+    def getScanLinesAndSidewalkPoints(world:carla.World, centerScanLine: LineString) -> Tuple[List[LineString], List[Point]]:
         """Sequentially searches for sidewalk from the center scan line. whenever it cannot detect a sidewalk, the search stops.
 
         Args:

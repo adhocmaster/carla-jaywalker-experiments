@@ -8,13 +8,19 @@ from agents.pedestrians.factors.InternalFactors import InternalFactors
 
 class ForceModel:
 
-    def __init__(self, agent: any,  actorManager: ActorManager, obstacleManager: ObstacleManager,
-                    internalFactors: InternalFactors) -> None:
+    def __init__(
+            self, agent: any,  
+            actorManager: ActorManager, 
+            obstacleManager: ObstacleManager,
+            internalFactors: InternalFactors,
+            debug=False
+        ) -> None:
 
         self._agent = agent
         self.actorManager = actorManager
         self.obstacleManager = obstacleManager
         self.internalFactors = internalFactors
+        self.debug = debug
         pass
 
     @property
