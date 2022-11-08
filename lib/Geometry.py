@@ -1,7 +1,8 @@
 import carla
 import copy
 import math
-from shapely.geometry import Point
+from shapely.geometry import Point, LineString, Polygon
+from shapely.affinity import scale, rotate
 
 class Geometry: 
 
@@ -57,6 +58,80 @@ class Geometry:
     @staticmethod
     def locationToPoint(location: carla.Location) -> Point:
         return Point(location.x, location.y)
+
+
+    #region scanning for sidewalks
+
+    
+    @staticmethod
+    def makeCenterScanLine(source: carla.Location, dest: carla.Location):
+
+        s = (source.x, source.y)
+        d = (dest.x, dest.y)
+        yAxis = LineString([s, d])
+        centerScanLine = scale(yAxis, xfact=1.5, yfact=1.5, origin=s)
+        return centerScanLine
+
+
+    @staticmethod
+    def getSideWalkPoint(world:carla.World, scanLine: LineString) -> Point:
+        
+        initialLocaltion = carla.Location(scanLine.coords[0][0], scanLine.coords[0][1], 0.1)
+        endLocation = carla.Location(scanLine.coords[1][0], scanLine.coords[1][1], 0.1)
+        objectsInPath = world.cast_ray(initialLocaltion, endLocation)
+        for obj in objectsInPath:
+            # print(f"type: {obj.label}, position: {obj.location}")
+            if obj.label == carla.CityObjectLabel.Sidewalks:
+                sideWalkLine = LineString([scanLine.coords[0], (obj.location.x, obj.location.y)])
+                scaleFactor = (sideWalkLine.length + 1) / sideWalkLine.length
+                sideWalkLine = scale(sideWalkLine, xfact=scaleFactor, yfact=scaleFactor, origin=scanLine.coords[0])
+                return sideWalkLine.coords[1]
+        
+        return None
+
+
+    @staticmethod
+    def getScanLinesAndSidewalkPoints(world:carla.World, centerScanLine: LineString):
+        """Sequentially searches for sidewalk from the center scan line. whenever it cannot detect a sidewalk, the search stops.
+
+        Args:
+            centerScanLine (LineString): line between the origin and the ideal destination
+
+        Returns:
+            _type_: _description_
+        """
+        
+        rightScanLines = []
+        rightSideWalkPoints = []
+        for i in range(1, 10):
+            angle = 10 * i
+            newLine = rotate(centerScanLine, angle, origin=centerScanLine.coords[0])
+            sideWalkPoint = Geometry.getSideWalkPoint(world, newLine)
+            if sideWalkPoint is not None:
+                rightScanLines.append(newLine)
+                rightSideWalkPoints.append(sideWalkPoint)
+            else:
+                break
+        
+        
+        leftScanLines = []
+        leftSideWalkPoints = []
+        for i in range(1, 10):
+            angle = -10 * i
+            newLine = rotate(centerScanLine, angle, origin=centerScanLine.coords[0])
+            sideWalkPoint = Geometry.getSideWalkPoint(world, newLine)
+            if sideWalkPoint is not None:
+                leftScanLines.append(newLine)
+                leftSideWalkPoints.append(sideWalkPoint)
+            else:
+                break
+        
+        leftScanLines.reverse()
+        leftSideWalkPoints.reverse()
+
+        return leftScanLines + rightScanLines, leftSideWalkPoints + rightSideWalkPoints
+
+    #endregion
 
 
     
