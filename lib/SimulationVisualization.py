@@ -7,7 +7,7 @@ from shapely.geometry import LineString, Point, Polygon
 from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
 from .MapManager import MapManager
-from typing import Dict
+from typing import Dict, List
 # import agents.pedestrians.PedState as PedState
 
 class SimulationVisualization(ClientUser):
@@ -65,6 +65,10 @@ class SimulationVisualization(ClientUser):
     def drawShaplyPoint(self, point: Point, size=0.1, color=(255,0,0,100), life_time = 0):
         location = carla.Location(point[0], point[1], 0.5)
         self.drawPoint(location, size, color, life_time)
+    
+    def drawPoints(self, locations:List[carla.Location], size=0.1, color=(255,0,0,100), life_time = 0):
+        for location in locations:
+            self.drawPoint(location, size, color, life_time) 
 
 
     def drawLine(self, begin, end, thickness=0.1, color=(255,0,0,100), life_time = 1.0):

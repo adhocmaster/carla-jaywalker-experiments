@@ -187,6 +187,8 @@ class CrosswalkGeometry:
         # 3. set self.finalDestination to the last item in new_points[]
         self.finalDestination = new_points[-1]
 
+        return self.intermediatePoints
+
 
 
 

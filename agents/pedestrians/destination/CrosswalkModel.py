@@ -2,6 +2,7 @@ import carla
 from shapely.geometry import Polygon, LineString
 from ..PedestrianAgent import PedestrianAgent
 from lib import Geometry
+from .CrosswalkGeometry import CrosswalkGeometry
 
 class CrosswalkModel:
 
@@ -22,15 +23,36 @@ class CrosswalkModel:
         self.idealDestination = idealDestination
         self.areaPolygon = areaPolygon
         self.goalLine = goalLine
+
+        self.crosswalkGeometry = None
         self.intermediatePoints = []
         self.finalDestination = None
         self.nextIntermediatePointIdx = None
+
         if self.areaPolygon == None:
             self.createPolygon()
+
+        self.__initGeomery()
+
         pass
 
     
-    
+    def __initGeomery(self):
+        self.crosswalkGeometry = CrosswalkGeometry(
+            source=Geometry.locationToPoint(self.source),
+            idealDestination=Geometry.locationToPoint(self.idealDestination),
+            areaPolygon=self.areaPolygon,
+            goalLine=self.goalLine
+        )
+
+        self.intermediatePoints = [ carla.Location(point.x, point.y) for point in self.crosswalkGeometry.generateIntermediatePoints() ]
+        self.nextIntermediatePointIdx = 0
+        self.finalDestination = self.intermediatePoints[-1]
+
+        if self.debug:
+            self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
+
+
     def createPolygon(self):
         
         centerScanLine = Geometry.makeCenterScanLine(self.source, self.idealDestination)
@@ -46,13 +68,14 @@ class CrosswalkModel:
         if self.goalLine == None:
             self.goalLine = LineString([sideWalkPoints[0], sideWalkPoints[-1]])
         
+        print(self.goalLine)
+        
         self.areaPolygon = Polygon([Geometry.locationToPoint(self.source), sideWalkPoints[0], sideWalkPoints[-1]])
        
         if self.debug:
             self.visualizeScanLines(scanLines)
             self.visualizeSideWalkPoints(sideWalkPoints)
             self.visualizeArea()
-        # self.areaPolygon = self.genPolyArea(self.source, self.idealDestination, self.goalLine)
 
     
     def visualizeScanLines(self, scanLines):
