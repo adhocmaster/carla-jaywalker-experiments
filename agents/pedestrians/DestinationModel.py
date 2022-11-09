@@ -151,7 +151,9 @@ class DestinationModel(ForceModel):
 
     def getDesiredDirection(self) -> carla.Vector3D:
         
-        self.agent.logger.info(f"next destination is {self.nextDestination}")
+        self.agent.logger.debug(f"next destination is {self.nextDestination}")
+        if self.debug:
+            self.agent.visualizer.drawPoint(self.nextDestination, color=(100, 100, 200, 100), life_time=1.0)
         return Utils.getDirection(self.agent.feetLocation, self.nextDestination, ignoreZ=True)
         
         

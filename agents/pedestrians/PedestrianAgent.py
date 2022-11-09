@@ -82,14 +82,6 @@ class PedestrianAgent(InfoAgent):
         if TG is None: # Vehicle already crossed
             return None
 
-        # conflictPoint = self._localPlanner.getPredictedConflictPoint()
-        # self.logger.info(f"predicted conflictPoint = {conflictPoint}")
-        # if conflictPoint is None:
-        #     # self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
-        #     # self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
-        #     # self.logger.info(f"ped velo: {self.velocity}")
-        #     # self.logger.info(f"ped location: {self.location}")
-        #     return None # already pass the conflict zone
 
 
         TG = self._addErrorToTimeEstimtion(TG)

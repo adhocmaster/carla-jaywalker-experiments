@@ -126,14 +126,14 @@ class Research1v1(BaseResearch):
 
     
     def reset(self):
-        """Does not reset episode number
+        """Does not reset episode number. Only used for episodic simulator
         """
         self.logger.info(f"Resetting environment")
         self.pedFactory.reset()
         self.vehicleFactory.reset()
-        self.episodeTimeStep = 0
 
         super().reset()
+
         self.episodeTimeStep = 0
         self.createDynamicAgents()
         self.setupSimulator(episodic=True)
@@ -181,6 +181,8 @@ class Research1v1(BaseResearch):
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)
+
+        # self.walkerAgent.updateLogLevel(logging.INFO)
 
         # attach actor manager
 
@@ -304,7 +306,7 @@ class Research1v1(BaseResearch):
 
 
     def run(self, maxTicks=1000):
-        """Runs in asynchronous mode
+        """Runs in asynchronous mode only
 
         Args:
             maxTicks (int, optional): _description_. Defaults to 1000.
@@ -325,11 +327,6 @@ class Research1v1(BaseResearch):
             # self.world.wait_for_tick()
             self.tickOrWaitBeforeSimulation()
 
-            # onTickers = [self.visualizer.onTick, self.onTick, self.restart] # onTick must be called before restart. restart does not work in episodic manner
-            # onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
-            # onEnders = [self.onEnd]
-            # terminalSignalers = [self.walkerAgent.isFinished]
-            # self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders)
             self.setupSimulator(False)
 
             self.simulator.run(maxTicks)

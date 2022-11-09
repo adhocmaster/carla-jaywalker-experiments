@@ -77,6 +77,27 @@ sequenceDiagram
     R->>VF:reset()
     R->>BR:reset()
     BR->>MM:reload()
+
+    Note over R: first the vehicle <br> and then the walker is created
+    R->>R:createDynamicAgents()
+    R->>R:setupSimulator(episodic=True)
     deactivate R
     deactivate E
+```
+
+### Simulator lifecycle
+
+#### Episodic simulator
+
+```mermaid
+flowchart LR
+    Created --> Ticking --> Ending
+    Ticking --> onTickStart --> onTick --> Ticking
+```
+
+### Environment step
+
+```mermaid
+flowchart LR
+    up[update behavior] --> tick[tick until the Action is finished] --> ret[return state, done, reward, info]
 ```

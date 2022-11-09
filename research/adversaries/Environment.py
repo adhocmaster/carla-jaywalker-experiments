@@ -60,7 +60,6 @@ class Environment(gym.Env):
             However an action may need multiple ticks to be completed. So, this method must not return a new state every tick.
             returns new_state, reward, done, _
         """
-        # self.tickCounter += 1
         self.updateBehavior(action)
         self.tickUntilActionIsFinished(action)
         newState = self.state()

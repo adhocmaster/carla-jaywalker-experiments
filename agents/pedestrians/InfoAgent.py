@@ -72,6 +72,10 @@ class InfoAgent:
     def getHeadLocation(self):
         raise Exception("Not implemented yet")
 
+    def updateLogLevel(self, newLevel):
+        self.logger.warn(f"Updating {self.name} log level: {newLevel}")
+        self._logger = LoggerFactory.create(self.name, {"LOG_LEVEL": newLevel}) # TODO name is not defined in this
+
     def onTickStart(self, world_snapshot):
         self._localPlanner.onTickStart(world_snapshot)
 
