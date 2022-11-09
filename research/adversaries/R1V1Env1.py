@@ -86,7 +86,7 @@ class R1V1Env1(Environment):
                 # "lane": spaces.Discrete(nLanes, start=1)
             }),
             "road": spaces.Dict({
-                "nLanes": spaces.Discrete(nLanes, start=1) # maximum 4 lanes
+                "nLanes": spaces.Discrete(nLanes) # maximum 4 lanes
                 # "positions": spaces.Box(low=-100, high=100, shape=(nLanes, 2)) # x,y of the centerline for each lane from cs origin
             })
         })
@@ -109,8 +109,8 @@ class R1V1Env1(Environment):
     #region state
 
     def state(self):
-        walkerAgent = self.research.walkerAgent
-        vehicleAgent = self.research.vehicleAgent
+        walkerAgent = self.research.getWalkerAgent()
+        vehicleAgent = self.research.getVehicleAgent()
 
         state = {
             "pedestrian": {
@@ -147,8 +147,9 @@ class R1V1Env1(Environment):
 
     
     def vehicleState(self):
-        vehicleAgent = self.research.vehicleAgent
-        absPosition = vehicleAgent.position
+        vehicle = self.research.getVehicle()
+        absPosition = vehicle.get_location()
+        velocity = vehicle.get_velocity()
         center, centerRotation = self.getCenter()
 
         position = Geometry.changeCartesianCenter(absPosition, center, centerRotation=centerRotation)
@@ -157,17 +158,17 @@ class R1V1Env1(Environment):
 
         self.logger.info(f"vehicleState: Vehicle position x={position.x}, y={position.y}, z={position.z}")
 
-        velocity = Geometry.changeCartesianCenter(vehicleAgent.velocity, center, centerRotation=centerRotation)
+        velocity = Geometry.changeCartesianCenter(velocity, center, centerRotation=centerRotation)
 
-        self.logger.info(f"vehicleState: Vehicle global velocity x={vehicleAgent.velocity.x}, y={vehicleAgent.velocity.y}, z={vehicleAgent.velocity.z}")
+        self.logger.info(f"vehicleState: Vehicle global velocity x={velocity.x}, y={velocity.y}, z={velocity.z}")
 
         self.logger.info(f"vehicleState: Vehicle velocity x={velocity.x}, y={velocity.y}, z={velocity.z}")
 
-        return spaces.Dict({
+        return {
                 'position': position, 
                 'velocity': np.array([velocity.x, velocity.y]),
                 # "lane": spaces.Discrete(nLanes, start=1)
-            })
+            }
         
 
 

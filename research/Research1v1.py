@@ -68,6 +68,20 @@ class Research1v1(BaseResearch):
 
         self.setup()
 
+    #region getters
+    def getVehicle(self):
+        return self.vehicle
+
+    def getWalker(self):
+        return self.walker
+
+    def getVehicleAgent(self):
+        return self.vehicleAgent
+
+    def getWalkerAgent(self):
+        return self.walkerAgent
+
+    #endregion
 
     def destoryActors(self):
         self.logger.info('\ndestroying  walkers')

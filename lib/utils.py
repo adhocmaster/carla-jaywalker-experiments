@@ -135,9 +135,6 @@ class Utils:
         lineS1 = Utils.getLineSegment(vel1, start1, seconds)
         lineS2 = Utils.getLineSegment(vel2, start2, seconds)
 
-        print(lineS1)
-        print(lineS2)
-
         point = lineS1.intersection(lineS2)
 
         if isinstance(point, Point):
