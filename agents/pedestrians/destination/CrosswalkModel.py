@@ -50,7 +50,7 @@ class CrosswalkModel:
         self.finalDestination = self.intermediatePoints[-1]
 
         if self.debug:
-            self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
+            self.visualizer.drawPoints(self.intermediatePoints, life_time=20.0)
 
 
     def createPolygon(self):
@@ -109,6 +109,8 @@ class CrosswalkModel:
         # find if the pedestrian reached the local y coordinate with a threshold around 100 cm
         # change next destination point to the next intermediate point return 
 
+        self.agent.logger.warn(f"current destination index {self.nextIntermediatePointIdx}")
+
         if self.hasReachedNextDestinationPoint(self.agent.location):
             if self.nextIntermediatePointIdx == len(self.intermediatePoints) - 1:
                 return self.finalDestination
@@ -120,8 +122,9 @@ class CrosswalkModel:
     def hasReachedNextDestinationPoint(self, agentLocation: carla.Location):
         # TODO: fill it out
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
-
-        if Utils.getDistance(agentLocation, nextDest) < 0.5: # maybe a random value?
+        d =  agentLocation.distance_2d(nextDest)
+        self.agent.logger.warn(f"distance to next destination {d} meters")
+        if d < 0.5: # maybe a random value?
             return True
         return False
         

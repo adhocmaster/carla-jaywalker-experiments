@@ -15,7 +15,7 @@ class ActorManager:
     def __init__(self, actor: carla.Actor, time_delta):
         
         self.name = f"ActorManager #{actor.id}"
-        self.logger = LoggerFactory.create(self.name, {'LOG_LEVEL': logging.DEBUG})
+        self.logger = LoggerFactory.create(self.name, {'LOG_LEVEL': logging.WARN})
         self.time_delta = time_delta
 
         self._actor = actor
