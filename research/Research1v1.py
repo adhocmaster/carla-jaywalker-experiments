@@ -177,7 +177,7 @@ class Research1v1(BaseResearch):
             "visualizationInfoLocation": carla.Location(x=-155.0, y=0.0, z=1.5)
         }
 
-        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG, optionalFactors=self.optionalFactors, config=config)
+        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=self.logLevel, optionalFactors=self.optionalFactors, config=config)
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)

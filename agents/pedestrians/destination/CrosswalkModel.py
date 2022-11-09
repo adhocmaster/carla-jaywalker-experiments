@@ -95,24 +95,16 @@ class CrosswalkModel:
     def visualizeArea(self):
         self.visualizer.drawShapelyPolygon(self.areaPolygon, color=(0, 100, 100, 100), life_time=10.0)
 
-
-    def createGoalLine(self):
-        goal = self.idealDestination
-        #goalLine = shapely.LineString([goal.coords[0]-length, goal.coords[0]+length])
-        #self.goalLine = goalLine
-        # TODO: muktadir createGoalLine
-        raise NotImplementedError("createGoalLine is not implemented")
-
     
     def getNextDestinationPoint(self):
         # TODO
         # find if the pedestrian reached the local y coordinate with a threshold around 100 cm
         # change next destination point to the next intermediate point return 
-
-        self.agent.logger.warn(f"current destination index {self.nextIntermediatePointIdx}")
-
         if self.hasReachedNextDestinationPoint(self.agent.location):
             if self.nextIntermediatePointIdx == len(self.intermediatePoints) - 1:
+                self.agent.logger.warn(f"going to the final destination")
+                d =  self.agent.location.distance_2d(self.finalDestination)
+                self.agent.logger.warn(f"distance to next destination {d} meters")
                 return self.finalDestination
             self.nextIntermediatePointIdx += 1 # this might overflow if we have reached the final 
         
@@ -123,7 +115,7 @@ class CrosswalkModel:
         # TODO: fill it out
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
         d =  agentLocation.distance_2d(nextDest)
-        self.agent.logger.warn(f"distance to next destination {d} meters")
+        self.agent.logger.debug(f"distance to next destination {d} meters")
         if d < 0.5: # maybe a random value?
             return True
         return False

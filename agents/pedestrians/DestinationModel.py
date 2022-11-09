@@ -134,10 +134,10 @@ class DestinationModel(ForceModel):
 
         speed = self.getDesiredSpeed()
         
-        self.agent.logger.info(f"Desired speed is {speed}")
+        self.agent.logger.debug(f"Desired speed is {speed}")
 
         velocity = self.getDesiredDirection() * speed 
-        self.agent.logger.info(f"Desired velocity is {velocity}")
+        self.agent.logger.debug(f"Desired velocity is {velocity}")
 
         return velocity
 

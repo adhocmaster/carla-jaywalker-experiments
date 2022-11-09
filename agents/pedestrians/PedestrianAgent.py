@@ -209,7 +209,7 @@ class PedestrianAgent(InfoAgent):
 
     def calculateControl(self):
         if self.destination is None:
-            raise Error("Destination is none")
+            raise Exception("Destination is none")
 
         if self.isInitializing():
             self.logger.info(f"Pedestrian is initializing.")
