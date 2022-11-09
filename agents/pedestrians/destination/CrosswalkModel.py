@@ -1,7 +1,7 @@
 import carla
 from shapely.geometry import Polygon, LineString
 from ..PedestrianAgent import PedestrianAgent
-from lib import Geometry
+from lib import Geometry, Utils
 from .CrosswalkGeometry import CrosswalkGeometry
 
 class CrosswalkModel:
@@ -104,22 +104,25 @@ class CrosswalkModel:
         raise NotImplementedError("createGoalLine is not implemented")
 
     
-    def getNextDestinationPoint(self, agentLocation: carla.Location):
+    def getNextDestinationPoint(self):
         # TODO
         # find if the pedestrian reached the local y coordinate with a threshold around 100 cm
         # change next destination point to the next intermediate point return 
 
-        if self.hasReachedNextDestinationPoint(agentLocation):
+        if self.hasReachedNextDestinationPoint(self.agent.location):
             if self.nextIntermediatePointIdx == len(self.intermediatePoints) - 1:
                 return self.finalDestination
-            self.nextIntermediatePoint += 1 # this might overflow if we have reached the final 
+            self.nextIntermediatePointIdx += 1 # this might overflow if we have reached the final 
         
         return self.intermediatePoints[self.nextIntermediatePointIdx]
 
     
     def hasReachedNextDestinationPoint(self, agentLocation: carla.Location):
         # TODO: fill it out
-        return False
+        nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
 
+        if Utils.getDistance(agentLocation, nextDest) < 0.5: # maybe a random value?
+            return True
+        return False
         
     pass

@@ -179,7 +179,7 @@ class CrosswalkGeometry:
             final_rot = self.closestEnd(final_rot, goalLine)
         new_points.append(final_rot)
         # 1. set intermediatePoints[] to the generated new_points[]
-        self.intermediatePoints = new_points
+        self.intermediatePoints = new_points[1:]
 
         # 2. set nextIntermediatePointIdx to index 0
         self.nextIntermediatePointIdx = 0

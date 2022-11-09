@@ -44,11 +44,6 @@ class DestinationModel(ForceModel):
         pass
 
 
-
-    @property
-    def name(self):
-        return f"DestinationModel {self.agent.id}"
-    
     def initFactors(self):
         if "desired_speed" not in self.internalFactors:
             self.internalFactors["desired_speed"] = 2 
@@ -60,6 +55,17 @@ class DestinationModel(ForceModel):
             self.internalFactors["use_crosswalk_area_model"] = False
         
         pass
+
+    @property
+    def name(self):
+        return f"DestinationModel {self.agent.id}"
+        
+    @property
+    def nextDestination(self):
+        if self.crosswalkModel is None:
+            return self._nextDestination
+        return self.crosswalkModel.getNextDestinationPoint()
+    
 
     def addCrossWalkAreaModel(self):
         self.crosswalkModel = CrosswalkModel(
@@ -122,11 +128,6 @@ class DestinationModel(ForceModel):
                 self.addCrossWalkAreaModel()
         
             
-    def setNextDestination(self, destination):
-        self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
-
-    def getDistanceToDestination(self):
-        return Utils.getDistance(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:
@@ -135,7 +136,10 @@ class DestinationModel(ForceModel):
         
         self.agent.logger.info(f"Desired speed is {speed}")
 
-        return self.getDesiredDirection() * speed 
+        velocity = self.getDesiredDirection() * speed 
+        self.agent.logger.info(f"Desired velocity is {velocity}")
+
+        return velocity
 
     def getDesiredSpeed(self) -> carla.Vector3D:
         if self.speedModel is None:
@@ -146,12 +150,21 @@ class DestinationModel(ForceModel):
 
 
     def getDesiredDirection(self) -> carla.Vector3D:
-        return Utils.getDirection(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
+        
+        self.agent.logger.info(f"next destination is {self.nextDestination}")
+        return Utils.getDirection(self.agent.feetLocation, self.nextDestination, ignoreZ=True)
         
         
 
+    # def setNextDestination(self, destination):
+    #     self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
+
+    # def getDistanceToDestination(self):
+    #     return Utils.getDistance(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
+
     def getDistanceToNextDestination(self):
-        return self.agent.getFeetLocation().distance(self._nextDestination)
+        return self.agent.getFeetLocation().distance(self.nextDestination)
+
 
 
     def calculateForce(self):
@@ -196,6 +209,9 @@ class DestinationModel(ForceModel):
 
         if self._nextDestination.distance_2d(self.agent.location) < 0.1:
             self._nextDestination = self._finalDestination
+
+        if self.crosswalkModel is not None:
+            self._nextDestination = self.crosswalkModel.getNextDestinationPoint()
 
     
     def calculateForceForDesiredVelocity(self):
