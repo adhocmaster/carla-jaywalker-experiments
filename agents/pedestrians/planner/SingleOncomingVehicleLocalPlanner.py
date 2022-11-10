@@ -13,6 +13,7 @@ from ..StateTransitionManager import StateTransitionManager
 from lib import ActorManager, ObstacleManager, LoggerFactory, TooManyNewStates
 from agents.pedestrians.factors import *
 from typing import List
+import logging
 
 class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
@@ -21,11 +22,12 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
                     agent: PedestrianAgent, 
                     actorManager: ActorManager, obstacleManager: ObstacleManager,
                     internalFactors: InternalFactors, 
-                    time_delta
+                    time_delta,
+                    logLevel: logging.INFO
                     ) -> None:
 
         self.name = f"SingleOncomingVehicleLocalPlanner {agent.id}"
-        self._logger = LoggerFactory.create(self.name)
+        self._logger = LoggerFactory.create(self.name, {'LOG_LEVEL': logLevel})
         super().__init__(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=time_delta)
         self.modelFactory = ModelFactory(
                                     self,

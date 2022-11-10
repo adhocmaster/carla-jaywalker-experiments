@@ -111,12 +111,12 @@ class PedestrianFactory(ClientUser):
             config=config
             )
 
-        self.addPlanners(agent, internalFactorsPath=internalFactorsPath, optionalFactors=optionalFactors)
+        self.addPlanners(agent, internalFactorsPath=internalFactorsPath, optionalFactors=optionalFactors, logLevel=logLevel)
         # self.initSensors(agent)
         
         return agent
 
-    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None):
+    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None, logLevel=logging.INFO):
         
         actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
         obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)
@@ -128,7 +128,7 @@ class PedestrianFactory(ClientUser):
         internalFactors = InternalFactors(internalFactorsPath)
 
 
-        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=self.time_delta)
+        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=self.time_delta, logLevel=logLevel)
 
         if optionalFactors is not None:
             localPlanner.createOptionalModels(optionalFactors=optionalFactors)

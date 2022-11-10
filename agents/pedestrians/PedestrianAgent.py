@@ -260,7 +260,7 @@ class PedestrianAgent(InfoAgent):
         distance -= self.getOldSpeed() * self.time_delta
         self.logger.info(f"after tick distance to sidewalk is {distance}")
 
-        walkerSpeed = self.getOldSpeed()
+        # walkerSpeed = self.getOldSpeed()
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
         # if distance < 0.2 and distance > 0.1:

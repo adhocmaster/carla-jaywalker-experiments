@@ -128,6 +128,10 @@ class DestinationModel(ForceModel):
                 self.addCrossWalkAreaModel()
         
             
+    def getFinalDestination(self):
+        if self.crosswalkModel is None:
+            return self._finalDestination
+        return self.crosswalkModel.getFinalDestination()
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:
@@ -169,7 +173,7 @@ class DestinationModel(ForceModel):
             return None
 
 
-        self.agent.logger.info(f"Collecting state from {self.name}")
+        # self.agent.logger.info(f"Collecting state from {self.name}")
         
         # if self.needSkip:
         #     return None

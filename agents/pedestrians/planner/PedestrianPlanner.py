@@ -24,7 +24,7 @@ class PedestrianPlanner:
         self._map = self.world.get_map()
         self.actorManager = actorManager
         self.obstacleManager = obstacleManager
-        self._destination = None
+        # self._destination = None
         self.internalFactors = internalFactors
 
         self.models: List[ForceModel] = []
@@ -96,7 +96,7 @@ class PedestrianPlanner:
     
     @property
     def destination(self):
-        return self._destination
+        return self.getDestinationModel().getFinalDestination()
 
 
     def reset(self):
@@ -135,7 +135,7 @@ class PedestrianPlanner:
         self.setFactorModelDestinationParams()
 
     def setDestination(self, destination):
-        self._destination = destination
+        # self._destination = destination
         self.getDestinationModel().setFinalDestination(destination)
 
     
@@ -148,10 +148,10 @@ class PedestrianPlanner:
         return False
             
     def getDistanceToDestination(self):
-        return Utils.getDistance(self.agent.feetLocation, self._destination, ignoreZ=True)
+        return Utils.getDistance(self.agent.feetLocation, self.destination, ignoreZ=True)
 
     def getDesiredDirection(self):
-        return Utils.getDirection(self.agent.feetLocation, self._destination, ignoreZ=True)
+        return Utils.getDirection(self.agent.feetLocation, self.destination, ignoreZ=True)
 
     def getStopControl(self):
         oldControl = self.agent.getOldControl()

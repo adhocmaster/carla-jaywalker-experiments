@@ -52,6 +52,9 @@ class CrosswalkModel:
         if self.debug:
             self.visualizer.drawPoints(self.intermediatePoints, life_time=20.0)
 
+    def getFinalDestination(self):
+        return self.finalDestination
+
 
     def createPolygon(self):
         
