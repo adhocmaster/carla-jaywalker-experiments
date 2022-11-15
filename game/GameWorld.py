@@ -87,8 +87,9 @@ class GameWorld(ClientUser):
             wps.extend(RoadHelper.getWPsInFront(rightWP, v2vDistance, 3))
             wps.extend(RoadHelper.getWPsBehind(rightWP, v2vDistance, 3))
         
-        wps.extend(RoadHelper.getWPsInFront(playerWP, v2vDistance, 3))
-        wps.extend(RoadHelper.getWPsBehind(playerWP, v2vDistance, 3))
+        playerLaneDistance = v2vDistance + player.get_velocity().length() * 3 # three second rule
+        wps.extend(RoadHelper.getWPsInFront(playerWP, playerLaneDistance, 3))
+        wps.extend(RoadHelper.getWPsBehind(playerWP, playerLaneDistance, 3))
 
         return wps
     
@@ -102,12 +103,19 @@ class GameWorld(ClientUser):
         chosenWps = random.sample(wps, nVehicles)
         print(chosenWps)
 
-        for wp in chosenWps:
-            print(wp)
-            try:
-                self.vehicleFactory.spawn(wp.transform)
-            except Exception as e:
-                self.logger.warn(f"Cannot spawn vehicle at {wp.transform.location}")
+        # generatedVehicles = []
+
+        # for wp in chosenWps:
+        #     print(wp)
+        #     try:
+        #         generatedVehicles.append(self.vehicleFactory.spawn(wp.transform))
+        #     except Exception as e:
+        #         self.logger.warn(f"Cannot spawn vehicle at {wp.transform.location}")
+
+        spawnPoints = [wp.transform for wp in wps]
+        generatedVehicles = self.vehicleFactory.batchSpawn(spawnPoints)
+
+        return generatedVehicles
         
         pass
 

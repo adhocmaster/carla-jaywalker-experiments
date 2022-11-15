@@ -10,6 +10,7 @@ from lib import LoggerFactory, ClientUser
 from agents.vehicles.qnactr.CogMod import CogModAgent  # cogmod agent 
 from .qnactr.TrajectoryFollower import TrajectoryFollower  # trajectory follower actor agent
 
+from typing import List
 
 from lib import LoggerFactory
 
@@ -29,7 +30,11 @@ class VehicleFactory(ClientUser):
         self.time_delta = time_delta
         
         self.bpLib = self.world.get_blueprint_library()
-        self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
+        # self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
+        self.vehicleBps = self.bpLib.filter('vehicle.*')
+        
+        self.tm = client.get_trafficmanager(8000)
+        self.tm.set_global_distance_to_leading_vehicle(2.5)
 
         
     def getVehicles(self):
@@ -51,7 +56,7 @@ class VehicleFactory(ClientUser):
             self.destroy(vehicle)
 
     
-    def spawn(self, spawnPoint):
+    def spawn(self, spawnPoint: carla.Transform):
 
         if spawnPoint.location.z < 0.5:
            spawnPoint.location.z = 0.5 
@@ -59,6 +64,32 @@ class VehicleFactory(ClientUser):
         vehicle = self.world.spawn_actor(vehicleBp, spawnPoint)
         self.vehicles.append(vehicle)
         return vehicle
+
+    
+    def batchSpawn(self, spawnPoints: carla.Transform):
+
+        batch = []
+        for spawnPoint in spawnPoints:
+            if spawnPoint.location.z < 0.5:
+                spawnPoint.location.z = 0.5 
+                
+            vehicleBp = self.create()
+            batch.append(
+                carla.command.SpawnActor(vehicleBp, spawnPoint)
+                    .then(carla.command.SetAutopilot(carla.command.FutureActor, True, self.tm.get_port()))
+            )
+
+        
+        generatedVehicles = []
+
+        for response in self.client.apply_batch_sync(batch):
+            if response.error:
+                logging.error(response.error)
+            else:
+                generatedVehicles.append(self.world.get_actor(response.actor_id))
+                self.vehicles.extend(generatedVehicles)
+                
+        return generatedVehicles
 
     
     def createAgent(self, vehicle: carla.Vehicle, target_speed=20, logLevel=logging.INFO) -> BasicAgent:
