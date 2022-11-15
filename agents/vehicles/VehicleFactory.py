@@ -67,7 +67,7 @@ class VehicleFactory(ClientUser):
         return vehicle
 
     
-    def batchSpawn(self, spawnPoints: carla.Transform, autoPilot: True):
+    def batchSpawn(self, spawnPoints: carla.Transform, autoPilot=True):
 
         batch = []
         for spawnPoint in spawnPoints:
