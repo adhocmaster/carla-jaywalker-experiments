@@ -57,6 +57,16 @@ class GameWorld(ClientUser):
             project_to_road=True
             )
         
+        playerTransform = player.get_transform()
+        forwardVector = playerTransform.get_forward_vector()
+        rightVector = playerTransform.get_right_vector()
+
+        pointOnRight = rightVector * 3 + playerLocation
+        rightWp = self.map.get_waypoint(
+            pointOnRight,
+            project_to_road=True
+        )
+        
         # find way points on a circle at 10 meter radius and then extend way points?
 
 
