@@ -11,12 +11,12 @@ class RoadHelper:
     @staticmethod
     def getWaypointOnTheLeft(map: carla.Map, wp: carla.Waypoint):
         
-        transform = wp.get_transform()
+        transform = wp.transform
         
         rightVector = transform.get_right_vector().make_unit_vector()
-        leftVector = - rightVector
+        leftVector = rightVector * -1
         point = transform.location + leftVector * 3
-        leftWP = self.map.get_waypoint(
+        leftWP = map.get_waypoint(
             point,
             project_to_road=True
         )
@@ -29,11 +29,11 @@ class RoadHelper:
     @staticmethod
     def getWaypointOnTheRight(map: carla.Map, wp: carla.Waypoint):
         
-        transform = wp.get_transform()
+        transform = wp.transform
         
         rightVector = transform.get_right_vector().make_unit_vector()
         point = transform.location + rightVector * 3
-        rightWP = self.map.get_waypoint(
+        rightWP = map.get_waypoint(
             point,
             project_to_road=True
         )
@@ -44,8 +44,19 @@ class RoadHelper:
         return leftWP
     
     @staticmethod
-    def getForwardWPs(map, wp: carla.Waypoint, distance, steps=1):
+    def getWPsInFront(wp: carla.Waypoint, distance, steps=1):
         wps = []
 
-        for i in range(steps):
-            wps.append(wp.next(distance * i))
+        for i in range(1, steps + 1):
+            wps.extend(wp.next(distance * i))
+
+        return wps
+    
+    @staticmethod
+    def getWPsBehind(wp: carla.Waypoint, distance, steps=1):
+        wps = []
+
+        for i in range(1, steps + 1):
+            wps.extend(wp.previous(distance * i))
+
+        return wps

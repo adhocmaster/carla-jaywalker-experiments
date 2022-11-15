@@ -52,6 +52,9 @@ class VehicleFactory(ClientUser):
 
     
     def spawn(self, spawnPoint):
+
+        if spawnPoint.location.z < 0.5:
+           spawnPoint.location.z = 0.5 
         vehicleBp = self.create()
         vehicle = self.world.spawn_actor(vehicleBp, spawnPoint)
         self.vehicles.append(vehicle)

@@ -55,7 +55,7 @@ mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
 # mapManager.load(MapNames.circle_t_junctions)
 
-mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
@@ -75,20 +75,21 @@ map = mapManager.map
 
 
 visualizer.drawSpawnPoints(dropout=0.8)
-visualizer.drawSpectatorPoint()
-visualizer.drawAllWaypoints(life_time=0.0)
+# visualizer.drawSpectatorPoint()
+# visualizer.drawAllWaypoints(life_time=0.0)
 
 world = client.get_world()
 
 
 # game state
-gameWorld = GameWorld(client)
-walkers = []
-walkerAgents = []
-vehicles = []
-vehicleAgents = []
+gameWorld = GameWorld(client, logging.DEBUG)
+
 
 print(gameWorld.worldVehicles)
 print(gameWorld.playerVehicles)
+
+if len(gameWorld.playerVehicles) > 0:
+    for player in gameWorld.playerVehicles:
+        gameWorld.generateNPCVehicles(player, 2)
 
 # exit(0)

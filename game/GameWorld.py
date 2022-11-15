@@ -3,16 +3,25 @@ import carla
 from typing import List
 
 from agents.vehicles.VehicleFactory import VehicleFactory
+from lib.RoadHelper import RoadHelper
+import random
+from lib.LoggerFactory import LoggerFactory
+import logging
 
 class GameWorld(ClientUser):
 
 
     
-    def __init__(self, client):
+    def __init__(
+        self, 
+        client,
+        logLevel=logging.INFO
+        ):
         super().__init__(client)
+
+        self.logger = LoggerFactory.create("GameWorld", {"LOG_LEVEL": logLevel})
         self.walkers: List[carla.Walker] = []
         self.walkerAgents = []
-        self.vehicles: List[carla.Vehicle] = []
         self.vehicleAgents = []
 
         self.vehicleFactory = VehicleFactory(self.client)
@@ -31,6 +40,10 @@ class GameWorld(ClientUser):
     def worldWalkers(self) -> List[carla.Walker]:
         return list(self.worldActors.filter("wallker*"))
     
+    @property
+    def vehicles(self) -> List[carla.Vehicle]:
+        return self.vehicleFactory.getVehicles()
+
     def addWalker(self, walker):
         self.walkers.append(walker)
     
@@ -38,13 +51,15 @@ class GameWorld(ClientUser):
         self.walkers.remove(walker)
         walker.destroy()
 
-    def addVehicle(self, vehicle):
-        self.vehicles.append(vehicle)
     
-    def destroyVehicle(self, vehicle):
-        self.vehicles.remove(vehicle)
-        vehicle.destroy()
+
+    # endregion
+
+    # region lifecycle
     
+    def destroy(self):
+        self.vehicleFactory.reset()
+        pass
 
     # endregion
 
@@ -52,22 +67,54 @@ class GameWorld(ClientUser):
 
     def getWaypointsNearPlayer(self, player: carla.Vehicle) -> List[carla.Waypoint]:
         playerLocation = player.get_location()
-        playerWp = self.map.get_waypoint(
+        playerWP = self.map.get_waypoint(
             playerLocation,
             project_to_road=True
             )
         
-        playerTransform = player.get_transform()
-        forwardVector = playerTransform.get_forward_vector()
-        rightVector = playerTransform.get_right_vector()
-
-        pointOnRight = rightVector * 3 + playerLocation
-        rightWp = self.map.get_waypoint(
-            pointOnRight,
-            project_to_road=True
-        )
+        v2vDistance = 5
         
-        # find way points on a circle at 10 meter radius and then extend way points?
+        wps = []
+        leftWP = RoadHelper.getWaypointOnTheLeft(self.map, playerWP)
+        if leftWP is not None:
+            wps.append(leftWP)
+            wps.extend(RoadHelper.getWPsInFront(leftWP, v2vDistance, 3))
+            wps.extend(RoadHelper.getWPsBehind(leftWP, v2vDistance, 3))
+
+        rightWP = RoadHelper.getWaypointOnTheRight(self.map, playerWP)
+        if rightWP is not None:
+            wps.append(rightWP)
+            wps.extend(RoadHelper.getWPsInFront(rightWP, v2vDistance, 3))
+            wps.extend(RoadHelper.getWPsBehind(rightWP, v2vDistance, 3))
+        
+        wps.extend(RoadHelper.getWPsInFront(playerWP, v2vDistance, 3))
+        wps.extend(RoadHelper.getWPsBehind(playerWP, v2vDistance, 3))
+
+        return wps
+    
+
+    def generateNPCVehicles(self, player: carla.Vehicle, nVehicles=3):
+        wps = self.getWaypointsNearPlayer(player)
+        self.logger.debug(f"Generated {len(wps)} waypoints for player {player.id}")
+        if nVehicles > len(wps):
+            raise Exception(f"number of vehicles is more than available way points")
+
+        chosenWps = random.sample(wps, nVehicles)
+        print(chosenWps)
+
+        for wp in chosenWps:
+            print(wp)
+            try:
+                self.vehicleFactory.spawn(wp.transform)
+            except Exception as e:
+                self.logger.warn(f"Cannot spawn vehicle at {wp.transform.location}")
+        
+        pass
+
+
+
+        
+
 
 
     # endregion

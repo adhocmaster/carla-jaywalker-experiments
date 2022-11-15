@@ -41,7 +41,8 @@ class MapManager(ClientUser):
     @property
     def waypoints(self):
         if self._waypoints is None:
-            raise Exception("waypoint accessed before loading a map")
+            self.generateNavPoints()
+            # raise Exception("waypoint accessed before loading a map")
         return self._waypoints
 
     def getMapName(self, map):
