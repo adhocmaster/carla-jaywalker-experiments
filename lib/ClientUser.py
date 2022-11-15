@@ -12,7 +12,11 @@ class ClientUser:
 
     @property
     def map(self):
-        return self.client.get_world().get_map()
+        return self.world.get_map()
+
+    @property
+    def worldActors(self):
+        return self.world.get_actors()
 
     @property
     def debug(self):

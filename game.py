@@ -11,6 +11,7 @@ from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-e
 
 from lib import SimulationVisualization, MapNames, MapManager, Simulator
 from lib.state import StateManager
+from game.GameWorld import GameWorld
 
 SpawnActor = carla.command.SpawnActor
 
@@ -44,7 +45,7 @@ client.set_timeout(5.0)
 logging.info(f"Client carla version: {client.get_client_version()}")
 logging.info(f"Server carla version: {client.get_server_version()}")
 
-print(client.get_available_maps())
+# print(client.get_available_maps())
 
 if client.get_client_version() != client.get_server_version():
     logging.warning("Client and server version mistmatch. May not work properly.")
@@ -54,7 +55,8 @@ mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
 # mapManager.load(MapNames.circle_t_junctions)
 
-mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
+mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 
@@ -77,7 +79,16 @@ visualizer.drawSpectatorPoint()
 visualizer.drawAllWaypoints(life_time=0.0)
 
 world = client.get_world()
-controllers = world.get_blueprint_library().filter('controller.*')
-print(controllers)
+
+
+# game state
+gameWorld = GameWorld(client)
+walkers = []
+walkerAgents = []
+vehicles = []
+vehicleAgents = []
+
+print(gameWorld.worldVehicles)
+print(gameWorld.playerVehicles)
 
 # exit(0)
