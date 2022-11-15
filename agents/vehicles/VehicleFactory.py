@@ -35,6 +35,7 @@ class VehicleFactory(ClientUser):
         
         self.tm = client.get_trafficmanager(8000)
         self.tm.set_global_distance_to_leading_vehicle(2.5)
+        self.tm.global_percentage_speed_difference(-20)
 
         
     def getVehicles(self):
@@ -66,7 +67,7 @@ class VehicleFactory(ClientUser):
         return vehicle
 
     
-    def batchSpawn(self, spawnPoints: carla.Transform):
+    def batchSpawn(self, spawnPoints: carla.Transform, autoPilot: True):
 
         batch = []
         for spawnPoint in spawnPoints:
@@ -74,10 +75,16 @@ class VehicleFactory(ClientUser):
                 spawnPoint.location.z = 0.5 
                 
             vehicleBp = self.create()
-            batch.append(
-                carla.command.SpawnActor(vehicleBp, spawnPoint)
-                    .then(carla.command.SetAutopilot(carla.command.FutureActor, True, self.tm.get_port()))
-            )
+
+            if autoPilot:
+                batch.append(
+                    carla.command.SpawnActor(vehicleBp, spawnPoint)
+                        .then(carla.command.SetAutopilot(carla.command.FutureActor, True, self.tm.get_port()))
+                )
+            else:
+                batch.append(
+                    carla.command.SpawnActor(vehicleBp, spawnPoint)
+                )
 
         
         generatedVehicles = []
@@ -86,9 +93,17 @@ class VehicleFactory(ClientUser):
             if response.error:
                 logging.error(response.error)
             else:
-                generatedVehicles.append(self.world.get_actor(response.actor_id))
+                vehicle = self.world.get_actor(response.actor_id)
+                generatedVehicles.append(vehicle)
                 self.vehicles.extend(generatedVehicles)
-                
+
+                self.tm.auto_lane_change(vehicle, random.choice([True, False]))
+                self.tm.ignore_lights_percentage(vehicle, 20)
+                self.tm.ignore_signs_percentage(vehicle, 20)
+                self.tm.ignore_vehicles_percentage(vehicle, 20)
+                self.tm.ignore_walkers_percentage(vehicle, 20)
+
+
         return generatedVehicles
 
     
