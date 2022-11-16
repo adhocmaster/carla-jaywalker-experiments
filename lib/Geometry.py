@@ -79,7 +79,16 @@ class Geometry:
 
 
     @staticmethod
-    def getSideWalkPoint(world:carla.World, scanLine: LineString) -> Point:
+    def getSideWalkPointOnScanLine(world:carla.World, scanLine: LineString) -> Point:
+        """gets a point on the sidewalk 1 meter inside from the edge of detection
+
+        Args:
+            world (carla.World): _description_
+            scanLine (LineString): _description_
+
+        Returns:
+            Point: _description_
+        """
         
         initialLocaltion = carla.Location(scanLine.coords[0][0], scanLine.coords[0][1], 0.1)
         endLocation = carla.Location(scanLine.coords[1][0], scanLine.coords[1][1], 0.1)
@@ -111,7 +120,7 @@ class Geometry:
         for i in range(1, 10):
             angle = 10 * i
             newLine = rotate(centerScanLine, angle, origin=centerScanLine.coords[0])
-            sideWalkPoint = Geometry.getSideWalkPoint(world, newLine)
+            sideWalkPoint = Geometry.getSideWalkPointOnScanLine(world, newLine)
             if sideWalkPoint is not None:
                 rightScanLines.append(newLine)
                 rightSideWalkPoints.append(sideWalkPoint)
@@ -124,7 +133,7 @@ class Geometry:
         for i in range(1, 10):
             angle = -10 * i
             newLine = rotate(centerScanLine, angle, origin=centerScanLine.coords[0])
-            sideWalkPoint = Geometry.getSideWalkPoint(world, newLine)
+            sideWalkPoint = Geometry.getSideWalkPointOnScanLine(world, newLine)
             if sideWalkPoint is not None:
                 leftScanLines.append(newLine)
                 leftSideWalkPoints.append(sideWalkPoint)

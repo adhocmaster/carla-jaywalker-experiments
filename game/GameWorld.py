@@ -119,6 +119,11 @@ class GameWorld(ClientUser):
         
         pass
 
+    
+    def generateNPCWalkers(self, player: carla.Vehicle, nPedestrians=3):
+
+        # get forward way points
+        # ray cast towards the right vector
 
 
         

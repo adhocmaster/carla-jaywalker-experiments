@@ -1,7 +1,18 @@
 import carla
-
+from typing import List, Tuple
+from .Geometry import Geometry
 
 class RoadHelper:
+
+    @staticmethod
+    def getPlayerWP(map: carla.Map, player: carla.Vehicle) -> carla.Waypoint:
+        
+        playerLocation = player.get_location()
+        playerWP = self.map.get_waypoint(
+            playerLocation,
+            project_to_road=True
+            )
+        return playerWP
 
     @staticmethod
     def areWPsOnTheSameLane(wp1: carla.Waypoint, wp2: carla.Waypoint) -> bool:
@@ -9,7 +20,7 @@ class RoadHelper:
         return wp1.lane_id == wp2.lane_id
     
     @staticmethod
-    def getWaypointOnTheLeft(map: carla.Map, wp: carla.Waypoint):
+    def getWaypointOnTheLeft(map: carla.Map, wp: carla.Waypoint) -> carla.Waypoint:
         
         transform = wp.transform
         
@@ -27,7 +38,7 @@ class RoadHelper:
         return leftWP
 
     @staticmethod
-    def getWaypointOnTheRight(map: carla.Map, wp: carla.Waypoint):
+    def getWaypointOnTheRight(map: carla.Map, wp: carla.Waypoint) -> carla.Waypoint:
         
         transform = wp.transform
         
@@ -44,7 +55,7 @@ class RoadHelper:
         return leftWP
     
     @staticmethod
-    def getWPsInFront(wp: carla.Waypoint, distance, steps=1):
+    def getWPsInFront(wp: carla.Waypoint, distance, steps=1) -> List[carla.Waypoint]:
         wps = []
 
         for i in range(1, steps + 1):
@@ -53,10 +64,62 @@ class RoadHelper:
         return wps
     
     @staticmethod
-    def getWPsBehind(wp: carla.Waypoint, distance, steps=1):
+    def getWPsBehind(wp: carla.Waypoint, distance, steps=1) -> List[carla.Waypoint]:
         wps = []
 
         for i in range(1, steps + 1):
             wps.extend(wp.previous(distance * i))
 
         return wps
+
+    
+    @staticmethod
+    def getWalkerSpawnPointsInFront(world: carla.World, vehicle: carla.Vehicle) -> Tuple[List[carla.Location], List[carla.Location]]:
+
+        vehicleWp = RoadHelper.getPlayerWP(world.get_map(), vehicle)
+        frontWps = RoadHelper.getWPsInFront(vehicleWp, 10, steps=5):
+
+        leftSpawnPoints = []
+        rightSpawnPoints = []
+
+        for wp in frontWps:
+            leftSidewalkPoint, rightSidewalkPoint = RoadHelper.getSideWalkPoints(world, wp)
+            if leftSidewalkPoint is not None:
+                leftSpawnPoints.append(leftSidewalkPoint)
+            if rightSidewalkPoint is not None:
+                rightSpawnPoints.append(rightSidewalkPoint)
+        
+        return leftSpawnPoints, rightSpawnPoints
+        
+
+    @staticmethod
+    def getSideWalkPoints(world: carla.World, wp: carla.Waypoint) -> Tuple[carla.Location, carla.Location]:
+        """This is a naive approach and will not work well where the lane and the sidewalks do not run parallel; 
+        There are edge case where left and right points are not on the shorted crossing path. We need to find them in another approach
+
+        Args:
+            world (carla.World): _description_
+            wp (carla.Waypoint): _description_
+
+        Returns:
+            Tuple[carla.Location, carla.Location]: point on the left and on the right sidewalks.
+        """
+        # make a scanline towards the left
+        # Geometry.getSideWalkPointOnScanLine
+
+        rightVector = wp.transform.get_right_vector().make_unit_vector()
+        leftVector = rightVector * -1
+
+        aPointOnTheRight = rightVector * 20 + wp.transform.location
+        aPointOnTheLeft = leftVector * 20 +  wp.transform.location
+
+        scanLine = Geometry.makeCenterScanLine(wp.transform.location, aPointOnTheLeft)
+        leftSidewalkPoint = Geometry.getSideWalkPointOnScanLine(scanLine)
+
+        scanLine = Geometry.makeCenterScanLine(wp.transform.location, aPointOnTheRight)
+        rightSidewalkPoint = Geometry.getSideWalkPointOnScanLine(scanLine)
+
+        # there are edge case where left and right points are not on the shorted crossing path. We need to find them in another approach
+
+        return leftSidewalkPoint, rightSidewalkPoint
+
