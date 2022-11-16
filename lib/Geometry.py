@@ -67,7 +67,10 @@ class Geometry:
 
     #region scanning for sidewalks
 
-    
+    @staticmethod
+    def findClosestSidewalkPointOnTheOtherSide(source: carla.Location) -> carla.Location:
+        pass # TODO
+
     @staticmethod
     def makeCenterScanLine(source: carla.Location, dest: carla.Location) -> LineString:
 
