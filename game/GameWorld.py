@@ -133,5 +133,6 @@ class GameWorld(ClientUser):
     # endregion
 
     # region static generation
+    
     # endregion
     
