@@ -51,38 +51,43 @@ if client.get_client_version() != client.get_server_version():
     logging.warning("Client and server version mistmatch. May not work properly.")
 
 
-mapManager = MapManager(client)
-# mapManager.load(MapNames.t_junction)
-# mapManager.load(MapNames.circle_t_junctions)
+# mapManager = MapManager(client)
+# # mapManager.load(MapNames.t_junction)
+# # mapManager.load(MapNames.circle_t_junctions)
 
-# mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
-# mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
-# mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
-# mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
+# # mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+# # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
+# # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
+# # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 
-# world = mapManager.world
+# # world = mapManager.world
 
-# time_delta = 0.01
-# settings = world.get_settings()
-# settings.substepping = False
-# settings.fixed_delta_seconds = time_delta
-# world.apply_settings(settings)
+# # time_delta = 0.01
+# # settings = world.get_settings()
+# # settings.substepping = False
+# # settings.fixed_delta_seconds = time_delta
+# # world.apply_settings(settings)
 
-visualizer = SimulationVisualization(client, mapManager)
-# visualizer.draw00()
+# visualizer = SimulationVisualization(client, mapManager)
+# # visualizer.draw00()
 
-map = mapManager.map
+# map = mapManager.map
 
 
-visualizer.drawSpawnPoints(dropout=0.8)
-# visualizer.drawSpectatorPoint()
-# visualizer.drawAllWaypoints(life_time=0.0)
+# visualizer.drawSpawnPoints(dropout=0.8)
+# # visualizer.drawSpectatorPoint()
+# # visualizer.drawAllWaypoints(life_time=0.0)
 
-world = client.get_world()
+# world = client.get_world()
 
 
 # game state
-gameWorld = GameWorld(client, logging.DEBUG)
+gameWorld = GameWorld(
+    client, 
+    mapName = MapNames.circle_t_junctions,
+    outputDir = "logs", 
+    logLevel=logging.DEBUG
+    )
 
 
 print(gameWorld.worldVehicles)
@@ -91,5 +96,7 @@ print(gameWorld.playerVehicles)
 if len(gameWorld.playerVehicles) > 0:
     for player in gameWorld.playerVehicles:
         gameWorld.generateNPCVehicles(player, 2)
+
+gameWorld.destroy()
 
 # exit(0)

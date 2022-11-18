@@ -12,3 +12,4 @@ from .OnTicker import OnTicker
 from .ActorManager import ActorManager
 from .ObstacleManager import ObstacleManager
 from .LoggerFactory import LoggerFactory
+from .RoadHelper import RoadHelper

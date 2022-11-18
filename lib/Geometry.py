@@ -67,57 +67,124 @@ class Geometry:
 
     #region scanning for sidewalks
 
+
     @staticmethod
-    def findClosestSidewalkLocationOnTheOtherSide(
+    def makeCenterScanLine(source: carla.Location, dest: carla.Location, scaleFactor:float = 1.5) -> LineString:
+
+        s = (source.x, source.y)
+        d = (dest.x, dest.y)
+        yAxis = LineString([s, d])
+        centerScanLine = scale(yAxis, xfact=scaleFactor, yfact=scaleFactor, origin=s)
+        return centerScanLine
+
+
+    @staticmethod
+    def findClosestSidewalkLocationToDirection(
             world:carla.World, 
             source: carla.Location, 
-            maxDistance:float = 20, 
-            direction: carla.Vector3D = None
+            direction: carla.Vector3D,
+            scanRadius = 20
         ) -> carla.Location:
-        """Given a source point on a sidewalk, this method returns the closest point on the sidewalk on the other side of the road.
+        """Given a source point on a road this method returns the closest point on the sidewalk on the other side of the road. 
 
         Args:
-            source (carla.Location): source is a point on the current sidewalk.
-            maxDistance (float): maximum distance to the target point in meters. Defaults to 20 meters.
+            source (carla.Location): any point on the road
             direction (carla.Vector3D): direction to search, useful when the current sidewalk (or island) is in the middle of the road.
+            scanRadius (float): maximum scan radius for ray tracing for sidwalks. Defaults to 20 meters.
 
         Returns:
             carla.Location: a point on another sidewalk, or None if not sidewalk on the other side of the road.
         """
 
-        if direction is not None:
-            raise NotImplementedError("Geometry:findClosestSidewalkPointOnTheOtherSide does not handle direction yet.")
+        # if direction is not None:
+            
 
-        sidewalkPoint, centerLine = Geometry.getClosestSidewalkPointOnTheOtherSideAndtheScanLine()
+        sidewalkPoint, centerLine = Geometry.getClosestSidewalkPointAndScanLine(
+            world=world,
+            source=source,
+            direction=direction,
+            scanRadius=scanRadius
+        )
 
         return Geometry.pointtoLocation(sidewalkPoint)
 
 
     @staticmethod
-    def getClosestSidewalkPointOnTheOtherSideAndtheScanLine(world:carla.World, source: carla.Location, ignoreLessThan=4.0) -> LineString:
+    def findClosestSidewalkLocationOnTheOtherSide(
+            world:carla.World, 
+            source: carla.Location, 
+            scanRadius = 20
+        ) -> carla.Location:
+        """Given a source point on a sidewalk, this method returns the closest point on the sidewalk on the other side of the road. 
+
+        Args:
+            source (carla.Location): source is a point on the current sidewalk. If the point is not on a sidewalk, provide a direction to search in.
+            scanRadius (float): maximum scan radius for ray tracing for sidwalks. Defaults to 20 meters.
+
+        Returns:
+            carla.Location: a point on another sidewalk, or None if not sidewalk on the other side of the road.
+        """
+
+        # if direction is not None:
+            
+
+        sidewalkPoint, centerLine = Geometry.getClosestSidewalkPointAndScanLine(
+            world=world,
+            source=source,
+            direction=None,
+            scanRadius=scanRadius
+        )
+
+        return Geometry.pointtoLocation(sidewalkPoint)
+
+    @staticmethod
+    def getClosestSidewalkPointAndScanLine(
+            world:carla.World, 
+            source: carla.Location, 
+            direction: carla.Vector3D = None,
+            scanRadius = 20,
+            fov:float = 90,
+            ignoreLessThan=4.0
+            ) -> LineString:
+        """_summary_
+
+        Args:
+            world (carla.World): _description_
+            source (carla.Location): a point on a sidewalk if direction is None. A point on the road if a direction is given.
+            direction (carla.Vector3D, optional): Limit search towards a direction. Defaults to None.
+            scanRadius (float): maximum scan radius for ray tracing for sidwalks. Defaults to 20 meters.
+            fov (float, optional): Limit search inside a fov. Defaults to 90.
+            ignoreLessThan (float, optional): _description_. Defaults to 4.0.
+
+        Returns:
+            LineString: _description_
+        """
 
         curMin = 0.0
-        curMinLine = None
+        centerScanLine = None
 
-        # broad scan
+        # broad scan in 360
+        if direction is None:
+            scanLines = Geometry.get360ScanLines(source, 10, scanRadius)
 
-        scanLines = Geometry.get360ScanLines(source, 10)
-
-        for scanLine in scanLines:
-            sidewalkPoint = Geometry.getSideWalkPointOnScanLine(world, scanLine)
-            sidewalkLocation = Geometry.pointtoLocation(sidewalkPoint)
-            d = source.distance_2d(sidewalkLocation)
-            if d > ignoreLessThan and d < curMin:
-                curMin = d
-                curMinLine = scanLine
+            for scanLine in scanLines:
+                sidewalkPoint = Geometry.getSideWalkPointOnScanLine(world, scanLine)
+                sidewalkLocation = Geometry.pointtoLocation(sidewalkPoint)
+                d = source.distance_2d(sidewalkLocation)
+                if d > ignoreLessThan and d < curMin:
+                    curMin = d
+                    centerScanLine = scanLine
+        else:
+            targetLocation = direction * scanRadius + source
+            centerLine = Geometry.makeCenterScanLine(source, targetLocation)
             
         # narrow scan
 
         _, sidewalkPoints = Geometry.getScanLinesAndSidewalkPoints(
             world=world,
-            centerScanLine=curMinLine,
+            centerScanLine=centerScanLine,
             nLines=10,
-            fov=90
+            fov=fov
         )
 
         minSidewalkPoint = None
@@ -126,21 +193,21 @@ class Geometry:
             d = source.distance_2d(sidewalkLocation)
             if d > ignoreLessThan and d < curMin:
                 curMin = d
-                curMinLine = scanLine
+                centerScanLine = scanLine
                 minSidewalkPoint = sidewalkPoint
 
 
-        return minSidewalkPoint, curMinLine
+        return minSidewalkPoint, centerScanLine
 
 
 
     @staticmethod
-    def get360ScanLines(source: carla.Location, nLines = 10, length = 20) -> List[LineString]:
+    def get360ScanLines(source: carla.Location, nLines = 10, scanRadius = 20) -> List[LineString]:
 
         stepAngle = 360 // nLines
 
         # a randomLine
-        aRandomEndPoint = carla.Location(source.x + length, source.y, source.z)
+        aRandomEndPoint = carla.Location(source.x + scanRadius, source.y, source.z)
         firstLine = Geometry.makeCenterScanLine(
             source=source,
             dest=aRandomEndPoint,
@@ -154,16 +221,6 @@ class Geometry:
         
         return lines
 
-
-
-    @staticmethod
-    def makeCenterScanLine(source: carla.Location, dest: carla.Location, scaleFactor:float = 1.5) -> LineString:
-
-        s = (source.x, source.y)
-        d = (dest.x, dest.y)
-        yAxis = LineString([s, d])
-        centerScanLine = scale(yAxis, xfact=scaleFactor, yfact=scaleFactor, origin=s)
-        return centerScanLine
 
 
     @staticmethod

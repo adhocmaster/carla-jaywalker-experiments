@@ -48,8 +48,12 @@ class VehicleFactory(ClientUser):
 
     
     def destroy(self, vehicle: carla.Vehicle):
-        self.vehicles.remove(vehicle)
-        vehicle.destroy()
+
+        try:
+            self.vehicles.remove(vehicle)
+            vehicle.destroy()
+        except:
+            self.logger.warn(f"vehicle already destroyed")
 
 
     def reset(self):

@@ -8,7 +8,7 @@ class RoadHelper:
     def getPlayerWP(map: carla.Map, player: carla.Vehicle) -> carla.Waypoint:
         
         playerLocation = player.get_location()
-        playerWP = self.map.get_waypoint(
+        playerWP = map.get_waypoint(
             playerLocation,
             project_to_road=True
             )
@@ -74,26 +74,26 @@ class RoadHelper:
 
     
     @staticmethod
-    def getWalkerSpawnPointsInFront(world: carla.World, vehicle: carla.Vehicle) -> Tuple[List[carla.Location], List[carla.Location]]:
+    def getWalkerSpawnPointsInFront(world: carla.World, vehicle: carla.Vehicle) -> Tuple[List[carla.Transform], List[carla.Transform]]:
 
         vehicleWp = RoadHelper.getPlayerWP(world.get_map(), vehicle)
-        frontWps = RoadHelper.getWPsInFront(vehicleWp, 10, steps=5):
+        frontWps = RoadHelper.getWPsInFront(vehicleWp, 10, steps=5)
 
         leftSpawnPoints = []
         rightSpawnPoints = []
 
         for wp in frontWps:
-            leftSidewalkPoint, rightSidewalkPoint = RoadHelper.getSideWalkPoints(world, wp)
-            if leftSidewalkPoint is not None:
-                leftSpawnPoints.append(leftSidewalkPoint)
-            if rightSidewalkPoint is not None:
-                rightSpawnPoints.append(rightSidewalkPoint)
+            leftSidewalkLocation, rightSidewalkLocation = RoadHelper.getSideWalkLocations(world, wp)
+            if leftSidewalkLocation is not None:
+                leftSpawnPoints.append(carla.Transform(location = leftSidewalkLocation))
+            if rightSidewalkLocation is not None:
+                rightSpawnPoints.append(carla.Transform(location = rightSidewalkLocation))
         
         return leftSpawnPoints, rightSpawnPoints
         
 
     @staticmethod
-    def getSideWalkPoints(world: carla.World, wp: carla.Waypoint) -> Tuple[carla.Location, carla.Location]:
+    def getSideWalkLocations(world: carla.World, wp: carla.Waypoint) -> Tuple[carla.Location, carla.Location]:
         """This is a naive approach and will not work well where the lane and the sidewalks do not run parallel; 
         There are edge case where left and right points are not on the shorted crossing path. We need to find them in another approach
 
@@ -121,5 +121,5 @@ class RoadHelper:
 
         # there are edge case where left and right points are not on the shorted crossing path. We need to find them in another approach
 
-        return leftSidewalkPoint, rightSidewalkPoint
+        return Geometry.pointtoLocation(leftSidewalkPoint), Geometry.pointtoLocation(rightSidewalkPoint)
 

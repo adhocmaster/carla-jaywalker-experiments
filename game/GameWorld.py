@@ -1,31 +1,69 @@
-from lib.ClientUser import ClientUser
-import carla
+import logging
+import random
 from typing import List
 
+import carla
+from agents.pedestrians.factors import Factors
+from agents.pedestrians.PedestrianFactory import PedestrianFactory
 from agents.vehicles.VehicleFactory import VehicleFactory
-from lib.RoadHelper import RoadHelper
-import random
-from lib.LoggerFactory import LoggerFactory
-import logging
+from lib import (ClientUser, LoggerFactory, MapManager, MapNames, Geometry, LoggerFactory, RoadHelper,
+                 NotImplementedInterface, SimulationMode,
+                 SimulationVisualization)
+
 
 class GameWorld(ClientUser):
 
 
     
     def __init__(
-        self, 
-        client,
-        logLevel=logging.INFO
+            self, 
+            client: carla.Client,
+            mapName=MapNames.circle_t_junctions, 
+            outputDir:str = "logs", 
+            logLevel=logging.INFO,
+            stats=False
         ):
+
         super().__init__(client)
+
+        self.mapName = mapName
+        self.outputDir = outputDir
+        self.logLevel = logLevel
+        self.stats = stats
+        self.time_delta = None
+        self.mapManager = None
+        self.visualizer = None
+
+        self.initWorldSettingsAsynchronousMode()
+        self.initVisualizer()
 
         self.logger = LoggerFactory.create("GameWorld", {"LOG_LEVEL": logLevel})
         self.walkers: List[carla.Walker] = []
         self.walkerAgents = []
         self.vehicleAgents = []
+        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
+        self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
-        self.vehicleFactory = VehicleFactory(self.client)
-
+    def configureMap(self):
+        self.mapManager = MapManager(self.client)
+        self.mapManager.load(self.mapName)
+        
+    def initWorldSettingsAsynchronousMode(self):
+        self.configureMap()
+        self.time_delta = 0.007
+        settings = self.world.get_settings()
+        settings.synchronous_mode = False # Enables synchronous mode
+        settings.substepping = False
+        settings.fixed_delta_seconds = self.time_delta
+        self.world.apply_settings(settings)
+        pass
+    
+    def initVisualizer(self):
+        self.visualizer = SimulationVisualization(self.client, self.mapManager)
+        self.visualizer.drawSpawnPoints(life_time=1.0)
+        self.visualizer.drawSpectatorPoint()
+        # self.visualizer.drawAllWaypoints(life_time=1.0)
+        pass
 
     # region actors
     @property
@@ -44,12 +82,12 @@ class GameWorld(ClientUser):
     def vehicles(self) -> List[carla.Vehicle]:
         return self.vehicleFactory.getVehicles()
 
-    def addWalker(self, walker):
-        self.walkers.append(walker)
+    # def addWalker(self, walker):
+    #     self.walkers.append(walker)
     
-    def destroyWalker(self, walker):
-        self.walkers.remove(walker)
-        walker.destroy()
+    # def destroyWalker(self, walker):
+    #     self.walkers.remove(walker)
+    #     walker.destroy()
 
     
 
@@ -58,7 +96,11 @@ class GameWorld(ClientUser):
     # region lifecycle
     
     def destroy(self):
+        self.walkers: List[carla.Walker] = []
+        self.walkerAgents = []
+        self.vehicleAgents = []
         self.vehicleFactory.reset()
+        self.pedFactory.reset()
         pass
 
     # endregion
@@ -66,11 +108,8 @@ class GameWorld(ClientUser):
     # region dynamic generation
 
     def getWaypointsNearPlayer(self, player: carla.Vehicle) -> List[carla.Waypoint]:
-        playerLocation = player.get_location()
-        playerWP = self.map.get_waypoint(
-            playerLocation,
-            project_to_road=True
-            )
+
+        playerWP = RoadHelper.getPlayerWP(self.map, player)
         
         v2vDistance = 5
         
@@ -124,6 +163,29 @@ class GameWorld(ClientUser):
 
         # get forward way points
         # ray cast towards the right vector
+        
+        leftSpawnPoints, rightSpawnPoints = RoadHelper.getWalkerSpawnPointsInFront(self.world, player)
+        chosenSpawnPoints = random.sample(leftSpawnPoints + rightSpawnPoints, nPedestrians)
+
+        optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
+        config = {
+            "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
+            "visualizationInfoLocation": carla.Location(x=-155.0, y=0.0, z=1.5)
+        }
+        self.walkers, self.walkerAgents = self.pedFactory.batchSpawnWalkerAndAgent(
+            chosenSpawnPoints,
+            logLevel=self.logLevel,
+            optionalFactors=optionalFactors,
+            config=config
+        )
+
+        for walkerAgent in self.walkerAgents:
+            dest = Geometry.findClosestSidewalkLocationOnTheOtherSide(
+                world=self.world,
+                source=walkerAgent.location,
+                scanRadius=20 # TODO: find road width and use that + 5 as a radius
+            )
+            walkerAgent.setDestination(dest)
 
 
         
@@ -133,6 +195,6 @@ class GameWorld(ClientUser):
     # endregion
 
     # region static generation
-    
+
     # endregion
     

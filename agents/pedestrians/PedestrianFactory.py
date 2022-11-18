@@ -1,15 +1,15 @@
-import carla
-import random
 import logging
-
-from agents.pedestrians.PedestrianAgent import PedestrianAgent
-from agents.pedestrians.planner.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
-from agents.pedestrians.factors import InternalFactors
-from lib import LoggerFactory, ClientUser
-from lib.ActorManager import ActorManager
-from lib.ObstacleManager import ObstacleManager
+import random
 from typing import List
+
+import carla
 from agents.pedestrians.factors import *
+from agents.pedestrians.factors import InternalFactors
+from agents.pedestrians.PedestrianAgent import PedestrianAgent
+from agents.pedestrians.planner.SingleOncomingVehicleLocalPlanner import \
+    SingleOncomingVehicleLocalPlanner
+from lib import (ActorManager, ClientUser, LoggerFactory, ObstacleManager,
+                 SimulationMode)
 
 
 class PedestrianFactory(ClientUser):
@@ -61,7 +61,7 @@ class PedestrianFactory(ClientUser):
             self.destroy(walker)
 
     
-    def spawn(self, spawnPoint):
+    def spawn(self, spawnPoint: carla.Transform):
         walkerBp = self.create()
         # walkerBp.set_attribute('is_invincible', 'true')  
         walker = self.world.spawn_actor(walkerBp, spawnPoint)
@@ -69,12 +69,12 @@ class PedestrianFactory(ClientUser):
         self.walkers.append(walker)
         return walker
     
-    def spawnWithCollision(self, spawnPoint):
+    def spawnWithCollision(self, spawnPoint: carla.Transform):
         walker = self.spawn(spawnPoint)
         collision = self.addCollisonSensor(walker)
         return walker, collision
 
-    def addCollisonSensor(self, walker):
+    def addCollisonSensor(self, walker: carla.Walker):
 
         if walker not in PedestrianFactory.collisionSensors:
             spawnPoint = carla.Transform(location = carla.Location(0, 0, 1))
@@ -83,12 +83,92 @@ class PedestrianFactory(ClientUser):
         return PedestrianFactory.collisionSensors[walker]
 
     
-    def addObstacleDetector(self, walker):
+    def addObstacleDetector(self, walker: carla.Walker):
         if walker not in PedestrianFactory.obstacleDetectors:
             spawnPoint = carla.Transform(location = carla.Location(0, 0, 1))
             PedestrianFactory.obstacleDetectors[walker] = self.world.spawn_actor(self.obstacleBp, spawnPoint, attach_to=walker)
 
         return PedestrianFactory.obstacleDetectors[walker]
+
+    def batchSpawnWalkerAndAgent(self,
+
+            spawnPoints: List[carla.Transform],
+            logLevel=logging.INFO, 
+            internalFactorsPath = None, 
+            optionalFactors: List[Factors] = None,
+            config=None,
+            simulationMode = SimulationMode.ASYNCHRONOUS
+
+        ):
+
+        # 1. batch spawn walkers
+        # 2. wait for tick or tick
+        # 3. batch spawn agents
+
+        walkers = self.batchSpawnWalkers(spawnPoints)
+        if simulationMode == SimulationMode.ASYNCHRONOUS:
+            self.world.wait_for_tick()
+        else:
+            self.world.tick()
+        
+        agents = self.batchCreateAgents(
+            walkers,
+            logLevel=logLevel, 
+            internalFactorsPath = internalFactorsPath, 
+            optionalFactors = optionalFactors,
+            config=config,
+        )
+
+        return walkers, agents
+
+       
+    def batchSpawnWalkers(self, spawnPoints: List[carla.Transform]):
+        
+        batch = []
+        for spawnPoint in spawnPoints:
+            if spawnPoint.location.z < 0.5:
+                spawnPoint.location.z = 0.5 
+
+                walkerBp = self.create()
+                
+                batch.append(carla.command.SpawnActor(walkerBp, spawnPoint))
+        
+        generatedWalkers = []
+
+        for response in self.client.apply_batch_sync(batch):
+            if response.error:
+                logging.error(response.error)
+            else:
+                walker = self.world.get_actor(response.actor_id)
+                generatedWalkers.append(walker)
+                self.walkers.extend(generatedWalkers)
+        
+        return generatedWalkers
+
+    
+    def batchCreateAgents(
+            self, 
+            walkers: List[carla.Walker], 
+            logLevel=logging.INFO, 
+            internalFactorsPath = None, 
+            optionalFactors: List[Factors] = None,
+            config=None
+        ) -> List[PedestrianAgent]:
+
+        agents = []
+        for walker in walkers:
+            agents.append(
+                self.createAgent(
+                    walker=walker,
+                    logLevel=logLevel,
+                    internalFactorsPath=internalFactorsPath,
+                    optionalFactors=optionalFactors,
+                    config=config
+                )
+            )
+        
+        return agents
+
 
     
     def createAgent(
