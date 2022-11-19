@@ -71,7 +71,7 @@ class CrosswalkModel:
         if self.goalLine == None:
             self.goalLine = LineString([sideWalkPoints[0], sideWalkPoints[-1]])
         
-        print(self.goalLine)
+        self.agent.logger.info("created goal line:", self.goalLine)
         
         self.areaPolygon = Polygon([Geometry.locationToPoint(self.source), sideWalkPoints[0], sideWalkPoints[-1]])
        

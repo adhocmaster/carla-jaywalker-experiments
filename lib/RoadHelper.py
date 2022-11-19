@@ -114,10 +114,14 @@ class RoadHelper:
         aPointOnTheLeft = leftVector * 20 +  wp.transform.location
 
         scanLine = Geometry.makeCenterScanLine(wp.transform.location, aPointOnTheLeft)
-        leftSidewalkPoint = Geometry.getSideWalkPointOnScanLine(scanLine)
+        leftSidewalkPoint = Geometry.getSideWalkPointOnScanLine(world, scanLine)
+
+        assert leftSidewalkPoint is not None
 
         scanLine = Geometry.makeCenterScanLine(wp.transform.location, aPointOnTheRight)
-        rightSidewalkPoint = Geometry.getSideWalkPointOnScanLine(scanLine)
+        rightSidewalkPoint = Geometry.getSideWalkPointOnScanLine(world, scanLine)
+
+        assert rightSidewalkPoint is not None
 
         # there are edge case where left and right points are not on the shorted crossing path. We need to find them in another approach
 

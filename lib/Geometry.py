@@ -7,6 +7,9 @@ from typing import List, Tuple
 
 class Geometry: 
 
+    visualizer = None
+
+
     @staticmethod
     def getGlobalYaw(subject: carla.Vector3D): 
         """Returns rotation around Z"""
@@ -160,33 +163,69 @@ class Geometry:
             LineString: _description_
         """
 
-        curMin = 0.0
+        curMin = 60
         centerScanLine = None
 
         # broad scan in 360
         if direction is None:
             scanLines = Geometry.get360ScanLines(source, 10, scanRadius)
 
+            if Geometry.visualizer is not None:
+                for scanLine in scanLines:
+                    Geometry.visualizer.drawShapelyLine(scanLine, life_time=3)
+
             for scanLine in scanLines:
                 sidewalkPoint = Geometry.getSideWalkPointOnScanLine(world, scanLine)
+                if sidewalkPoint is None:
+                    continue
                 sidewalkLocation = Geometry.pointtoLocation(sidewalkPoint)
                 d = source.distance_2d(sidewalkLocation)
+                # print("d", d)
                 if d > ignoreLessThan and d < curMin:
                     curMin = d
                     centerScanLine = scanLine
         else:
             targetLocation = direction * scanRadius + source
-            centerLine = Geometry.makeCenterScanLine(source, targetLocation)
+            centerScanLine = Geometry.makeCenterScanLine(source, targetLocation)
             
         # narrow scan
 
-        _, sidewalkPoints = Geometry.getScanLinesAndSidewalkPoints(
+        assert centerScanLine is not None
+        
+        if Geometry.visualizer is not None:
+            Geometry.visualizer.drawShapelyLine(centerScanLine, color=(0, 0, 255, 100), life_time=3)
+
+        return Geometry.getClosestSidewalkPointAndLineAroundAScanLine(
             world=world,
             centerScanLine=centerScanLine,
             nLines=10,
             fov=fov
         )
 
+
+    @staticmethod
+    def getClosestSidewalkPointAndLineAroundAScanLine(
+            world:carla.World, 
+            centerScanLine: LineString,
+            nLines=20,
+            fov=90,
+            ignoreLessThan=4.0
+        ):
+    
+        narrowScanLines, sidewalkPoints = Geometry.getScanLinesAndSidewalkPoints(
+            world=world,
+            centerScanLine=centerScanLine,
+            nLines=10,
+            fov=fov
+        )
+
+        source = Geometry.pointtoLocation(centerScanLine.coords[0])
+
+        if Geometry.visualizer is not None:
+            for scanLine in narrowScanLines:
+                Geometry.visualizer.drawShapelyLine(scanLine, life_time=3)
+
+        curMin = 60
         minSidewalkPoint = None
         for sidewalkPoint in sidewalkPoints:
             sidewalkLocation = Geometry.pointtoLocation(sidewalkPoint)
@@ -198,8 +237,6 @@ class Geometry:
 
 
         return minSidewalkPoint, centerScanLine
-
-
 
     @staticmethod
     def get360ScanLines(source: carla.Location, nLines = 10, scanRadius = 20) -> List[LineString]:
@@ -216,7 +253,7 @@ class Geometry:
 
         lines = [firstLine]
         for i in range(1, nLines+1):
-            angle = 10 * i
+            angle = stepAngle * i
             lines.append(rotate(firstLine, angle, origin=firstLine.coords[0]))
         
         return lines

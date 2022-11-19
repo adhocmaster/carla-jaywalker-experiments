@@ -44,6 +44,8 @@ class GameWorld(ClientUser):
         self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
+        Geometry.visualizer = self.visualizer
+
     def configureMap(self):
         self.mapManager = MapManager(self.client)
         self.mapManager.load(self.mapName)
@@ -140,7 +142,7 @@ class GameWorld(ClientUser):
             raise Exception(f"number of vehicles is more than available way points")
 
         chosenWps = random.sample(wps, nVehicles)
-        print(chosenWps)
+        # print(chosenWps)
 
         # generatedVehicles = []
 
@@ -166,7 +168,10 @@ class GameWorld(ClientUser):
         
         leftSpawnPoints, rightSpawnPoints = RoadHelper.getWalkerSpawnPointsInFront(self.world, player)
         chosenSpawnPoints = random.sample(leftSpawnPoints + rightSpawnPoints, nPedestrians)
-
+        
+        self.visualizer.drawSpawnPoints(spawn_points=chosenSpawnPoints)
+        # return 
+        
         optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
         config = {
             "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
@@ -174,17 +179,22 @@ class GameWorld(ClientUser):
         }
         self.walkers, self.walkerAgents = self.pedFactory.batchSpawnWalkerAndAgent(
             chosenSpawnPoints,
-            logLevel=self.logLevel,
+            # logLevel=self.logLevel,
+            logLevel=logging.ERROR,
             optionalFactors=optionalFactors,
             config=config
         )
 
+        self.logger.info("created walkers and agents. Setting destinations")
+        # return
         for walkerAgent in self.walkerAgents:
+            # self.visualizer.drawPoint(walkerAgent.location, size=0.2, life_time=5.0)
             dest = Geometry.findClosestSidewalkLocationOnTheOtherSide(
                 world=self.world,
                 source=walkerAgent.location,
                 scanRadius=20 # TODO: find road width and use that + 5 as a radius
             )
+            assert dest is not None
             walkerAgent.setDestination(dest)
 
 

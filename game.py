@@ -5,6 +5,7 @@ import random
 import time
 import eventlet
 eventlet.monkey_patch()
+import traceback
 
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
 from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
@@ -93,10 +94,15 @@ gameWorld = GameWorld(
 print(gameWorld.worldVehicles)
 print(gameWorld.playerVehicles)
 
-if len(gameWorld.playerVehicles) > 0:
-    for player in gameWorld.playerVehicles:
-        gameWorld.generateNPCVehicles(player, 2)
+try:
+    if len(gameWorld.playerVehicles) > 0:
+        for player in gameWorld.playerVehicles:
+            # gameWorld.generateNPCVehicles(player, 2)
+            gameWorld.generateNPCWalkers(player, 2)
+except Exception as e:
+    traceback.print_exc()
 
+time.sleep(5)
 gameWorld.destroy()
 
 # exit(0)
