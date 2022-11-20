@@ -33,9 +33,6 @@ class BaseResearch(ClientUser):
         self.mapManager = MapManager(self.client)
         self.mapManager.load(self.mapName)
 
-    def reset(self):
-        # self.client.reload_world(False)
-        self.mapManager.reload()
 
 
     def initWorldSettings(self):
@@ -90,12 +87,36 @@ class BaseResearch(ClientUser):
         else:
             self.world.tick()
 
+    #region lifecycle methods
+
+    def reset(self):
+        # self.client.reload_world(False)
+        self.mapManager.reload()
+    
+
+    @abstractmethod
+    def setup(self):
+        raise NotImplementedInterface("setup")
+
+    @abstractmethod
+    def setupSimulator(self, episodic=False):
+        raise NotImplementedInterface("setupSimulator")
+
     @abstractmethod
     def createDynamicAgents(self):
         raise NotImplementedInterface("createDynamicAgents")
 
     @abstractmethod
+    def onTick(self):
+        raise NotImplementedInterface("onTick")
+    
+    @abstractmethod
+    def onEnd(self):
+        raise NotImplementedInterface("onEnd")
+    
+    @abstractmethod
     def setupSimulator(self):
         raise NotImplementedInterface("setupSimulator")
-
+    
+    #endregion
     

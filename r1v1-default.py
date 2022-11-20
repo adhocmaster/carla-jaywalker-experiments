@@ -11,7 +11,7 @@ from research import ResearchFactory
     )
 def r1v1Default(max_ticks):
     research = ResearchFactory.createResearch1v1()
-    research.run(maxTicks=max_ticks)
+    research.runAsync(maxTicks=max_ticks)
 
 
 if __name__ == '__main__':

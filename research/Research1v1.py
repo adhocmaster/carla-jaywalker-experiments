@@ -297,9 +297,9 @@ class Research1v1(BaseResearch):
 
         onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
         onEnders = [self.onEnd]
-        terminalSignalers = [self.walkerAgent.isFinished]
 
         if episodic:
+            terminalSignalers = [self.walkerAgent.isFinished]
             self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
         else:
             onTickers.append(self.restart)
@@ -307,12 +307,13 @@ class Research1v1(BaseResearch):
 
 
 
-    def run(self, maxTicks=1000):
+    def runAsync(self, maxTicks=1000):
         """Runs in asynchronous mode only
 
         Args:
             maxTicks (int, optional): _description_. Defaults to 1000.
         """
+            
 
         # self.episodeNumber = 1 # updated when resetted
         
@@ -323,7 +324,7 @@ class Research1v1(BaseResearch):
         # return
 
         try:
-
+            assert self.simulationMode == SimulationMode.ASYNCHRONOUS
             self.createDynamicAgents()
             
             # self.world.wait_for_tick()
