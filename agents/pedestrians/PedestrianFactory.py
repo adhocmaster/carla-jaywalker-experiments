@@ -201,6 +201,7 @@ class PedestrianFactory(ClientUser):
     def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None, logLevel=logging.INFO):
         
         localPlanner = self.createLocalPlanner(
+            agent=agent,
             internalFactorsPath=internalFactorsPath,
             optionalFactors=optionalFactors,
             logLevel=logLevel
@@ -212,7 +213,7 @@ class PedestrianFactory(ClientUser):
         pass
 
     
-    def createLocalPlanner(self, internalFactorsPath = None, optionalFactors: List[Factors] = None, logLevel=logging.INFO) -> PedestrianPlanner:
+    def createLocalPlanner(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None, logLevel=logging.INFO) -> PedestrianPlanner:
 
         actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
         obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)

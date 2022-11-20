@@ -10,7 +10,7 @@ class Factors(Enum):
     # CROSSWALK_MODEL = auto()
 
     @staticmethod
-    def getByValue(factor: str) -> Factors:
+    def getByValue(factor: str):
 
         factor = factor.strip().upper()
 

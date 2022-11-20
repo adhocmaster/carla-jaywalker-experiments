@@ -53,8 +53,8 @@ class Research1v1(BaseResearch):
         self.episodeTimeStep = 0
         self.stats = stats
         self.settingsId = settingsId
-
-        self.optionalFactors = [Factors.DRUNKEN_WALKER]
+        self.optionalFactors = None # will be populated from the internal factors file
+        # self.optionalFactors = [Factors.DRUNKEN_WALKER]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
         # self.optionalFactors = [Factors.ANTISURVIVAL]

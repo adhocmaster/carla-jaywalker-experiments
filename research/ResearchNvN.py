@@ -54,18 +54,4 @@ class ResearchNvN(BaseResearch):
         self.stats = stats
         self.settingsId = settingsId
 
-        self.optionalFactors = [Factors.DRUNKEN_WALKER]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
-        # self.optionalFactors = [Factors.ANTISURVIVAL]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.DRUNKEN_WALKER]
-        # self.optionalFactors = []
-
-        # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]
-
-#        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
-
-
         self.setup()
