@@ -97,14 +97,15 @@ class BaseResearch(ClientUser):
     @abstractmethod
     def setup(self):
         raise NotImplementedInterface("setup")
+    
+    @abstractmethod
+    def createDynamicAgents(self):
+        raise NotImplementedInterface("createDynamicAgents")
 
     @abstractmethod
     def setupSimulator(self, episodic=False):
         raise NotImplementedInterface("setupSimulator")
 
-    @abstractmethod
-    def createDynamicAgents(self):
-        raise NotImplementedInterface("createDynamicAgents")
 
     @abstractmethod
     def onTick(self):

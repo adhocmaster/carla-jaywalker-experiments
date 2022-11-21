@@ -5,14 +5,14 @@ from .Geometry import Geometry
 class RoadHelper:
 
     @staticmethod
-    def getPlayerWP(map: carla.Map, player: carla.Vehicle) -> carla.Waypoint:
+    def getVehicleWP(map: carla.Map, vehicle: carla.Vehicle) -> carla.Waypoint:
         
-        playerLocation = player.get_location()
-        playerWP = map.get_waypoint(
-            playerLocation,
+        vehicleLocation = vehicle.get_location()
+        vehicleWP = map.get_waypoint(
+            vehicleLocation,
             project_to_road=True
             )
-        return playerWP
+        return vehicleWP
 
     @staticmethod
     def areWPsOnTheSameLane(wp1: carla.Waypoint, wp2: carla.Waypoint) -> bool:
@@ -73,10 +73,40 @@ class RoadHelper:
         return wps
 
     
+
+    @staticmethod
+    def getWaypointsNearVehicle(self, map: carla.Map, vehicle: carla.Vehicle, minN=6) -> List[carla.Waypoint]:
+
+        vehicleWP = RoadHelper.getVehicleWP(self.map, vehicle)
+        
+        stopDistance = 6
+        v2vDistance = stopDistance + vehicle.get_velocity().length() * 2
+        vehicleLaneDistance = stopDistance + vehicle.get_velocity().length() * 3 # three second rule
+        
+        wps = []
+        leftWP = RoadHelper.getWaypointOnTheLeft(self.map, vehicleWP)
+        if leftWP is not None:
+            wps.append(leftWP)
+            wps.extend(RoadHelper.getWPsInFront(leftWP, v2vDistance, minN // 2))
+            wps.extend(RoadHelper.getWPsBehind(leftWP, v2vDistance, minN // 2))
+
+        rightWP = RoadHelper.getWaypointOnTheRight(self.map, vehicleWP)
+        if rightWP is not None:
+            wps.append(rightWP)
+            wps.extend(RoadHelper.getWPsInFront(rightWP, v2vDistance, minN // 2))
+            wps.extend(RoadHelper.getWPsBehind(rightWP, v2vDistance, minN // 2))
+        
+        vehicleLaneDistance = v2vDistance + vehicle.get_velocity().length() * 3 # three second rule
+        wps.extend(RoadHelper.getWPsInFront(vehicleWP, vehicleLaneDistance, minN // 2))
+        wps.extend(RoadHelper.getWPsBehind(vehicleWP, vehicleLaneDistance, minN // 2))
+
+        return wps
+
+    
     @staticmethod
     def getWalkerSpawnPointsInFront(world: carla.World, vehicle: carla.Vehicle) -> Tuple[List[carla.Transform], List[carla.Transform]]:
 
-        vehicleWp = RoadHelper.getPlayerWP(world.get_map(), vehicle)
+        vehicleWp = RoadHelper.getVehicleWP(world.get_map(), vehicle)
         frontWps = RoadHelper.getWPsInFront(vehicleWp, 10, steps=5)
 
         leftSpawnPoints = []

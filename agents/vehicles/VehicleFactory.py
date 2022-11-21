@@ -40,6 +40,9 @@ class VehicleFactory(ClientUser):
         
     def getVehicles(self):
         return self.vehicles
+    
+    def size(self):
+        return len(self.vehicles)
 
         
     def create(self):

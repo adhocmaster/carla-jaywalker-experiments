@@ -109,34 +109,34 @@ class GameWorld(ClientUser):
 
     # region dynamic generation
 
-    def getWaypointsNearPlayer(self, player: carla.Vehicle) -> List[carla.Waypoint]:
+    # def getWaypointsNearPlayer(self, player: carla.Vehicle) -> List[carla.Waypoint]:
 
-        playerWP = RoadHelper.getPlayerWP(self.map, player)
+    #     playerWP = RoadHelper.getVehicleWP(self.map, player)
         
-        v2vDistance = 5
+    #     v2vDistance = 5
         
-        wps = []
-        leftWP = RoadHelper.getWaypointOnTheLeft(self.map, playerWP)
-        if leftWP is not None:
-            wps.append(leftWP)
-            wps.extend(RoadHelper.getWPsInFront(leftWP, v2vDistance, 3))
-            wps.extend(RoadHelper.getWPsBehind(leftWP, v2vDistance, 3))
+    #     wps = []
+    #     leftWP = RoadHelper.getWaypointOnTheLeft(self.map, playerWP)
+    #     if leftWP is not None:
+    #         wps.append(leftWP)
+    #         wps.extend(RoadHelper.getWPsInFront(leftWP, v2vDistance, 3))
+    #         wps.extend(RoadHelper.getWPsBehind(leftWP, v2vDistance, 3))
 
-        rightWP = RoadHelper.getWaypointOnTheRight(self.map, playerWP)
-        if rightWP is not None:
-            wps.append(rightWP)
-            wps.extend(RoadHelper.getWPsInFront(rightWP, v2vDistance, 3))
-            wps.extend(RoadHelper.getWPsBehind(rightWP, v2vDistance, 3))
+    #     rightWP = RoadHelper.getWaypointOnTheRight(self.map, playerWP)
+    #     if rightWP is not None:
+    #         wps.append(rightWP)
+    #         wps.extend(RoadHelper.getWPsInFront(rightWP, v2vDistance, 3))
+    #         wps.extend(RoadHelper.getWPsBehind(rightWP, v2vDistance, 3))
         
-        playerLaneDistance = v2vDistance + player.get_velocity().length() * 3 # three second rule
-        wps.extend(RoadHelper.getWPsInFront(playerWP, playerLaneDistance, 3))
-        wps.extend(RoadHelper.getWPsBehind(playerWP, playerLaneDistance, 3))
+    #     playerLaneDistance = v2vDistance + player.get_velocity().length() * 3 # three second rule
+    #     wps.extend(RoadHelper.getWPsInFront(playerWP, playerLaneDistance, 3))
+    #     wps.extend(RoadHelper.getWPsBehind(playerWP, playerLaneDistance, 3))
 
-        return wps
+    #     return wps
     
 
     def generateNPCVehicles(self, player: carla.Vehicle, nVehicles=3):
-        wps = self.getWaypointsNearPlayer(player)
+        wps = self.getWaypointsNearVehicle(self.map, player)
         self.logger.debug(f"Generated {len(wps)} waypoints for player {player.id}")
         if nVehicles > len(wps):
             raise Exception(f"number of vehicles is more than available way points")

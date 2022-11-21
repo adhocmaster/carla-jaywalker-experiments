@@ -48,6 +48,9 @@ class PedestrianFactory(ClientUser):
     def getWalkers(self):
         return self.walkers
 
+    def size(self):
+        return len(self.walkers)
+
     def create(self):
         walkerBp = random.choice(self.pedBps)
         return walkerBp
