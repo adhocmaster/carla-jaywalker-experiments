@@ -54,8 +54,8 @@ class Research1v1(BaseResearch):
         self.stats = stats
         self.settingsId = settingsId
 
-        self.optionalFactors = [Factors.DRUNKEN_WALKER]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
+        # self.optionalFactors = [Factors.DRUNKEN_WALKER]
+        self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
         # self.optionalFactors = [Factors.ANTISURVIVAL]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
@@ -396,7 +396,8 @@ class Research1v1(BaseResearch):
             return
 
         if self.walkerAgent.isFinished():
-            self.logger.warn(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
+            self.logger.warn(f"Walker {self.walkerAgent.walker.id} reached destination")
+            # self.logger.warn(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
             # if walkerAgent.destination == walkerSetting.destination:
             #     walkerAgent.set_destination(walkerSetting.source)
             #     visualizer.drawDestinationPoint(destination)
@@ -404,7 +405,7 @@ class Research1v1(BaseResearch):
             #     walkerAgent.set_destination(walkerSetting.destination)
             #     visualizer.drawDestinationPoint(destination)
             # return
-
+        
         # print("canUpdate")
         # if self.walkerAgent.canUpdate():
         control = self.walkerAgent.calculateControl()

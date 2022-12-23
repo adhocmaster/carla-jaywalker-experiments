@@ -62,9 +62,14 @@ class DestinationModel(ForceModel):
         
     @property
     def nextDestination(self):
-        if self.crosswalkModel is None:
-            return self._nextDestination
-        return self.crosswalkModel.getNextDestinationPoint()
+
+        if self._nextDestination.distance_2d(self.agent.location) < 0.1:
+            self._nextDestination = self._finalDestination
+
+        if self.crosswalkModel is not None:
+            self._nextDestination = self.crosswalkModel.getNextDestinationPoint()
+
+        return self._nextDestination
     
 
     def addCrossWalkAreaModel(self):
@@ -173,12 +178,13 @@ class DestinationModel(ForceModel):
             return None
 
 
-        # self.agent.logger.info(f"Collecting state from {self.name}")
+        # self.agent.logger.warn(f"Collecting state from {self.name}")
         
         # if self.needSkip:
         #     return None
 
-        self.calculateNextDestination()
+        # self.calculateNextDestination()
+        self.nextDestination # updates if required. Do not comment it out
 
         force = self.calculateForceForDesiredVelocity()
 
@@ -186,31 +192,6 @@ class DestinationModel(ForceModel):
         
         return self.clipForce(force)
 
-
-
-    def calculateNextDestination(self):
-
-
-        # # First we check if we need to go back to origin.
-
-        # TG = self.agent.getAvailableTimeGapWithClosestVehicle()
-        
-        # TTX = PedUtils.timeToCrossNearestLane(self.map, self.location, self._localPlanner.getDestinationModel().getDesiredSpeed())
-
-
-        # if TG > TTX:
-        #     # positive oncoming vehicle force
-        # else:
-        #     # negative oncoming vehicle force.
-
-
-        # # last, check if next destination is reached, if so, set it to final destination
-
-        if self._nextDestination.distance_2d(self.agent.location) < 0.1:
-            self._nextDestination = self._finalDestination
-
-        if self.crosswalkModel is not None:
-            self._nextDestination = self.crosswalkModel.getNextDestinationPoint()
 
     
     def calculateForceForDesiredVelocity(self):

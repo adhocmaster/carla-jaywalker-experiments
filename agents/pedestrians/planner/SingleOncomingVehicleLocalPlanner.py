@@ -86,7 +86,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
     def transitionStateIfNeeded(self):
         self.logger.debug(f"transitionStateIfNeeded")
         if self.done():
-            self.logger.warn(f"changing agent state to finished")
+            self.logger.warn(f"Planner is done. changing agent state to finished")
             StateTransitionManager.changeAgentState(self.name, self.agent, PedState.FINISHED)
             return
 
@@ -100,7 +100,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         
         # All the state transition should be contained here.
 
-        self.logger.debug(f"calculateNextControl")
+        # self.logger.warn(f"calculateNextControl")
         # StateTransitionManager.changeAgentState(self.name, self.agent, PedState.WAITING) # may also be frozen or other states which we will need to extend later.
         self.transitionStateIfNeeded()
 
@@ -109,7 +109,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         #     control = self.getNewControl()
 
         if self.agent.isFinished():
-            self.logger.info(f"Finished. no new control")
+            self.logger.warn(f"Finished. no new control")
             return self.getStopControl()
 
         if self.agent.isWaiting():
@@ -122,29 +122,6 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
 
         return control
 
-    # def getResultantForce(self):
-
-    #     resultantForce = carla.Vector3D()
-
-    #     for model in self.models:
-    #         force = model.calculateForce()
-    #         self.logger.info(f"Force from {model.name} {force}")
-            
-    #         if force is not None:
-    #             resultantForce += force
-        
-    #     return resultantForce
-
-        # destForce = self.destinationModel.calculateForce()
-        # onComingVehicleForce = self.stopGoModel.calculateForce()
-        # self.logger.info(f"Force from destination model {destForce}")
-        # self.logger.info(f"Force from ped gap model {onComingVehicleForce}")
-        # return destForce + onComingVehicleForce
-
-    # def getOncomingVehicles(self):
-    #     if self.vehicle is None:
-    #         return []
-    #     return [self.vehicle]
 
 
     def getDestinationModel(self):

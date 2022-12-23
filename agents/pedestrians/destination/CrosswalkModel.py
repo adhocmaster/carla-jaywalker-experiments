@@ -105,9 +105,9 @@ class CrosswalkModel:
         # change next destination point to the next intermediate point return 
         if self.hasReachedNextDestinationPoint(self.agent.location):
             if self.nextIntermediatePointIdx == len(self.intermediatePoints) - 1:
-                self.agent.logger.warn(f"going to the final destination")
+                self.agent.logger.info(f"going to the final destination")
                 d =  self.agent.location.distance_2d(self.finalDestination)
-                self.agent.logger.warn(f"distance to next destination {d} meters")
+                self.agent.logger.info(f"distance to next destination {d} meters")
                 return self.finalDestination
             self.nextIntermediatePointIdx += 1 # this might overflow if we have reached the final 
         

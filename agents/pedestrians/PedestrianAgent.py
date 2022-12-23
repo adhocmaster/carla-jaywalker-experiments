@@ -203,10 +203,15 @@ class PedestrianAgent(InfoAgent):
         if self.destination is None:
             raise Exception("Destination is none")
 
+        self.visualiseState()
+
         if self.isInitializing():
             self.logger.info(f"Pedestrian is initializing.")
             self.visualiseState()
             return self._localPlanner.getStopControl()
+
+        # if self.isFinished():
+        #     self.visualiseState()
         
  
         location = self.feetLocation
@@ -300,7 +305,7 @@ class PedestrianAgent(InfoAgent):
             
             desiredDirection = self._localPlanner.desiredDirection
 
-            translation = desiredDirection * 0.5
+            translation = desiredDirection * 1.5
 
             self._walker.set_location(
                 carla.Location(

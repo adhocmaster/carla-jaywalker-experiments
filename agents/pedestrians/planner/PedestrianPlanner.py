@@ -129,6 +129,9 @@ class PedestrianPlanner:
 
 
     def onTickStart(self, world_snapshot):
+
+        if self.agent.isFinished():
+            return
         self.locations.append(self.agent.location)
         self.actorManager.onTickStart(world_snapshot)
         self.obstacleManager.onTickStart(world_snapshot)
@@ -140,6 +143,9 @@ class PedestrianPlanner:
 
     
     def done(self):
+        if self.agent.isFinished():
+            return True
+
         if self.getDistanceToDestination() < 0.2:
             self.logger.warn(f"Reached destination {self.getDistanceToDestination()}")
             return True
@@ -168,7 +174,7 @@ class PedestrianPlanner:
         
         control = carla.WalkerControl(
             direction = oldControl.direction,
-            speed = 0.5,
+            speed = 0.3,
             jump = False
         )
         return control
@@ -214,9 +220,9 @@ class PedestrianPlanner:
             raise InvalidParameter("Time delta too low for Pedestrian Planner")
 
         force = self.getResultantForce() # unit mass, so force == acceleration
-        self.logger.info(f"Resultant force is {force}")
-        self.logger.info(f"Resultant acceleration is {force.length()} m/s^2")
-        self.logger.info(f"timeDelta is {timeDelta}")
+        self.logger.debug(f"Resultant force is {force}")
+        self.logger.debug(f"Resultant acceleration is {force.length()} m/s^2")
+        self.logger.debug(f"timeDelta is {timeDelta}")
         dv = force * timeDelta
         return dv
 
@@ -227,10 +233,10 @@ class PedestrianPlanner:
 
         for model in self.models:
             force = model.calculateForce()
-            self.logger.info(f"Force from {model.name} {force}")
-            self.modelForces[model.name] = force
+            self.logger.debug(f"Force from {model.name} {force}")
             
             if force is not None:
+                self.modelForces[model.name] = force
                 resultantForce += force
         
         # clip force
