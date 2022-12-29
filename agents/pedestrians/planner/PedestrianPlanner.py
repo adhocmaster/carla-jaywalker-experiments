@@ -147,7 +147,7 @@ class PedestrianPlanner:
             return True
 
         if self.getDistanceToDestination() < 0.2:
-            self.logger.warn(f"Reached destination {self.getDistanceToDestination()}")
+            self.logger.info(f"Reached destination {self.getDistanceToDestination()}")
             return True
         else:
             self.logger.info(f"Distance to destination {self.getDistanceToDestination()}")

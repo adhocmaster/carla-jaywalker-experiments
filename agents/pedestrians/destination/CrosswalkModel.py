@@ -70,8 +70,7 @@ class CrosswalkModel:
         # TODO: we make a generic one which may be based on real world dataset. Also create a goal line
         if self.goalLine == None:
             self.goalLine = LineString([sideWalkPoints[0], sideWalkPoints[-1]])
-        
-        print(self.goalLine)
+    
         
         self.areaPolygon = Polygon([Geometry.locationToPoint(self.source), sideWalkPoints[0], sideWalkPoints[-1]])
        

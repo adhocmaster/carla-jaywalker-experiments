@@ -56,17 +56,17 @@ class LoggerFactory:
         level = None
 
         if config is not None and "LOG_LEVEL" in config:
-            print(f"setting log level {config['LOG_LEVEL']} for {name}")
+            logging.info(f"setting log level {config['LOG_LEVEL']} for {name}")
             logger.setLevel(config["LOG_LEVEL"])
             level = config["LOG_LEVEL"]
 
         elif LoggerFactory.defaultLevel is not None:
-            print(f"setting log level {LoggerFactory.defaultLevel} for {name} from default level")
+            logging.info(f"setting log level {LoggerFactory.defaultLevel} for {name} from default level")
             logger.setLevel(LoggerFactory.defaultLevel)
             level = LoggerFactory.defaultLevel
 
         else:
-            print(f"setting log level {logging.INFO} for {name} as no config found")
+            logging.info(f"setting log level {logging.INFO} for {name} as no config found")
             logger.setLevel(logging.INFO)
             level = logging.INFO
 

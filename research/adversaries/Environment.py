@@ -49,6 +49,7 @@ class Environment(gym.Env):
             return self.state(), {}
 
     def close(self):
+        self.research.saveStats()
         self.research.reset()
 
     def render(self, mode="human"):
@@ -74,7 +75,8 @@ class Environment(gym.Env):
         self.logger.info(f"tickUntilActionIsFinished n={n}")
         for _ in range(n):
             self.tickCounter += 1
-            self.research.simulator.tick(self.tickCounter) #episodic
+            if not self.research.simulator.isDone():
+                self.research.simulator.tick(self.tickCounter) #episodic
 
     def isEpisodeDone(self):
         return self.research.simulator.isDone()

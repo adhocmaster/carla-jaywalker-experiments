@@ -119,7 +119,7 @@ class LocalPlanner(object):
     def _init_controller(self):
         """Controller initialization"""
 
-        self.logger.warn(f"Len of waypoint queue at _init_controller = {len(self._waypoints_queue)}")
+        self.logger.info(f"Len of waypoint queue at _init_controller = {len(self._waypoints_queue)}")
 
         self._vehicle_controller = VehiclePIDController(self._vehicle,
                                                         args_lateral=self._args_lateral_dict,

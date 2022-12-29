@@ -3,6 +3,7 @@ import math
 from typing import List
 from enum import Enum
 from .ClientUser import ClientUser
+import logging
 
 class MapNames(Enum):
     circle_t_junctions = 'circle_t_junctions'
@@ -63,7 +64,7 @@ class MapManager(ClientUser):
         
         currentMapName = self.getMapName(self.map)
         if mapName.value != currentMapName:
-            print(f"MapManager: loading new map {mapName.value}")
+            logging.info(f"MapManager: loading new map {mapName.value}")
             self.client.load_world(mapName.value, map_layers=layers)
 
         # self.client.load_world(mapName.value, map_layers=layers)
@@ -86,7 +87,7 @@ class MapManager(ClientUser):
     def configureSpectator(self):
 
         (x, y, z) = self.getSpectatorPos()
-        print(f"MapManager: setting spectator position to ({x}, {y}, {z})")
+        logging.info(f"MapManager: setting spectator position to ({x}, {y}, {z})")
         transform = carla.Transform(carla.Location(x=x, y=y, z=z), carla.Rotation(pitch=-90)) 
         if self.currentMapName == MapNames.circle_t_junctions:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 

@@ -23,7 +23,7 @@ class R1V1Env1(Environment):
             port=port, 
             defaultLogLevel=logging.WARNING,
             simulationMode=SimulationMode.SYNCHRONOUS, 
-            stats=False
+            stats=True
             )
         return R1V1Env1(
             research=research
@@ -49,7 +49,7 @@ class R1V1Env1(Environment):
         
 
     def updateBehavior(self, action):
-        self.logger.warn("Updating behavior")
+        self.logger.info("Updating behavior")
         # raise NotImplementedInterface("updateBehavior")
 
     def setObsActionSpaces(self):

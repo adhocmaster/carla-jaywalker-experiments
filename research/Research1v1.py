@@ -14,7 +14,7 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
-from lib import Simulator, EpisodeSimulator, SimulationMode
+from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRecorder, ActorClass
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
@@ -86,14 +86,19 @@ class Research1v1(BaseResearch):
     #endregion
 
     def destoryActors(self):
+        
         self.logger.info('\ndestroying  walkers')
-        if self.walker is not None:
-            # self.walker.destroy()
-            self.pedFactory.destroy(self.walker)
-
+        self.pedFactory.reset()
         self.logger.info('\ndestroying  vehicles')
-        if self.vehicle is not None:
-            self.vehicleFactory.destroy(self.vehicle)
+        self.vehicleFactory.reset()
+        # self.logger.info('\ndestroying  walkers')
+        # if self.walker is not None:
+        #     # self.walker.destroy()
+        #     self.pedFactory.destroy(self.walker)
+
+        # self.logger.info('\ndestroying  vehicles')
+        # if self.vehicle is not None:
+        #     self.vehicleFactory.destroy(self.vehicle)
 
     
     def setMap(self, mapName:MapNames):
@@ -128,17 +133,21 @@ class Research1v1(BaseResearch):
 
     
     def reset(self):
-        """Does not reset episode number. Only used for episodic simulator
+        """Only used for episodic simulator
         """
         self.logger.info(f"Resetting environment")
-        self.pedFactory.reset()
-        self.vehicleFactory.reset()
+        # self.pedFactory.reset()
+        # self.vehicleFactory.reset()
+        self.destoryActors()
 
         super().reset()
 
+        self.episodeNumber += 1
         self.episodeTimeStep = 0
         self.createDynamicAgents()
         self.setupSimulator(episodic=True)
+
+        self.logger.warn(f"started episode {self.episodeNumber}")
 
         
     
@@ -283,7 +292,7 @@ class Research1v1(BaseResearch):
         pass
     
     
-    #end region
+    #endregion
 
     #region simulation
 
@@ -293,17 +302,29 @@ class Research1v1(BaseResearch):
         Args:
             episodic (bool, optional): _description_. Defaults to False.
         """
-        self.episodeNumber = 1 # updated when resetted
+        # self.episodeNumber = 1 # updated when resetted
 
         onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
-        onEnders = [self.onEnd]
         terminalSignalers = [self.walkerAgent.isFinished]
 
         if episodic:
-            self.simulator = EpisodeSimulator(self.client, terminalSignalers=terminalSignalers, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
+            # this is only to be used from gym environments. It does not call onEnd as we may reset and run
+            self.simulator = EpisodeSimulator(
+                self.client, 
+                terminalSignalers=terminalSignalers, 
+                onTickers=onTickers, 
+                onEnders=[], 
+                simulationMode=self.simulationMode
+            )
         else:
+            onEnders = [self.onEnd]
             onTickers.append(self.restart)
-            self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
+            self.simulator = Simulator(
+                self.client, 
+                onTickers=onTickers, 
+                onEnders=onEnders, 
+                simulationMode=self.simulationMode
+            )
 
 
 
@@ -339,6 +360,7 @@ class Research1v1(BaseResearch):
         # try: 
         # except Exception as e:
         #     self.logger.exception(e)
+    #endregion
 
 
     def restart(self, world_snapshot):
@@ -364,6 +386,7 @@ class Research1v1(BaseResearch):
     
     
     def onEnd(self):
+        self.logger.warn(f"ending simulation")
         self.destoryActors()
         self.saveStats()
 
@@ -432,6 +455,8 @@ class Research1v1(BaseResearch):
         self.vehicle.apply_control(control)
         pass
 
+    #region stats
+
     def updateStatDataframe(self):
         # 1. make a dataframe from self.statDict
         df = pd.DataFrame.from_dict(self.statDict)
@@ -445,20 +470,6 @@ class Research1v1(BaseResearch):
 
         if not self.stats:
             return
-        # we will save trajectories of all the walkers and vehicles (location, speed, velocity). Time interval is not saved.
-
-        # self.stats = pd.DataFrame(columns=['walker_trajectories'])
-
-        # self.stats = {
-        #     "walker_trajectories": {},
-        # }
-
-        # walkers = self.pedFactory.getWalkers()
-        # vehicles  = self.vehicleFactory.getVehicles()
-        
-        # for walker in walkers
-
-        # self.trajectories = pd.DataFrame(columns=["episode", "v_loc", "v_speed", "v_direction", "w_loc", "w_speed", "w_direction"])
 
         self.statDict = {
             "episode": [], 
@@ -473,6 +484,8 @@ class Research1v1(BaseResearch):
             "w_state": []
             # "w_direction": []
         }
+
+        self.episodeTrajectoryRecorders = {}
 
 
         pass
@@ -497,12 +510,39 @@ class Research1v1(BaseResearch):
         # self.statDict["w_direction"].append(self.episodeNumber)
         self.statDict["w_state"].append(self.walkerAgent.state.value)
 
+
+        self.initEpisodeRecorderIfNeeded()
+        self.recordTrajectoryTimeStep()
+
         pass
+
+    def initEpisodeRecorderIfNeeded(self):
+        if self.episodeNumber not in self.episodeTrajectoryRecorders:
+            self.episodeTrajectoryRecorders[self.episodeNumber] = EpisodeTrajectoryRecorder(
+                self.episodeNumber,
+                {}, # TODO road configuration
+                fps = 1 / self.time_delta,
+                startFrame=self.episodeTimeStep
+            )
+
+
+    def recordTrajectoryTimeStep(self):
+        # self.logger.warn("recordTrajectoryTimeStep")
+        recorder = self.episodeTrajectoryRecorders[self.episodeNumber]
+        self.addActorsToRecorder(recorder)
+        recorder.collectStats(self.episodeTimeStep)
+
+    def addActorsToRecorder(self, recorder: EpisodeTrajectoryRecorder):
+        recorder.addactor(self.walker, ActorClass.pedestrian, self.episodeTimeStep)
+        recorder.addactor(self.vehicle, ActorClass.vehicle, self.episodeTimeStep)
 
 
     def saveStats(self):
         if not self.stats:
             return
+
+        self.saveTrajectories()
+
 
         dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
         statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
@@ -514,3 +554,20 @@ class Research1v1(BaseResearch):
             return
         self.statDataframe.to_csv(statsPath, index=False)
         pass
+
+
+    def saveTrajectories(self):
+
+        dfs = []
+        for recorder in self.episodeTrajectoryRecorders.values():
+            episodeDf = recorder.getAsDataFrame()
+            dfs.append(episodeDf)
+
+        simDf = pd.concat(dfs, ignore_index=True)
+
+        dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
+        statsPath = os.path.join(self.outputDir, f"{dateStr}-tracks.csv")
+        self.logger.warn(f"Saving tracks to {statsPath}")
+        simDf.to_csv(statsPath, index=False)
+    
+    #endregion
