@@ -72,7 +72,7 @@ class BaseResearch(ClientUser):
         pass
 
     def initWorldSettingsSynchronousMode(self):
-        self.time_delta = 0.05
+        self.time_delta = 0.04
         settings = self.world.get_settings()
         # settings.substepping = False # https://carla.readthedocs.io/en/latest/python_api/#carlaworldsettings
         settings.synchronous_mode = True # Enables synchronous mode

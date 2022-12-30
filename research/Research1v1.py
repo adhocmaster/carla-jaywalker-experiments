@@ -569,5 +569,7 @@ class Research1v1(BaseResearch):
         statsPath = os.path.join(self.outputDir, f"{dateStr}-tracks.csv")
         self.logger.warn(f"Saving tracks to {statsPath}")
         simDf.to_csv(statsPath, index=False)
+
+        
     
     #endregion

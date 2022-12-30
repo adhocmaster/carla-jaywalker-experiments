@@ -64,10 +64,19 @@ class EpisodeTrajectoryRecorder:
         for actorId, traj in self.trajectories.items():
             points = traj.getPoints()
             trackDf = pd.DataFrame(points, columns= ["frame", "mapX", "mapY"])
-            trackDf["episode"] = self.episodeNo
+            trackDf["recordingId"] = self.episodeNo
+            trackDf["trackId"] = actorId
+            trackDf["class"] = traj.actorClass.value
             dfs.append(trackDf)
         
         return pd.concat(dfs, ignore_index=True)
+    
+    def getMeta(self) -> Dict[str, any]:
+
+        return {
+            "fps": self.fps,
+            "roadConfiguration": self.roadConfiguration
+        }
     
     
 
