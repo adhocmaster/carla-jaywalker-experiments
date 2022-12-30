@@ -90,7 +90,7 @@ class SettingsManager(ClientUser):
 
         return self._vehicleSettings
     
-    def getWalkerSettings(self):
+    def getWalkerSettings(self) -> List[SourceDestinationPair]:
         self._assertCurrentSetting()
 
         if self._walkerSettings is None:

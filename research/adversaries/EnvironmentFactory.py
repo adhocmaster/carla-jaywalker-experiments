@@ -1,3 +1,5 @@
+import logging
+
 from enum import Enum, auto
 from .R1V1Env1 import R1V1Env1
 
@@ -7,5 +9,16 @@ class AvailableEnvironments(Enum):
 class EnvironmentFactory:
 
     @staticmethod
-    def create(envName: AvailableEnvironments, host="127.0.0.1", port=2000):
-        return envName.value.create()
+    def create(
+        envName: AvailableEnvironments, 
+        host="127.0.0.1", 
+        port=2000, 
+        defaultLogLevel=logging.WARNING,
+        output_dir="logs"
+        ):
+        return envName.value.create(
+            host=host,
+            port=port,
+            defaultLogLevel=defaultLogLevel,
+            output_dir=output_dir
+        )

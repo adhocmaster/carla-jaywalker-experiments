@@ -5,6 +5,7 @@ import logging
 import random
 import os
 import numpy as np
+import json
 from datetime import date
 
 from .BaseResearch import BaseResearch
@@ -55,13 +56,13 @@ class Research1v1(BaseResearch):
         self.settingsId = settingsId
 
         # self.optionalFactors = [Factors.DRUNKEN_WALKER]
-        self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
+        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
         # self.optionalFactors = [Factors.ANTISURVIVAL]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.DRUNKEN_WALKER]
-        # self.optionalFactors = []
+        self.optionalFactors = []
 
         # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]
 
@@ -198,6 +199,13 @@ class Research1v1(BaseResearch):
         # attach actor manager
 
         pass
+
+    def getWalkerCrossingAxisRotation(self):
+        
+        wp = self.map.get_waypoint(self.walkerSetting.source)
+        wpTransform = wp.transform
+        # walkerXAxisDirection = wpTransform.get_forward_vector()
+        return wpTransform.rotation.yaw
 
     
     def createVehicle(self, randomizeSpawnPoint=True):
@@ -559,9 +567,16 @@ class Research1v1(BaseResearch):
     def saveTrajectories(self):
 
         dfs = []
+        meta = [{
+            "crossingAxisRotation" : self.getWalkerCrossingAxisRotation(),
+            "walkerSource": (self.walkerSetting.source.x, self.walkerSetting.source.y),
+            "walkerDestination" : (self.walkerSetting.destination.x, self.walkerSetting.destination.y)
+        }]
         for recorder in self.episodeTrajectoryRecorders.values():
             episodeDf = recorder.getAsDataFrame()
             dfs.append(episodeDf)
+
+            meta.append(recorder.getMeta())
 
         simDf = pd.concat(dfs, ignore_index=True)
 
@@ -570,6 +585,14 @@ class Research1v1(BaseResearch):
         self.logger.warn(f"Saving tracks to {statsPath}")
         simDf.to_csv(statsPath, index=False)
 
+        metaPath = os.path.join(self.outputDir, f"{dateStr}-meta.json")
         
+        with open(metaPath, "w") as outfile:
+            outfile.write(json.dumps(meta))
+
+
+        # meta
+
+
     
     #endregion

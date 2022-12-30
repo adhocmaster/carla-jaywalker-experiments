@@ -15,13 +15,17 @@ class R1V1Env1(Environment):
     def create(
         host="127.0.0.1", 
         port=2000,
-        coordinateSystem='ped'):
+        coordinateSystem='ped',
+        defaultLogLevel=logging.WARNING,
+        output_dir="logs", 
+        ):
 
 
         research = ResearchFactory.createResearch1v1(
             host=host, 
             port=port, 
-            defaultLogLevel=logging.WARNING,
+            defaultLogLevel=defaultLogLevel,
+            output_dir=output_dir, 
             simulationMode=SimulationMode.SYNCHRONOUS, 
             stats=True
             )

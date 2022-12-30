@@ -355,7 +355,7 @@ class Utils:
     @staticmethod
     def draw_trace_route(debug, route, color=(150, 150, 0), life_time=10):
         
-        print(f"Utils->draw_trace_route: length of trace route {len(route)}")
+        # print(f"Utils->draw_trace_route: length of trace route {len(route)}")
         wps = []
         for (wp, ro) in route:
             wps.append(wp)

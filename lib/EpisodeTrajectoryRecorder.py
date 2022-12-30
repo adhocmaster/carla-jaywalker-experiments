@@ -74,6 +74,7 @@ class EpisodeTrajectoryRecorder:
     def getMeta(self) -> Dict[str, any]:
 
         return {
+            "recordingId": self.episodeNo,
             "fps": self.fps,
             "roadConfiguration": self.roadConfiguration
         }
