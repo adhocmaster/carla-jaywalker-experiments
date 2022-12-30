@@ -75,6 +75,7 @@ class DestinationModel(ForceModel):
     def addCrossWalkAreaModel(self):
         self.crosswalkModel = CrosswalkModel(
             agent = self.agent,
+            internalFactors=self.internalFactors,
             source = self.agent.location,
             idealDestination = self._finalDestination,
             areaPolygon = None,

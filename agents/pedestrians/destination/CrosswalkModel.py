@@ -1,20 +1,25 @@
 import carla
 from shapely.geometry import Polygon, LineString
 from ..PedestrianAgent import PedestrianAgent
+from agents.pedestrians.factors import InternalFactors
 from lib import Geometry, Utils
 from .CrosswalkGeometry import CrosswalkGeometry
+import numpy as np
 
 class CrosswalkModel:
 
     def __init__(
             self, 
             agent: PedestrianAgent, 
+            internalFactors: InternalFactors, 
             source: carla.Location, 
             idealDestination: carla.Location, 
             areaPolygon: Polygon=None, 
             goalLine: LineString=None,
             debug=False
         ):
+
+        self.internalFactors = internalFactors
 
         self.debug = debug
         self.visualizer = agent.visualizer
@@ -32,7 +37,10 @@ class CrosswalkModel:
         if self.areaPolygon == None:
             self.createPolygon()
 
-        self.__initGeomery()
+        if ("use_random_destination_without_intermediates" in self.internalFactors) and (not self.internalFactors["use_random_destination_without_intermediates"]):
+            self.__initGeomery()
+        else:
+            self.__setRandomDestination()
 
         pass
 
@@ -45,7 +53,17 @@ class CrosswalkModel:
             goalLine=self.goalLine
         )
 
-        self.intermediatePoints = [ carla.Location(point.x, point.y) for point in self.crosswalkGeometry.generateIntermediatePoints() ]
+        self.intermediatePoints = [carla.Location(point.x, point.y) for point in self.crosswalkGeometry.generateIntermediatePoints() ]
+        self.nextIntermediatePointIdx = 0
+        self.finalDestination = self.intermediatePoints[-1]
+
+        if self.debug:
+            self.visualizer.drawPoints(self.intermediatePoints, life_time=20.0)
+    
+    def __setRandomDestination(self):
+
+        randomDestination = self.goalLine.interpolate(np.random.uniform(0, 1), normalized=True)
+        self.intermediatePoints = [carla.Location(randomDestination.x, randomDestination.y)]
         self.nextIntermediatePointIdx = 0
         self.finalDestination = self.intermediatePoints[-1]
 

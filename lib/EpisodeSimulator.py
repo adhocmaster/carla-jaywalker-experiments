@@ -1,6 +1,7 @@
 from xmlrpc.client import Boolean
 from .Simulator import Simulator
 import time
+import logging
 
 
 from .SimulationMode import SimulationMode
@@ -75,7 +76,7 @@ class EpisodeSimulator(Simulator):
             world_snapshot = self.world.wait_for_tick() # asynchronous mode 
         
         if i % 100 == 0:
-            print(f"Episodic Simulator: world ticks {i}")
+            logging.info(f"Episodic Simulator: world ticks {i}")
         for onTicker in self.onTickers:
             onTicker(world_snapshot)
 

@@ -48,7 +48,7 @@ class R1V1Env1(Environment):
     def getActionTicks(self, action) -> int:
         """actionTime/time_delta"""
         actionTime = 1 # one second
-        return int(max(actionTime // self.research.time_delta, 1))
+        return int(max(actionTime / self.research.time_delta, 1))
 
         
 

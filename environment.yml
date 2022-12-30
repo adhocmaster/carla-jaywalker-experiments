@@ -97,6 +97,7 @@ dependencies:
   - tk=8.6.11
   - toml=0.10.2
   - tornado=6.1
+  - tqdm=4.64.1
   - typing_extensions=4.0.1
   - ucrt=10.0.20348.0
   - unicodedata2=14.0.0
