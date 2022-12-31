@@ -62,9 +62,15 @@ class SimulationVisualization(ClientUser):
     def drawPoint(self, location, size=0.1, color=(255,0,0,100), life_time = 0):
         self.debug.draw_point(location, size, carla.Color(*color),  life_time)
     
-    def drawShaplyPoint(self, point: Point, size=0.1, color=(255,0,0,100), life_time = 0):
-        location = carla.Location(point[0], point[1], 0.5)
+    def drawShaplyPoint(self, point: Point, size=0.1, color=(255,0,0,100), life_time = 0, z=0.5):
+        location = carla.Location(point[0], point[1], z)
         self.drawPoint(location, size, color, life_time)
+
+    def drawShaplyPolygon(self, polygon: Polygon, size=0.1, color=(255,0,0,100), life_time = 0, z=0.5):
+        X = polygon.exterior.xy[0]
+        Y = polygon.exterior.xy[1]
+        for point in zip(X, Y):
+            self.drawShaplyPoint(point, size, color, life_time, z=z)
     
     def drawPoints(self, locations:List[carla.Location], size=0.1, color=(255,0,0,100), life_time = 0):
         for location in locations:

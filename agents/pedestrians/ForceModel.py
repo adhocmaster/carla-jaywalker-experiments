@@ -41,16 +41,16 @@ class ForceModel:
         raise NotImplementedInterface("name")
 
     @property
-    def maxAcceleration(self):
+    def maxAcceleration(self) -> carla.Vector3D:
         return self.internalFactors["acceleration_positive_max"]
 
 
     @property
-    def minAcceleration(self):
+    def minAcceleration(self) -> carla.Vector3D:
         return self.internalFactors["acceleration_negative_min"]
 
     @abstractmethod
-    def calculateForce(self):
+    def calculateForce(self) -> carla.Vector3D:
         raise NotImplementedInterface("called calculateForce method")
 
     @abstractmethod

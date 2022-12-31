@@ -3,14 +3,20 @@ import numpy as np
 from .CrossingFactorModel import CrossingFactorModel
 from ..StateTransitionModel import StateTransitionModel
 from ..PedState import PedState
-from lib import Utils
+from lib import Utils, VehicleUtils, ForceFunctions
 from ..PedUtils import PedUtils
 
 class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
+    """We implement the model from 
+    Yang, Dongfang et al. “A Social Force Based Pedestrian Motion Model Considering Multi-Pedestrian Interaction with a Vehicle.” ACM Transactions on Spatial Algorithms and Systems (TSAS) 6 (2020): 1 - 27.
+
+    """
 
     @property
     def name(self):
         return f"CrossingOncomingFactorModel #{self.agent.id}"
+
+    
     
     def getOncomingVehicleForce(self):
 
@@ -29,6 +35,34 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
 
         return force
 
+    
+    def getYANGForce(self) -> carla.Vector3D:
+        if self.actorManager.nearestOncomingVehicle is None:
+            return None
+
+        A_veh = 777.5852
+        b_veh = 2.613755
+        lambda_veh = 0.3119132
+
+        p_v = VehicleUtils.getNearestPointOnYANGVehicleContour(self.actorManager.nearestOncomingVehicle, self.agent.location) #influential point on the vehicle contour
+
+        distanceToVeh = self.agent.location.distance_2d(p_v)
+
+        n_vit = (self.agent.location - p_v).make_unit_vector() # direction from the influential point to the ped.
+
+
+        radAngle = Utils.angleBetweenDirections(-1 * n_vit, self.agent.direction)
+        # print("distanceToVeh", distanceToVeh)
+        # print("n_vit", n_vit)
+        # print("radAngle", radAngle)
+
+        force = ForceFunctions.expForce(distanceToVeh, A_veh, b_veh) * ForceFunctions.anisotropySin(radAngle, lambda_veh) * n_vit
+        # print("force", force)
+
+
+        return force
+
+
     # def flinchRequired(self):
 
     #     conflictPoint = self.agent.getPredictedConflictPoint()
@@ -45,9 +79,10 @@ class CrossingOncomingFactorModel(CrossingFactorModel, StateTransitionModel):
             
 
 
-    def calculateForce(self):
+    def calculateForce(self) -> carla.Vector3D:
         if self.agent.isCrossing():
-            return self.getOncomingVehicleForce()
+            return self.getYANGForce()
+            # return self.getOncomingVehicleForce()
             
         return None # in othe states this model does not produce force
 
