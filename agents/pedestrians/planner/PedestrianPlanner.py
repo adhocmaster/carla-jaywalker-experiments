@@ -146,12 +146,14 @@ class PedestrianPlanner:
         if self.agent.isFinished():
             return True
 
-        if self.getDistanceToDestination() < 0.2:
-            self.logger.info(f"Reached destination {self.getDistanceToDestination()}")
-            return True
-        else:
-            self.logger.info(f"Distance to destination {self.getDistanceToDestination()}")
-        return False
+        return self.agent.hasReachedDestinationAlongLocalY(self.destination, 0.2)
+
+        # if self.getDistanceToDestination() < 0.2:
+        #     self.logger.info(f"Reached destination {self.getDistanceToDestination()}")
+        #     return True
+        # else:
+        #     self.logger.info(f"Distance to destination {self.getDistanceToDestination()}")
+        # return False
             
     def getDistanceToDestination(self):
         return Utils.getDistance(self.agent.feetLocation, self.destination, ignoreZ=True)

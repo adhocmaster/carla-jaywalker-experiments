@@ -10,6 +10,7 @@ from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
 from typing import Dict
 from .PedUtils import PedUtils
+from lib import Geometry, Utils
 
 
 class PedestrianAgent(InfoAgent):
@@ -339,6 +340,23 @@ class PedestrianAgent(InfoAgent):
                 self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
                 return distance
         return None
+
+    
+    def hasReachedDestinationAlongLocalY(self, destination: carla.Location, tolerance: float):
+        
+        localYToDest = Utils.projectAonB2D(destination, self.localYDirection)
+        localYToCurrentLoc = Utils.projectAonB2D(self.location, self.localYDirection)
+
+        if localYToDest > localYToCurrentLoc:
+            return True
+
+        d =  abs(localYToDest - localYToCurrentLoc)
+        # d =  agentLocation.distance_2d(nextDest)
+        self.logger.info(f"distance to destination is {d} meters")
+        if d < tolerance: # maybe a random value?
+            return True
+        return False
+
 
     #endregion
     #region sensor handlers
