@@ -344,10 +344,11 @@ class PedestrianAgent(InfoAgent):
     
     def hasReachedDestinationAlongLocalY(self, destination: carla.Location, tolerance: float):
         
-        localYToDest = Utils.projectAonB2D(destination, self.localYDirection)
-        localYToCurrentLoc = Utils.projectAonB2D(self.location, self.localYDirection)
+        localYToDest = abs(Utils.projectAonB2D(destination, self.localYDirection))
+        localYToCurrentLoc = abs(Utils.projectAonB2D(self.location, self.localYDirection))
+        # self.logger.warn(f"localYToDest {localYToDest} and localYToCurrentLoc {localYToCurrentLoc}")
 
-        if localYToDest > localYToCurrentLoc:
+        if localYToDest < localYToCurrentLoc: # overshooting
             return True
 
         d =  abs(localYToDest - localYToCurrentLoc)
