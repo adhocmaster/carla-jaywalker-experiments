@@ -111,6 +111,10 @@ class Utils:
         d2 = v2.make_unit_vector()
         return np.arccos(np.clip(np.dot(d1, d2), -1.0, 1.0))
 
+    @staticmethod
+    def projectAonB2D(a: carla.Vector3D, b: carla.Vector3D) -> float:
+        return (a.dot_2d(b) / b.length())
+
 
     @staticmethod
     def getConflictPoint(vel1: carla.Vector3D, start1: carla.Location, vel2: carla.Vector3D, start2: carla.Location, seconds=15) -> carla.Location:

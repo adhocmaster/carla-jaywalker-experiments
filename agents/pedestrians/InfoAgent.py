@@ -1,6 +1,8 @@
 import carla
 from lib import LoggerFactory
 from .PedState import PedState
+from shapely.geometry import Point
+from shapely.affinity import rotate
 # from .planner.PedestrianPlanner import PedestrianPlanner
 
 class InfoAgent:
@@ -15,6 +17,9 @@ class InfoAgent:
             self.debug = config["debug"]
         else:
             self.debug = False
+        
+        self._localAxisYaw = None
+        self._localYDirection = None
 
 
     def getInternalFactor(self, name):
@@ -63,6 +68,7 @@ class InfoAgent:
             return self.velocity.make_unit_vector()
         return direction
 
+
     @property
     def feetLocation(self):
         actorLocation = self.location
@@ -71,6 +77,27 @@ class InfoAgent:
     @property
     def getHeadLocation(self):
         raise Exception("Not implemented yet")
+
+    
+    @property
+    def localAxisYaw(self) -> float:
+
+        if self._localAxisYaw is None:
+            wp = self.map.get_waypoint(self.location)
+            wpTransform = wp.transform
+            self._localAxisYaw = wpTransform.rotation.yaw
+        return self._localAxisYaw
+    
+    @property
+    def localYDirection(self) -> carla.Vector3D:
+        if self._localYDirection is None:
+            degreeAngle = self.localAxisYaw
+            globalY = Point(0,1)
+            localY = rotate(globalY, degreeAngle, use_radians=False)
+            self._localYDirection = carla.Vector3D(x=localY.x, y=localY.y, z=0.0)
+        return self._localYDirection
+
+
 
     def updateLogLevel(self, newLevel):
         self.logger.warn(f"Updating {self.name} log level: {newLevel}")

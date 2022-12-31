@@ -5,7 +5,7 @@ relaxation_time: 0.5
 desired_speed: 2
 desired_distance_gap: 2
 use_crosswalk_area_model: True
-use_random_destination_without_intermediates: True
+use_random_destination_without_intermediates: False
 # desired_time_gap: 1
 
 # speed model

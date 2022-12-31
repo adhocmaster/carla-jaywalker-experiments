@@ -134,8 +134,13 @@ class CrosswalkModel:
     def hasReachedNextDestinationPoint(self, agentLocation: carla.Location):
         # TODO: fill it out
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
-        d =  agentLocation.distance_2d(nextDest)
-        self.agent.logger.debug(f"distance to next destination {d} meters")
+
+        localYToDest = Utils.projectAonB2D(nextDest, self.agent.localYDirection)
+        localYToCurrentLoc = Utils.projectAonB2D(self.agent.location, self.agent.localYDirection)
+
+        d =  abs(localYToDest - localYToCurrentLoc)
+        # d =  agentLocation.distance_2d(nextDest)
+        self.agent.logger.warn(f"distance to next destination {d} meters")
         if d < 0.5: # maybe a random value?
             return True
         return False

@@ -115,3 +115,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode/settings.json
+logs/2022-12-30-00-00-meta.json
