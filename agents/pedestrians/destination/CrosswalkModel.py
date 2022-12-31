@@ -140,7 +140,7 @@ class CrosswalkModel:
 
         d =  abs(localYToDest - localYToCurrentLoc)
         # d =  agentLocation.distance_2d(nextDest)
-        self.agent.logger.warn(f"distance to next destination {d} meters")
+        self.agent.logger.debug(f"distance to next destination {d} meters")
         if d < 0.5: # maybe a random value?
             return True
         return False
