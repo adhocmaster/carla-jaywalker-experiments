@@ -190,7 +190,7 @@ dependencies:
   - zstd=1.5.2=h6255e5f_0
   - pip:
     - carla==0.9.13
-    - py-trees==2.1.6
+    - py-trees==0.8.3
     - pydot==1.4.2
     - simple-watchdog-timer==0.1.1
 prefix: C:\Users\adhocmaster\anaconda3\envs\carla37
