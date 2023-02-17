@@ -8,6 +8,7 @@ __pycache__/
 
 
 logs/*.csv
+_out/
 
 # Distribution / packaging
 .Python
