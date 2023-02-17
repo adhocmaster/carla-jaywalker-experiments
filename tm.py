@@ -113,3 +113,5 @@ def destoryActors():
 
 time.sleep(5)
 destoryActors()
+
+print(client.get_available_maps())
