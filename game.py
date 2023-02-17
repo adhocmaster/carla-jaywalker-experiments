@@ -1,15 +1,18 @@
-import carla
 import argparse
 import logging
 import random
 import time
+
+import carla
 import eventlet
+
 eventlet.monkey_patch()
 
-from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
-from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
-
-from lib import SimulationVisualization, MapNames, MapManager, Simulator
+from agents.navigation.basic_agent import \
+    BasicAgent  # pylint: disable=import-error
+from agents.navigation.behavior_agent import \
+    BehaviorAgent  # pylint: disable=import-error
+from lib import MapManager, MapNames, SimulationVisualization, Simulator
 from lib.state import StateManager
 
 SpawnActor = carla.command.SpawnActor

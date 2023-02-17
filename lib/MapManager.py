@@ -96,8 +96,21 @@ class MapManager(ClientUser):
         # else:
         #     transform = carla.Transform(carla.Location(x=x, y=y, z=z*3), carla.Rotation(pitch=-90)) 
 
+        if self.currentMapName == MapNames.Town01_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
         if self.currentMapName == MapNames.Town02_Opt:
-            transform = carla.Transform(carla.Location(x=x-20, y=y-10, z=10), carla.Rotation(pitch=-30, yaw=190)) 
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
+            # transform = carla.Transform(carla.Location(x=x-20, y=y-10, z=10), carla.Rotation(pitch=-30, yaw=190)) 
+        if self.currentMapName == MapNames.Town03_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
+        if self.currentMapName == MapNames.Town04_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
+        if self.currentMapName == MapNames.Town05_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
+        if self.currentMapName == MapNames.Town07_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
+        if self.currentMapName == MapNames.Town10HD_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
             
         
         spectator = self.world.get_spectator()
