@@ -35,7 +35,7 @@ class Scenario1v1(BasicScenario):
             randomize=False, 
             debug_mode=False, 
             criteria_enable=True,
-            timeout=60
+            timeout=20
         ):
         """
         Initialize all parameters required

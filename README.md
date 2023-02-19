@@ -46,6 +46,12 @@ conda install -c conda-forge gym
 
 # Running experiments
 
+There are two ways experiments can be run, based on scenarios, and based on the research settings. Research settings are more useful for pedestrian behavior modeling and the scenarios are useful for ego vehicle modeling.
+
+## Running Scenarios
+
+    python scenario_runner2.py --scenario Scenario1v1_1 --configFile ./research/Scenario1v1.xml --reloadWorld
+
 ## Streaming
 You can use the streamer.py file to stream from the spectator in a remote server. Issue this command in the terminal:
 ```

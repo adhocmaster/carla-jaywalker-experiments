@@ -10,6 +10,7 @@ This module provides the key configuration parameters for an XML-based scenario
 """
 
 import carla
+from typing import List
 
 
 class ActorConfigurationData(object):
@@ -18,7 +19,7 @@ class ActorConfigurationData(object):
     This is a configuration base class to hold model and transform attributes
     """
 
-    def __init__(self, model, transform, rolename='other', speed=0, autopilot=False,
+    def __init__(self, model, transform: carla.Transform, rolename='other', speed=0, autopilot=False,
                  random=False, color=None, category="car", args=None):
         self.model = model
         self.rolename = rolename
@@ -72,9 +73,9 @@ class ScenarioConfiguration(object):
     - type is the class of scenario (e.g. ControlLoss)
     """
 
-    trigger_points = []
-    ego_vehicles = []
-    other_actors = []
+    trigger_points: List[carla.Transform] = []
+    ego_vehicles: List[ActorConfigurationData] = []
+    other_actors: List[ActorConfigurationData] = []
     town = None
     name = None
     type = None
