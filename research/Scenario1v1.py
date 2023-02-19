@@ -13,7 +13,7 @@ from srunner.scenariomanager.scenarioatomics.atomic_criteria import Criterion
 from srunner.scenarios.basic_scenario import BasicScenario
 import py_trees
 
-class NewScenario(BasicScenario):
+class Scenario1v1(BasicScenario):
     """
     Some documentation on NewScenario
     :param world is the CARLA world
@@ -38,14 +38,14 @@ class NewScenario(BasicScenario):
             timeout=60
         ):
         """
-        Initialize all parameters required for NewScenario
+        Initialize all parameters required
         """
         # Timeout of scenario in seconds
         self.timeout = timeout
 
         # Call constructor of BasicScenario
-        super(NewScenario, self).__init__(
-          "NewScenario",
+        super(Scenario1v1, self).__init__(
+          "Scenario1v1",
           ego_vehicles,
           config,
           world,

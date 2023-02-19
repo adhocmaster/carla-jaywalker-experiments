@@ -142,6 +142,7 @@ class ScenarioRunner(object):
 
         # Path of all scenario at "srunner/scenarios" folder + the path of the additional scenario argument
         scenarios_list = glob.glob("{}/srunner/scenarios/*.py".format(os.getenv('SCENARIO_RUNNER_ROOT', "./")))
+        scenarios_list += glob.glob("research/Scenario*.py")
         scenarios_list.append(self._args.additionalScenario)
 
         for scenario_file in scenarios_list:
@@ -149,6 +150,7 @@ class ScenarioRunner(object):
             # Get their module
             module_name = os.path.basename(scenario_file).split('.')[0]
             sys.path.insert(0, os.path.dirname(scenario_file))
+            print(os.path.dirname(scenario_file), module_name)
             scenario_module = importlib.import_module(module_name)
 
             # And their members of type class
