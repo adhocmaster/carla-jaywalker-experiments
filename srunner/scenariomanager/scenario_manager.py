@@ -48,6 +48,7 @@ class ScenarioManager(object):
         """
         self.scenario = None
         self.scenario_tree = None
+        self.scenario_class = None
         self.ego_vehicles = None
         self.other_actors = None
 
@@ -102,7 +103,8 @@ class ScenarioManager(object):
         self._agent = AgentWrapper(agent) if agent else None
         if self._agent is not None:
             self._sync_mode = True
-        self.scenario = scenario
+        self.scenario_class = scenario
+        self.scenario = scenario.scenario
         self.scenario_tree = self.scenario.scenario_tree
         self.ego_vehicles = scenario.ego_vehicles
         self.other_actors = scenario.other_actors
@@ -209,12 +211,11 @@ class ScenarioManager(object):
         timeout = False
         result = "SUCCESS"
 
-        criteria = self.scenario.get_criteria()
-        if len(criteria) == 0:
+        if self.scenario.test_criteria is None:
             print("Nothing to analyze, this scenario has no criteria")
             return True
 
-        for criterion in criteria:
+        for criterion in self.scenario.get_criteria():
             if (not criterion.optional and
                     criterion.test_status != "SUCCESS" and
                     criterion.test_status != "ACCEPTABLE"):

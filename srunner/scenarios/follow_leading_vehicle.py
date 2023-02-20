@@ -27,7 +27,8 @@ from srunner.scenariomanager.scenarioatomics.atomic_behaviors import (ActorTrans
                                                                       ActorDestroy,
                                                                       KeepVelocity,
                                                                       StopVehicle,
-                                                                      WaypointFollower)
+                                                                      WaypointFollower,
+                                                                      Idle)
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
 from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (InTriggerDistanceToVehicle,
                                                                                InTriggerDistanceToNextIntersection,
@@ -36,6 +37,8 @@ from srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (I
 from srunner.scenariomanager.timer import TimeOut
 from srunner.scenarios.basic_scenario import BasicScenario
 from srunner.tools.scenario_helper import get_waypoint_in_distance
+
+from srunner.tools.background_manager import Scenario2Manager
 
 
 class FollowLeadingVehicle(BasicScenario):
@@ -307,6 +310,7 @@ class FollowLeadingVehicleWithObstacle(BasicScenario):
         Remove all actors upon deletion
         """
         self.remove_all_actors()
+
 
 class FollowLeadingVehicleRoute(BasicScenario):
 
