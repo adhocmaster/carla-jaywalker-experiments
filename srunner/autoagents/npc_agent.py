@@ -11,10 +11,12 @@ from __future__ import print_function
 
 import carla
 from agents.navigation.basic_agent import BasicAgent
-
-from srunner.autoagents.autonomous_agent import AutonomousAgent
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
+from leaderboard.autoagents.autonomous_agent import AutonomousAgent, Track
+
+def get_entry_point():
+    return 'NpcAgent'
 
 class NpcAgent(AutonomousAgent):
 
@@ -29,6 +31,8 @@ class NpcAgent(AutonomousAgent):
         """
         Setup the agent parameters
         """
+        self.track = Track.SENSORS
+
         self._agent = None
 
     def sensors(self):
@@ -58,7 +62,7 @@ class NpcAgent(AutonomousAgent):
 
     def run_step(self, input_data, timestamp):
         """
-        Execute one step of navigation.
+        Execute one step of navigation. 
         """
         if not self._agent:
 

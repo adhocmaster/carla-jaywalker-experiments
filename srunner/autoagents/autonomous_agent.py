@@ -9,12 +9,22 @@ This module provides the base class for all autonomous agents
 
 from __future__ import print_function
 
+from enum import Enum
+
 import carla
-
-from srunner.autoagents.sensor_interface import SensorInterface
 from srunner.scenariomanager.timer import GameTime
-from srunner.tools.route_manipulation import downsample_route
 
+from leaderboard.utils.route_manipulation import downsample_route
+from leaderboard.envs.sensor_interface import SensorInterface
+
+
+class Track(Enum):
+
+    """
+    This enum represents the different tracks of the CARLA AD leaderboard.
+    """
+    SENSORS = 'SENSORS'
+    MAP = 'MAP'
 
 class AutonomousAgent(object):
 
@@ -23,6 +33,7 @@ class AutonomousAgent(object):
     """
 
     def __init__(self, path_to_conf_file):
+        self.track = Track.SENSORS
         #  current global plans to reach a destination
         self._global_plan = None
         self._global_plan_world_coord = None
@@ -33,9 +44,13 @@ class AutonomousAgent(object):
         # agent's initialization
         self.setup(path_to_conf_file)
 
+        self.wallclock_t0 = None
+
     def setup(self, path_to_conf_file):
         """
         Initialize everything needed by your agent and set the track attribute to the right type:
+            Track.SENSORS : CAMERAS, LIDAR, RADAR, GPS and IMU sensors are allowed
+            Track.MAP : OpenDRIVE map is also allowed
         """
         pass
 
@@ -89,8 +104,13 @@ class AutonomousAgent(object):
         input_data = self.sensor_interface.get_data()
 
         timestamp = GameTime.get_time()
+
+        if not self.wallclock_t0:
+            self.wallclock_t0 = GameTime.get_wallclocktime()
         wallclock = GameTime.get_wallclocktime()
-        print('======[Agent] Wallclock_time = {} / Sim_time = {}'.format(wallclock, timestamp))
+        wallclock_diff = (wallclock - self.wallclock_t0).total_seconds()
+
+        print('======[Agent] Wallclock_time = {} / {} / Sim_time = {} / {}x'.format(wallclock, wallclock_diff, timestamp, timestamp/(wallclock_diff+0.001)))
 
         control = self.run_step(input_data, timestamp)
         control.manual_gear_shift = False
@@ -101,8 +121,6 @@ class AutonomousAgent(object):
         """
         Set the plan (route) for the agent
         """
-
-        ds_ids = downsample_route(global_plan_world_coord, 1)
-        self._global_plan_world_coord = [(global_plan_world_coord[x][0], global_plan_world_coord[x][1])
-                                         for x in ds_ids]
+        ds_ids = downsample_route(global_plan_world_coord, 50)
+        self._global_plan_world_coord = [(global_plan_world_coord[x][0], global_plan_world_coord[x][1]) for x in ds_ids]
         self._global_plan = [global_plan_gps[x] for x in ds_ids]

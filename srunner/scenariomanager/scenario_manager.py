@@ -41,7 +41,7 @@ class ScenarioManager(object):
     5. If needed, cleanup with manager.stop_scenario()
     """
 
-    def __init__(self, debug_mode=False, sync_mode=False, timeout=2.0):
+    def __init__(self, debug_mode=False, sync_mode=False, timeout=300):
         """
         Setups up the parameters, which will be filled at load_scenario()
 
@@ -137,6 +137,7 @@ class ScenarioManager(object):
             if timestamp:
                 self._tick_scenario(timestamp)
 
+        print("ScenarioManager: cleaning up")
         self.cleanup()
 
         self.end_system_time = time.time()

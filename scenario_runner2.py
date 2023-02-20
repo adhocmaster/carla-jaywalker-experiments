@@ -102,7 +102,8 @@ class ScenarioRunner(object):
             self.module_agent = importlib.import_module(module_name)
 
         # Create the ScenarioManager
-        self.manager = ScenarioManager(self._args.debug, self._args.sync, self._args.timeout)
+        # self.manager = ScenarioManager(self._args.debug, self._args.sync, self._args.timeout) # source of error, this timeout was supposed to be client timeout, not manager timeout
+        self.manager = ScenarioManager(self._args.debug, self._args.sync, 300) # source of error, this timeout was supposed to be client timeout, not manager timeout
 
         # Create signal handler for SIGINT
         self._shutdown_requested = False
@@ -244,6 +245,8 @@ class ScenarioRunner(object):
         """
         Provide feedback about success/failure of a scenario
         """
+
+        print("analyzing scenario")
 
         # Create the filename
         current_time = str(datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
@@ -388,7 +391,8 @@ class ScenarioRunner(object):
             elif self._args.route:
                 scenario = RouteScenario(world=self.world,
                                          config=config,
-                                         debug_mode=self._args.debug)
+                                         debug_mode=self._args.debug,
+                                         timeout=100000)
             else:
                 scenario_class = self._get_scenario_class_or_fail(config.type)
                 scenario = scenario_class(self.world,
@@ -406,7 +410,7 @@ class ScenarioRunner(object):
         try:
             if self._args.record:
                 recorder_name = "{}/{}/{}.log".format(
-                    os.getenv('SCENARIO_RUNNER_ROOT', "./"), self._args.record, config.name)
+                    f"{os.getcwd()}/logs", self._args.record, config.name)
                 self.client.start_recorder(recorder_name, True)
 
             # Load scenario and run it

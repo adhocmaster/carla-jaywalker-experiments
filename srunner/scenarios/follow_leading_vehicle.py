@@ -330,7 +330,8 @@ class FollowLeadingVehicleRoute(BasicScenario):
         """
         self.timeout = timeout
         self._stop_duration = 15
-        self._end_time_condition = 30
+        # self._end_time_condition = 30
+        self._end_time_condition = self.timeout # why current end time is not currect
 
         super(FollowLeadingVehicleRoute, self).__init__("FollowLeadingVehicleRoute",
                                                         ego_vehicles,

@@ -89,6 +89,8 @@ class LeaderboardEvaluator(object):
         sys.path.insert(0, os.path.dirname(args.agent))
         self.module_agent = importlib.import_module(module_name)
 
+        print("LeaderboardEvaluator: init", self.module_agent)
+
         # Create the ScenarioManager
         self.manager = ScenarioManager(args.timeout, args.debug > 1)
 
@@ -307,7 +309,7 @@ class LeaderboardEvaluator(object):
             self._prepare_ego_vehicles(config.ego_vehicles, False)
             scenario = RouteScenario(world=self.world, config=config, debug_mode=args.debug)
             config.route = scenario.route
-            exit(0)
+            # exit(0)
             self.statistics_manager.set_scenario(scenario.scenario)
 
             # Load scenario and run it

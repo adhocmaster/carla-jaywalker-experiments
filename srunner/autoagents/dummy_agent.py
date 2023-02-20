@@ -11,8 +11,10 @@ from __future__ import print_function
 
 import carla
 
-from srunner.autoagents.autonomous_agent import AutonomousAgent
+from leaderboard.autoagents.autonomous_agent import AutonomousAgent, Track
 
+def get_entry_point():
+    return 'DummyAgent'
 
 class DummyAgent(AutonomousAgent):
 
@@ -24,6 +26,7 @@ class DummyAgent(AutonomousAgent):
         """
         Setup the agent parameters
         """
+        self.track = Track.MAP
 
     def sensors(self):
         """
@@ -40,21 +43,25 @@ class DummyAgent(AutonomousAgent):
 
             {'type': 'sensor.lidar.ray_cast', 'x': 0.7, 'y': 0.0, 'z': 1.60, 'yaw': 0.0, 'pitch': 0.0, 'roll': 0.0,
              'id': 'LIDAR'}
-
-
+        ]
         """
-        sensors = [{'type': 'sensor.camera.rgb', 'x': 0.7, 'y': 0.0, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
-                    'width': 800, 'height': 600, 'fov': 100, 'id': 'Center'},
-                   {'type': 'sensor.camera.rgb', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0,
-                    'yaw': -45.0, 'width': 800, 'height': 600, 'fov': 100, 'id': 'Left'},
-                   {'type': 'sensor.camera.rgb', 'x': 0.7, 'y': 0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 45.0,
-                    'width': 800, 'height': 600, 'fov': 100, 'id': 'Right'},
-                   {'type': 'sensor.lidar.ray_cast', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0,
-                    'yaw': -45.0, 'id': 'LIDAR'},
-                   {'type': 'sensor.other.gnss', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'GPS'},
-                   {'type': 'sensor.can_bus', 'reading_frequency': 25, 'id': 'can_bus'},
-                   {'type': 'sensor.hd_map', 'reading_frequency': 1, 'id': 'hdmap'},
-                   ]
+
+        sensors = [
+            {'type': 'sensor.camera.rgb', 'x': 0.7, 'y': 0.0, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+             'width': 800, 'height': 600, 'fov': 100, 'id': 'Center'},
+            {'type': 'sensor.camera.rgb', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': -45.0,
+             'width': 800, 'height': 600, 'fov': 100, 'id': 'Left'},
+            {'type': 'sensor.camera.rgb', 'x': 0.7, 'y': 0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0, 'yaw': 45.0,
+             'width': 800, 'height': 600, 'fov': 100, 'id': 'Right'},
+            {'type': 'sensor.lidar.ray_cast', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0,
+             'yaw': -45.0, 'id': 'LIDAR'},
+            {'type': 'sensor.other.radar', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0,
+             'yaw': -45.0, 'fov': 30, 'id': 'RADAR'},
+            {'type': 'sensor.other.gnss', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'id': 'GPS'},
+            {'type': 'sensor.other.imu', 'x': 0.7, 'y': -0.4, 'z': 1.60, 'roll': 0.0, 'pitch': 0.0,
+             'yaw': -45.0, 'id': 'IMU'},
+            {'type': 'sensor.opendrive_map', 'reading_frequency': 1, 'id': 'OpenDRIVE'},
+        ]
 
         return sensors
 

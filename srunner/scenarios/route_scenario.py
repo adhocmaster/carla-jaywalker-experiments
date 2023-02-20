@@ -415,8 +415,11 @@ class RouteScenario(BasicScenario):
         scenario_behaviors = []
         blackboard_list = []
 
+        # print(self.list_scenarios)
+
         for i, scenario in enumerate(self.list_scenarios):
             if scenario.scenario.behavior is not None:
+                print("behavior defined for", scenario)
                 route_var_name = scenario.config.route_var_name
                 if route_var_name is not None:
                     scenario_behaviors.append(scenario.scenario.behavior)
