@@ -97,17 +97,12 @@ def downsample_route(route, sample_factor):
     for i, point in enumerate(route):
         curr_option = point[1]
 
-        # At the beginning
-        if prev_option is None:
-            ids_to_sample.append(i)
-            dist = 0
-
         # Lane changing
-        elif curr_option in (RoadOption.CHANGELANELEFT, RoadOption.CHANGELANERIGHT):
+        if curr_option in (RoadOption.CHANGELANELEFT, RoadOption.CHANGELANERIGHT):
             ids_to_sample.append(i)
             dist = 0
 
-        # When entering or exitting intersections
+        # When road option changes
         elif prev_option != curr_option and prev_option not in (RoadOption.CHANGELANELEFT, RoadOption.CHANGELANERIGHT):
             ids_to_sample.append(i)
             dist = 0
@@ -145,19 +140,15 @@ def interpolate_trajectory(waypoints_trajectory, hop_resolution=1.0):
 
     grp = GlobalRoutePlanner(CarlaDataProvider.get_map(), hop_resolution)
     # Obtain route plan
-    lat_ref, lon_ref = _get_latlon_ref(CarlaDataProvider.get_world())
-
     route = []
-    gps_route = []
-
     for i in range(len(waypoints_trajectory) - 1):
 
         waypoint = waypoints_trajectory[i]
         waypoint_next = waypoints_trajectory[i + 1]
         interpolated_trace = grp.trace_route(waypoint, waypoint_next)
-        for wp, connection in interpolated_trace:
-            route.append((wp.transform, connection))
-            gps_coord = _location_to_gps(lat_ref, lon_ref, wp.transform.location)
-            gps_route.append((gps_coord, connection))
+        for wp_tuple in interpolated_trace:
+            route.append((wp_tuple[0].transform, wp_tuple[1]))
 
-    return gps_route, route
+    lat_ref, lon_ref = _get_latlon_ref(CarlaDataProvider.get_world())
+
+    return location_route_to_gps(route, lat_ref, lon_ref), route

@@ -53,7 +53,7 @@ There are three ways experiments can be run, based on scenarios, and based on th
     python scenario_runner2.py --scenario Scenario1v1_1 --configFile ./research/Scenario1v1.xml --reloadWorld
 
 ## Running Leaderboard Scenarios
-    python leaderboard_evaluator.py --routes ./leaderboard/routes/routes_devtest.xml -a ./leaderboard/autoagents/human_agent.py
+    python leaderboard_evaluator.py --routes ./srunner/data/routes_devtest.xml -a ./leaderboard/autoagents/human_agent.py --route-id=1 --scenarios ./leaderboard/routes/all_towns_traffic_scenarios_public.json
 
 ## Streaming
 You can use the streamer.py file to stream from the spectator in a remote server. Issue this command in the terminal:

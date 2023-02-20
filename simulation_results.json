@@ -1,0 +1,18 @@
+{
+    "_checkpoint": {
+        "global_record": {},
+        "progress": [
+            0,
+            1
+        ],
+        "records": []
+    },
+    "eligible": "",
+    "entry_status": "",
+    "labels": [],
+    "sensors": [
+        "carla_camera",
+        "carla_speedometer"
+    ],
+    "values": []
+}
