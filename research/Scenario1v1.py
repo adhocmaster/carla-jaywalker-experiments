@@ -7,8 +7,8 @@ import srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions as cond
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.timer import TimeOut
 from srunner.scenariomanager.weather_sim import WeatherBehavior
-from srunner.scenariomanager.scenarioatomics.atomic_behaviors import AtomicBehavior
-from srunner.scenariomanager.scenarioatomics.atomic_criteria import Criterion
+from srunner.scenariomanager.scenarioatomics.atomic_behaviors import AtomicBehavior, StopVehicle
+from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest, Criterion
 
 from srunner.scenarios.basic_scenario import BasicScenario
 import py_trees
@@ -57,8 +57,17 @@ class Scenario1v1(BasicScenario):
         """
         Setup the behavior for NewScenario
         """
+        stop = StopVehicle(self.ego_vehicles[0], 1)
+        return stop
 
     def _create_test_criteria(self) -> List[Criterion]:
         """
         Setup the evaluation criteria for NewScenario
         """
+        criteria = []
+
+        collision_criterion = CollisionTest(self.ego_vehicles[0])
+
+        criteria.append(collision_criterion)
+
+        return criteria
