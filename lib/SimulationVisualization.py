@@ -224,18 +224,21 @@ class SimulationVisualization(ClientUser):
             begin = wpt_t.location + carla.Location(z=z)
             angle = math.radians(wpt_t.rotation.yaw)
             end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
-            # self.world.debug.draw_arrow(
-            #     begin, 
-            #     end, 
-            #     arrow_size=0.3, 
-            #     color=carla.Color(*color), 
-            #     life_time=life_time
-            #     )
+            self.world.debug.draw_arrow(
+                begin, 
+                end, 
+                arrow_size=0.3, 
+                color=carla.Color(*color), 
+                life_time=life_time
+                )
             
             if position:
                 textLoc = carla.Location(wpt_t.location.x, wpt_t.location.y, 1.0)
+                if wpt_t.rotation.yaw > 0:
+                    # textLoc.x += 3
+                    textLoc.y -= 12
                 # print(textLoc)
-                self.drawTextOnMap(location=textLoc, text=f"({textLoc.x:.1f}, {textLoc.y:.1f}, {wpt_t.rotation.yaw:.1f})")
+                self.drawTextOnMap(location=textLoc, text=f"({wpt_t.location.x:.1f}, {wpt_t.location.y:.1f}, {wpt_t.rotation.yaw:.1f})")
 
 
 

@@ -66,7 +66,7 @@ mapManager.load(MapNames.circle_t_junctions, forceReload=True)
 # settings.fixed_delta_seconds = time_delta
 # world.apply_settings(settings)
 
-mapManager.generateWaypoints(distance=6.0)
+mapManager.generateWaypoints(distance=10.0)
 
 visualizer = SimulationVisualization(client, mapManager)
 # visualizer.draw00()
