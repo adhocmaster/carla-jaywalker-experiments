@@ -52,9 +52,9 @@ if client.get_client_version() != client.get_server_version():
 
 mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
-# mapManager.load(MapNames.circle_t_junctions)
+mapManager.load(MapNames.circle_t_junctions, forceReload=True)
 
-mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 
@@ -66,6 +66,8 @@ mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
 # settings.fixed_delta_seconds = time_delta
 # world.apply_settings(settings)
 
+mapManager.generateWaypoints(distance=6.0)
+
 visualizer = SimulationVisualization(client, mapManager)
 # visualizer.draw00()
 
@@ -74,6 +76,6 @@ map = mapManager.map
 
 visualizer.drawSpawnPoints(dropout=0.8)
 visualizer.drawSpectatorPoint()
-visualizer.drawAllWaypoints(life_time=0.0)
+visualizer.drawAllWaypoints(life_time=0.0, position=True)
 
 # exit(0)
