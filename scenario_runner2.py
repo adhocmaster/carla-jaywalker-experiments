@@ -31,6 +31,7 @@ import json
 import pkg_resources
 
 import carla
+from lib.MapManager import MapManager, MapNames
 
 from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfiguration
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
@@ -39,6 +40,8 @@ from srunner.scenarios.open_scenario import OpenScenario
 from srunner.scenarios.route_scenario import RouteScenario
 from srunner.tools.scenario_parser import ScenarioConfigurationParser
 from srunner.tools.route_parser import RouteParser
+
+from research.ScenarioRouteSrunner import ScenarioRouteSrunner
 
 # Version of scenario_runner
 VERSION = '0.9.13'
@@ -307,9 +310,12 @@ class ScenarioRunner(object):
         """
         Load a new CARLA world and provide data to CarlaDataProvider
         """
+        self.mapManager = MapManager(self.client)
 
         if self._args.reloadWorld:
-            self.world = self.client.load_world(town)
+            # self.world = self.client.load_world(town)
+            self.mapManager.load(MapNames[town], forceReload=True)
+            self.world = self.mapManager.world
         else:
             # if the world should not be reloaded, wait at least until all ego vehicles are ready
             ego_vehicle_found = False
@@ -388,8 +394,13 @@ class ScenarioRunner(object):
                                         config=config,
                                         config_file=self._args.openscenario,
                                         timeout=100000)
+            # elif self._args.route:
+            #     scenario = RouteScenario(world=self.world,
+            #                              config=config,
+            #                              debug_mode=self._args.debug,
+            #                              timeout=100000)
             elif self._args.route:
-                scenario = RouteScenario(world=self.world,
+                scenario = ScenarioRouteSrunner(world=self.world,
                                          config=config,
                                          debug_mode=self._args.debug,
                                          timeout=100000)
@@ -465,17 +476,19 @@ class ScenarioRunner(object):
         """
         result = False
 
-        if self._args.route:
-            routes = self._args.route[0]
-            scenario_file = self._args.route[1]
-            single_route = None
-            if len(self._args.route) > 2:
-                single_route = self._args.route[2]
+        print(self._args.route)
+        routes = self._args.route[0]
+        scenario_file = self._args.route[1]
+        single_route = None
+        if len(self._args.route) > 2:
+            single_route = self._args.route[2]
 
         # retrieve routes
         route_configurations = RouteParser.parse_routes_file(routes, scenario_file, single_route)
 
         for config in route_configurations:
+            # print([str(location) for location in config.trajectory])
+            # exit(0)
             for _ in range(self._args.repetitions):
                 result = self._load_and_run_scenario(config)
 

@@ -311,6 +311,8 @@ class RouteScenario(BasicScenario):
         """
         scenario_instance_vec = []
 
+        print("_build_scenario_instances", scenario_definitions)
+
         if debug_mode:
             for scenario in scenario_definitions:
                 loc = carla.Location(scenario['trigger_position']['x'],

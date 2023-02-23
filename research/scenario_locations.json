@@ -7,51 +7,14 @@
                         {
                             "transform": {
                                 "pitch": "0.0",
-                                "x": "180.9",
-                                "y": "105.3",
-                                "yaw": "180.0",
-                                "z": "1.2"
-                            }
-                        },
-                    ],
-                    "scenario_type": "Scenario1"
-                },
-                {
-                    "available_event_configurations": [
-                        {
-                            "transform": {
-                                "pitch": "0.0",
-                                "x": "119.3",
-                                "y": "302.9",
-                                "yaw": "180.0",
-                                "z": "0.0"
+                                "x": "-121.3",
+                                "y": "-6.8",
+                                "yaw": "-0.5",
+                                "z": "0"
                             }
                         }
                     ],
                     "scenario_type": "Scenario2"
-                },
-                {
-                    "available_event_configurations": [
-                        {
-                            "transform": {
-                                "pitch": "0.0",
-                                "x": "26.6",
-                                "y": "187.6",
-                                "yaw": "180.0",
-                                "z": "1.2"
-                            }
-                        },
-                        {
-                            "transform": {
-                                "pitch": "0.0",
-                                "x": "166.0",
-                                "y": "236.9",
-                                "yaw": "180.0",
-                                "z": "1.2"
-                            }
-                        }
-                    ],
-                    "scenario_type": "Scenario4"
                 }
             ]                       
         }
