@@ -84,9 +84,9 @@ class GlobalRoutePlanner(object):
 
                     self.logger.debug(f"distance to dest {waypoint.transform.location.distance(destination)}")
                     
-                    # if len(route)-i <= 2 and waypoint.transform.location.distance(destination) < 2*self._sampling_resolution: # the first condition creates a loop, but we need it to find alternative routes, too?
+                    # if len(route)-i <= 2 and waypoint.transform.location.distance(destination) < 2*self._sampling_resolution: # the first condition creates a loop,
                     #     break
-                    if waypoint.transform.location.distance(destination) < 2*self._sampling_resolution:
+                    if waypoint.transform.location.distance(destination) < self._sampling_resolution:
                         return route_trace
                     elif len(route)-i <= 2 and current_waypoint.road_id == destination_waypoint.road_id and current_waypoint.section_id == destination_waypoint.section_id and current_waypoint.lane_id == destination_waypoint.lane_id:
                         destination_index = self._find_closest_in_list(destination_waypoint, path)
