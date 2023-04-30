@@ -64,3 +64,32 @@ class ResearchFactory:
         client = Utils.createClient(logger, host, port)
         research = ResearchCogMod(client, defaultLogLevel, map, output_dir, simulationMode, simulation_id)
         research.run(maxTicks=maxTicks)
+        
+    
+    @staticmethod
+    def createResearchCogModHighD(maxTicks=100, 
+                                    host="127.0.0.1",
+                                    port=2000,
+                                    defaultLogLevel=logging.INFO,
+                                    outputDir="logs",
+                                    simulationMode = SimulationMode.ASYNCHRONOUS,
+                                    scenarioID = "scenario1"):
+        
+        print(f"research chosen : CogModHighD with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {outputDir}")
+        port = int(port)
+        name = "createResearchCogModHighD"
+        
+        logPath = os.path.join(outputDir, f"{name}.log")
+        logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
+        client = Utils.createClient(logger, host, port)
+        
+        # research = ResearchTrajectory(client=client,
+        #                               logLevel=defaultLogLevel,
+        #                               outputDir=outputDir,
+        #                               simulationMode=simulationMode,
+        #                               scenarioID=scenarioID)
+        
+        logger.info(f"Create research Trajectory agent {name}")
+        # research.run(maxTicks=maxTicks)
+        
+        pass
