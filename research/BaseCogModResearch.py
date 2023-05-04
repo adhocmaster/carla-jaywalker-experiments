@@ -48,10 +48,10 @@ class BaseCogModResearch(BaseResearch):
 
     def onEnd(self):
         self.logger.info("Ending simulation")
-        self.logger.info(f"length of vehicle list {len(self.agent_list)}")
+        # self.logger.info(f"length of vehicle list {len(self.agent_list)}")
         
         for agent_id, agent in self.agent_list.items():
-            self.logger.info(f"destroying agent {agent_id}")
+            self.logger.info(f"destroying {agent_id} agent")
             agent.get_vehicle().destroy()
         self.agent_list.clear()
         self.logger.info("destroyed all vehicles")

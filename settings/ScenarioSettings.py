@@ -36,8 +36,8 @@ scenarios = {
 
     "scenario3": {
         "map": MapNames.HighWay_Ring,
-        "high_d_path": f"C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\agents\\vehicles\\TrajectoryAgent\\tracks.csv",
-        "stable_height_path": f"C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\stable_height.csv",
+        "high_d_path": f"C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-driver-behavior-model\\agents\\vehicles\\TrajectoryAgent\\tracks.csv",
+        "stable_height_path": f"C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-driver-behavior-model\\settings\\stable_height.csv",
         "lane_id": {
             "left_lane":[4, 5, 6],
             "right_lane":[2,3],
@@ -47,7 +47,7 @@ scenarios = {
 
     "scenario4": {
         "map": MapNames.HighWay_Ring,
-        "high_d_path": f'C:\\Users\\abjawad\\Documents\\GitHub\\drone-dataset-tools\\data\\highD_dataset',
+        "high_d_path": f'D:\\highD_data\\highD_dataset',
         "dataset_id": 1,
         "stable_height_path": f"C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\stable_height.csv",
         "lane_id": {
@@ -58,10 +58,10 @@ scenarios = {
         "car_follow_settings":{
             'thw_lower_bound': 0,
             'thw_upper_bound': 4,
-            'time_duration': 5,
-            'distance_threshold': 20,
+            'time_duration': 10,
+            'distance_threshold': 50,
         },
-        "base_distance": 100,
+        "base_distance": 500,
         "cogmod_agent": {
             "source": None,
             "destination": None,

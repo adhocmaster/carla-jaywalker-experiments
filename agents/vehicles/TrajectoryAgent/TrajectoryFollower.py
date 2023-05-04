@@ -34,7 +34,12 @@ class TrajectoryFollower():
 
     # frame id starts from the original frame id from the highd dataset
     def run_step(self, frame_id):
+        
+        if frame_id not in self.trajectory["frame"].values:
+            print(f"frame {frame_id} not in trajectory")
+            return
         # get the x y and speed from the trajectory
+        # print(f"trajecytory agent {self.agent_id} is running step {frame_id}")
         cur_row = self.trajectory[self.trajectory["frame"] == frame_id]
         center_x, center_y = self.transform_coordinate_wrt_pivot(cur_row)
         location, rotation = self.get_vehicle_transform(cur_row, center_x, center_y, self.stable_height)
@@ -42,7 +47,6 @@ class TrajectoryFollower():
         self.vehicle.set_transform(cur_destination_transform)
         self.velocity =  carla.Vector3D(x=cur_row["xVelocity"].values[0], y=cur_row["yVelocity"].values[0], z=0)
         
-        # print('velocity +++++++++ ', self.velocity)
         pass
 
     def is_done(self, frame_id):
@@ -52,8 +56,6 @@ class TrajectoryFollower():
         else:
             return False
 
-    
-        
     def get_destination_transform(self):
         max_frame = self.trajectory["frame"].max()
         cur_row = self.trajectory[self.trajectory["frame"] == max_frame]
