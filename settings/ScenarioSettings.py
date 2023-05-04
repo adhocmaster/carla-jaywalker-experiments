@@ -58,7 +58,7 @@ scenarios = {
         "car_follow_settings":{
             'thw_lower_bound': 0,
             'thw_upper_bound': 4,
-            'time_duration': 10,
+            'time_duration': 13,
             'distance_threshold': 50,
         },
         "base_distance": 500,

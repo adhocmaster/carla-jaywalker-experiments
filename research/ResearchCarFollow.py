@@ -176,7 +176,7 @@ class ResearchCarFollow(BaseCogModResearch):
         self.bug_list = [] # 19
         self.scenario_list_df = [i for i in range(0, len(self.car_car_follow))] 
         
-        self.current_scenario_id = 2
+        self.current_scenario_id = 0
         self.max_tick = 0
         self.agent_list = {'ego': None, 'preceding': None}
         self.scenario_status = ScenarioState.PENDING
@@ -248,9 +248,8 @@ class ResearchCarFollow(BaseCogModResearch):
     def run(self, maxTicks=100):
         self.max_tick = maxTicks
         self.create_simulation(self.current_scenario_id)
-        # onTickers = [self.UpdateScenarioStatus, self.dataCollectorOnTick, self.onTick]
-        
-        onTickers = [self.UpdateScenarioStatus, self.onTick]
+        onTickers = [self.UpdateScenarioStatus, self.dataCollectorOnTick, self.onTick]
+        # onTickers = [self.UpdateScenarioStatus, self.onTick]
         onEnders = [self.onEnd]
         self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
         self.simulator.run(maxTicks=maxTicks)
@@ -380,4 +379,25 @@ class ResearchCarFollow(BaseCogModResearch):
             self.logger.error(f"bug list: {self.bug_list}")
             self.simulator.onEnd()
             self.restart_scenario()
+        pass
+    
+    
+    def dataCollectorOnTick(self, tick):
+        scenario_status = self.scenario_status
+        scenario_id = self.current_scenario_id
+        if scenario_status == ScenarioState.PENDING or \
+            scenario_status == ScenarioState.START or \
+                scenario_status == ScenarioState.RUNNING:
+
+            self.data_collector.collectStats(tick,
+                                            self.ego_id,
+                                            self.preceding_id,
+                                            self.agent_list['ego'], 
+                                            self.agent_list['preceding'],
+                                            scenario_id,
+                                            self.scenario_status)
+            return
+        if scenario_status == ScenarioState.END:
+            self.data_collector.updateTrajectoryDF()
+            pass
         pass
