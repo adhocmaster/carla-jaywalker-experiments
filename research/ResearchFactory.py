@@ -4,8 +4,11 @@ import os
 
 from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, Utils, SimulationMode
 from research import *
-# from research.SimulationMode import SimulationMode
 from research.ResearchCogMod import ResearchCogMod
+from research.ResearchTrajectory import ResearchTrajectory
+from research.ResearchCarFollow import ResearchCarFollow 
+from research.ResearchCarFollowRepeat import ResearchCarFollowRepeat
+
 
 class ResearchFactory:
     def __init__(self, host="127.0.0.1", port=2000, output_dir="logs", map=MapNames.circle_t_junctions) -> None:
@@ -70,6 +73,7 @@ class ResearchFactory:
     def createResearchCogModHighD(maxTicks=100, 
                                     host="127.0.0.1",
                                     port=2000,
+                                    timeout=10.0,
                                     defaultLogLevel=logging.INFO,
                                     outputDir="logs",
                                     simulationMode = SimulationMode.ASYNCHRONOUS,
@@ -77,11 +81,11 @@ class ResearchFactory:
         
         print(f"research chosen : CogModHighD with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {outputDir}")
         port = int(port)
-        name = "createResearchCogModHighD"
+        name = "CogmodHighD"
         
         logPath = os.path.join(outputDir, f"{name}.log")
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
-        client = Utils.createClient(logger, host, port)
+        client = Utils.createClient(logger, host, port, timeout=timeout)
         
         # research = ResearchTrajectory(client=client,
         #                               logLevel=defaultLogLevel,
@@ -89,7 +93,21 @@ class ResearchFactory:
         #                               simulationMode=simulationMode,
         #                               scenarioID=scenarioID)
         
-        logger.info(f"Create research Trajectory agent {name}")
+        # logger.info(f"Create research Trajectory agent {name}")
         # research.run(maxTicks=maxTicks)
         
+        research = ResearchCarFollow(client=client,
+                                     logLevel=defaultLogLevel,
+                                     outputDir="logs",
+                                     scenarioID=scenarioID)
+        logger.info(f"Create research Trajectory agent {name}")
+        research.run(maxTicks=maxTicks)
+        
+        # research = ResearchCarFollowRepeat(client=client,
+        #                                    logLevel=defaultLogLevel,
+        #                                    outputDir="logs",
+        #                                    scenarioID=scenarioID,
+        #                                    pickedScenario=0,
+        #                                    nRepeat=3)
+        # research.run(maxTicks=maxTicks)
         pass

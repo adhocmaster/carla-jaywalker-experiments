@@ -118,7 +118,7 @@ class HighDStats():
             distance.extend(temp_distance)
 
         df = pd.DataFrame(distance, columns=['followDistance'])
-        df = df[df['followDistance'] < 50]
+        # df = df[df['followDistance'] < 50]
         print("df ", df.columns, len(df))
         Histogram.plotMetricsDF(df, 'followDistance', xlabel='Follow Distance (m)', bins=10, kde=True)
         pass
@@ -144,7 +144,7 @@ class HighDStats():
             relative_speed.extend(del_speed)
 
         df = pd.DataFrame(relative_speed, columns=['RelativeSpeed'])
-        Histogram.plotMetricsDF(df, 'RelativeSpeed', xlabel='Relative Speed', bins=1000, kde=True)
+        Histogram.plotMetricsDF(df, 'RelativeSpeed', xlabel='Relative Speed', bins=10, kde=True)
 
     def follow_speed_distance_ratio(self, follow_meta):
 

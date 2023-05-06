@@ -1,291 +1,244 @@
-import math
-import time
-from unittest import result
+from datetime import datetime as date
+from enum import Enum
 import carla
-
-from lib.MapManager import MapNames
-
-from .BaseResearch import BaseResearch
-from settings.t_junction_settings import t_junction_settings
-from settings import SettingsManager
-from agents.pedestrians import PedestrianFactory
+import logging
 from agents.vehicles import VehicleFactory
-from lib import Simulator, SimulationMode
-from lib import Utils
+from lib import SimulationMode
+from lib.MapManager import MapNames
+from lib import Simulator
+from .BaseCogModResearch import BaseCogModResearch
+from research.BaseResearch import BaseResearch
+from settings.CogModSettings import CogModSettings
 
-class ResearchCogMod(BaseResearch):
 
-    def __init__(self, client: carla.Client, 
-                 logLevel, 
-                 mapName=MapNames.t_junction, 
-                 outputDir:str = "logs", 
-                 simulationMode = SimulationMode.ASYNCHRONOUS,
-                 simulation_id = "setting1"):
-        self.name = "Research CogMod"
+#  import for cogmod
+from agents.vehicles.CogMod.CogModAgent import CogModAgent
+from analytics.DataCollector import DataCollector
+
+
+class ScenarioState(Enum):
+    START = 0
+    RUNNING = 1
+    END = 2
+    PENDING = 3
+    DISCARD = 4
+    pass
+
+
+camera_angle = carla.Rotation(pitch=-45, yaw=0, roll=0)
+
+class ResearchCogMod(BaseCogModResearch):
+
+    def __init__(self,
+                 client,
+                 logLevel=logging.INFO,
+                 outputDir="logs",
+                 simulationMode=SimulationMode.ASYNCHRONOUS,
+                 scenarioID="scenario1"):
+
+        self.name = "ResearchCogMod"
+        self.scenarioID = scenarioID
+        self.researchSettings = CogModSettings(scenarioID)
+
+        # getting the values for the scenarios
+        self.mapName = self.researchSettings.getMapName()
+        self.cogmodAgentSettings = self.researchSettings.getCogModAgentSettings()
+        self.actorAgentSettings = self.researchSettings.getActorAgentSettings()
+        self.triggerDistance = self.researchSettings.getTriggerDistance()
+
+        self.scenario_state = ScenarioState.PENDING
+        self.episode = 1
+        self.nEpisode = 4
+
+        # initializing the base class
         super().__init__(name=self.name, 
                          client=client, 
-                         mapName=mapName, 
+                         mapName=self.mapName, 
                          logLevel=logLevel, 
-                         outputDir=outputDir,
-                         simulationMode=simulationMode)
-
-        self.simulation_id = simulation_id
-
-        self.settingsManager = SettingsManager(self.client, t_junction_settings)
-        self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
-
-        self.number_of_cogmod_agents = 0
-        self.number_of_actor_agents = 0
-
-
-        self.vehicle_list = []
-        self.cogmod_agent_list = []
-        self.actor_agent_list = []
-
-        self.cogmod_agent_parameter_list = []
-        self.actor_trajectory_list = []
+                         outputDir=outputDir, 
+                         simulationMode=simulationMode,
+                         showSpawnPoints=True)
         
-        self.setup()
+        self.simulator = None
+        self.cogmodAgent = None
+        self.actorAgent = None
 
-
-    def setup(self):
-        self.settingsManager.load(self.simulation_id)
-        self.simulator = None # populated when run
-        self.number_of_cogmod_agents, self.cogmod_agent_parameter_list = self.settingsManager.getNumberOfCogmodAgentsWithParameters()
-        self.number_of_actor_agents, self.actor_trajectory_list = self.settingsManager.getNumberOfActorAgentsWithTrajectories()
-        
-
-        self.visualizer.drawSpawnPoints()
-
-        # unique_lanes = {}
-        # for wp in self.mapManager.waypoints:
-        #     if wp.lane_id not in unique_lanes:
-        #         unique_lanes[wp.lane_id] = True
-        # print(f'unique roads {unique_lanes}')
+        self.data_collector = DataCollector()
 
         pass
 
-    def onEnd(self):
-        self.destoryActors()
-    
-    def destoryActors(self):
-        for vehicle in self.vehicle_list:
-            vehicle.destroy()
-        self.cogmod_agent_list = []
+    def restart_scenario(self):
+        self.scenario_state = ScenarioState.PENDING
+        self.episode += 1
+        if self.episode > self.nEpisode:
+            dateStr = date.now().strftime("%Y-%m-%d-%H-%M-%S")
+            self.data_collector.saveCSV(dateStr, self.outputDir)
+            self.logger.info("simulation ended saving data....")
+            exit()
+            
+        self.cogmodAgent = self.createCogModAgent(self.cogmodAgentSettings)
+        self.actorAgent = self.createActorAgent(self.actorAgentSettings)
+        self.logger.info(f"running research in asynchronous mode")
+        self.world.wait_for_tick()
+
         pass
+ 
 
-    def destroyAgent(self, agent):
-        self.cogmod_agent_list.remove(agent)
-        self.vehicle_list.remove(agent.vehicle)
-        agent.vehicle.destroy()
-
-    def onTick(self, world_snapshot):
-        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
-            self.updateVehiclesAsynchoronousMode(world_snapshot)
-        if self.simulationMode == SimulationMode.SYNCHRONOUS:
-            self.updateVehiclesSynchoronousMode(world_snapshot)
-
-        for agent in self.cogmod_agent_list:
-            print(f'agent : {agent.vehicle.id}, lm {len(agent.longterm_memory.request_queue)}, cc {len(agent.complex_cognition.request_queue)}, mc {len(agent.motor_control.request_queue)}')
-            # print(f'lm {len(agent.longterm_memory.request_queue)}')
-            # print(f'cc {len(agent.complex_cognition.request_queue)}')
-            # print(f'mc {len(agent.motor_control.request_queue)}')
-
-        
-
-
-
-    #region simulation
-    def run(self, maxTicks=5000):
-        print('inside run research')
-        
+    def run(self, maxTicks=100):
         
         if self.simulationMode == SimulationMode.ASYNCHRONOUS:
-            self.createCogmodAgentAsynchronousMode()
-            self.createActorAgentsAsynchronousMode()
+            self.cogmodAgent = self.createCogModAgent(self.cogmodAgentSettings)
+            self.actorAgent = self.createActorAgent(self.actorAgentSettings)
+            self.logger.info(f"running research in asynchronous mode")
             self.world.wait_for_tick()
-        if self.simulationMode == SimulationMode.SYNCHRONOUS:
-            self.createCogmodAgentSynchronousMode()
-            # self.createActorAgentsSynchronousMode()
-            self.world.tick()
-        
-        for agent in self.cogmod_agent_list:
-            print(f'agent : {agent}')
-            self.visualizer.trackAgentOnTick(agent)
+            pass
+        else:
+            raise Exception(f"Simulation mode {self.simulationMode} not supported")
 
-        onTickers = [self.visualizer.onTick, self.onTick]
+
+        # self.SetSpectator(self.cogmodAgent.get_vehicle().get_location(), 60)
+
+        onTickers = [self.ScenarioState, self.dataCollectorOnTick,  self.onTick]
         onEnders = [self.onEnd]
         self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
-
-        self.simulator.run(maxTicks)
-
-        # try: 
-        # except Exception as e:
-        #     self.logger.exception(e)
+        self.simulator.run(maxTicks=maxTicks)
+        
         pass
 
+    def ScenarioState(self, world_snapshot):
+        self.scenario_state = self.checkScenarioState(self.cogmodAgent, 
+                                                    self.actorAgent,
+                                                    self.triggerDistance)
 
-    def createActorAgentsAsynchronousMode(self):
-        for i in range(self.number_of_actor_agents):
-            trajectory = self.actor_trajectory_list[i]
-            spawn_point = trajectory[0].first
-            vehicle = self.vehicleFactory.spawn(spawnPoint=spawn_point)
-            if vehicle is None:
-                self.logger.error("Could not spawn a vehicle")
-                exit("cannot spawn a vehicle")
-                return
-            else:
-                self.logger.info(f"successfully spawn vehicle {vehicle.id} at {spawn_point.location.x, spawn_point.location.y, spawn_point.location.z}")
-            self.vehicle_list.append(vehicle)
+    def dataCollectorOnTick(self, world_snapshot):
 
-            actor_agent = self.vehicleFactory.createActorAgent(id=len(self.vehicle_list),
-                                                               vehicle=vehicle, 
-                                                               trajectory=trajectory)
-            self.actor_agent_list.append(actor_agent)
+        scenario_state = self.scenario_state
+
+        if scenario_state == ScenarioState.PENDING:
+            # self.logger.info("Scenario pending")
+            # self.data_collector.initDataDict()
+            self.data_collector.collectStats(world_snapshot, 
+                                             self.cogmodAgent,
+                                             self.actorAgent,
+                                             self.episode)
+            return 
+        elif scenario_state == ScenarioState.START:
+            # self.data_collector.initDataDict()
+            self.data_collector.collectStats(world_snapshot, 
+                                             self.cogmodAgent,
+                                             self.actorAgent,
+                                             self.episode)
+            self.logger.info("Scenario started")
+        elif scenario_state == ScenarioState.RUNNING:
+            self.data_collector.collectStats(world_snapshot, 
+                                             self.cogmodAgent,
+                                             self.actorAgent,
+                                             self.episode)
+            # self.logger.info("Scenario running")
+        elif scenario_state == ScenarioState.END:
+            self.data_collector.collectStats(world_snapshot,
+                                             self.cogmodAgent,
+                                             self.actorAgent,
+                                             self.episode)
+            self.data_collector.updateTrajectoryDF()
+            self.logger.info("Scenario ended")
+        elif scenario_state == ScenarioState.DISCARD:
+            self.logger.info("Scenario discarded")
             pass
-        pass
-
-    
-
-    def createCogmodAgentAsynchronousMode(self):       
-
-        for i in range(self.number_of_cogmod_agents):
-            spawn_point = self.cogmod_agent_parameter_list[i]['spawn_point']
-            destination_point = self.cogmod_agent_parameter_list[i]['destination_point']
-            driver_profile = self.cogmod_agent_parameter_list[i]['driver_profile']
-           
-            # spawn the vehicle in the simulator
-            vehicle = self.vehicleFactory.spawn(spawn_point)
-            if vehicle is None:
-                self.logger.error("Could not spawn a vehicle")
-                exit("cannot spawn a vehicle")
-                return
-            else:
-                self.logger.info(f"successfully spawn vehicle {vehicle.id} at {spawn_point.location.x, spawn_point.location.y, spawn_point.location.z}")
             
-
-            self.vehicle_list.append(vehicle)
-
-            # create the vehicle agent
-            vehicleAgent = self.vehicleFactory.createCogModAgent(id=i,
-                                                                 vehicle=vehicle,
-                                                                 destinationPoint=destination_point,
-                                                                 driver_profile=driver_profile)
-                                                                 
-            self.cogmod_agent_list.append(vehicleAgent)
-            pass
-
         pass
 
+    def onTick(self, world_snapshot):
 
-    def createActorAgentsSynchronousMode(self):
-        batch = []
-        for i in range(self.number_of_actor_agents):
-            trajectory = self.actor_trajectory_list[i]
-            spawn_point = trajectory[0][0]
-            spawn_command = self.vehicleFactory.spawn_command(spawnPoint=spawn_point)
-            batch.append(spawn_command)
-            pass
+        scenario_state = self.scenario_state
 
-        results = self.client.apply_batch_sync(batch, True)
+        if scenario_state == ScenarioState.PENDING or \
+            scenario_state == ScenarioState.START or \
+            scenario_state == ScenarioState.RUNNING:
 
-        for i in range(len(results)):
-            result = results[i]
-            if not result.error:
-                vehicle_actor = self.world.get_actor(result.actor_id)
-                actor_agent = self.vehicleFactory.createActorAgent(id=len(self.vehicle_list),
-                                                                   vehicle=vehicle_actor,
-                                                                   trajectory=self.actor_trajectory_list[i])
-                self.vehicle_list.append(vehicle_actor)
-                self.actor_agent_list.append(actor_agent)
-                pass
-            else:
-                exit(f"failed to spawn vehicle {i}")
-            pass
-        pass
+            cogomd_vehicle = self.cogmodAgent.get_vehicle()
+            actor_vehicle = self.actorAgent.get_vehicle()
 
-    # In the synchronous mode, the spawn command are applied in batch
-    def createCogmodAgentSynchronousMode(self):       
-        batch = []
-        for i in range(self.number_of_cogmod_agents):
-            spawn_point = self.cogmod_agent_parameter_list[i]['spawn_point']
+            actor_speed = self.actorAgent.get_vehicle().get_velocity().length()
+            cogmod_speed = self.cogmodAgent.get_vehicle().get_velocity().length()
+
+            print(f"Actor speed {actor_speed} Cogmod speed {cogmod_speed}")
+
+            self.SetSpectator(cogomd_vehicle.get_location(), camera_angle, 60)
+
+            # self.logger.info(f"Cogmod vehicle location {cogomd_vehicle.get_location()}")
+            # self.logger.info(f"Actor vehicle location {actor_vehicle.get_location()}")
+
+            distance = cogomd_vehicle.get_location().distance(actor_vehicle.get_location())
             
-            # creating the vehicle spawning command 
-            spawn_command = self.vehicleFactory.spawn_command(spawn_point)
-            batch.append(spawn_command)
+            if distance > self.triggerDistance:
+                super().onTick(world_snapshot)
+            
+            else:
+                actor_control = self.actorAgent.add_emergency_stop(carla.VehicleControl())
+                actor_vehicle.apply_control(actor_control)
+                cogmod_control = self.cogmodAgent.run_step()
+                cogomd_vehicle.apply_control(cogmod_control)
+        if scenario_state == ScenarioState.END or \
+            scenario_state == ScenarioState.DISCARD:
+            # restart the scenario
+            self.onEnd()
+            self.world.wait_for_tick()
+            
+            self.restart_scenario()
+
             pass
 
-        # applying all command togather 
-        results = self.client.apply_batch_sync(batch, True)
-        # print(f'results : {results}')
+    def checkScenarioState(self, cogmod_agent, actor_agent, trigger_distance):
+        
+        actor_speed_threshold = 6
+        cogmod_speed_threshold = 8
+        start_distance_threshold = 1
 
-        for i in range(len(results)):
-            if not results[i].error:
-                print(f"successfully spawn vehicle {results[i].actor_id}")
-                vehicle_actor = self.world.get_actor(results[i].actor_id)
-                destination_point = self.cogmod_agent_parameter_list[i]['destination_point']
-                driver_profile = self.cogmod_agent_parameter_list[i]['driver_profile']
-                vehicleAgent = self.vehicleFactory.createCogModAgent(id=vehicle_actor.id,
-                                                                     vehicle=vehicle_actor,
-                                                                     destinationPoint=destination_point,
-                                                                     driver_profile=driver_profile) 
-                
-                self.vehicle_list.append(vehicle_actor)                      
-                self.cogmod_agent_list.append(vehicleAgent)
-            else:
-                exit(f"failed to spawn vehicle {i}")
-                return
-        pass
-            
-    def updateVehiclesSynchoronousMode(self, world_snapshot):
-        batch = []
-        if len(self.vehicle_list) == 0:
-            self.logger.warn(f"No vehicle to update")
-            exit()
-            return
+        updated_threshold = trigger_distance + start_distance_threshold
 
-        agent_to_remove = []
-        for agent in self.cogmod_agent_list:
-            if agent.is_done():
-                agent_to_remove.append(agent)
-            else:
-                control = agent.update_agent(self.cogmod_agent_list)
-                if control is not None:
-                    batch.append(carla.command.ApplyVehicleControl(agent.vehicle.id, control))
+        actor_speed = actor_agent.get_vehicle().get_velocity().length()
+        cogmod_speed = cogmod_agent.get_vehicle().get_velocity().length()
 
-        split_index = len(batch)
+        actor_location = actor_agent.get_vehicle().get_location()
+        cogmod_location = cogmod_agent.get_vehicle().get_location()
 
-        for agent in agent_to_remove:
-            destroy_command = carla.command.DestroyActor(agent.vehicle.id)
-            batch.append(destroy_command)
-            
-        results = self.client.apply_batch_sync(batch, True)
-        for i in range(split_index, len(results)):
-            print('destroy agent ')
-            self.destroyAgent(self.cogmod_agent_list[i])
+        # if scneario pending: when the simulation started but the cogmod 
+        # speed and actor speed is below threshold, and distance is greater 
+        # than trigger distance 
+
+        if self.scenario_state == ScenarioState.PENDING:
+            distance = actor_location.distance(cogmod_location)
+            #  if distance is in trigger distance and 
+            #  both actor and cogmod speed is above threshold, start the scenario
+            if distance < updated_threshold and \
+                actor_speed >= actor_speed_threshold and \
+                    cogmod_speed >= cogmod_speed_threshold:
+                    self.scenario_state = ScenarioState.START
+                    return self.scenario_state
+            # if distance is in trigger distance and
+            #  either actor or cogmod speed is below threshold, 
+            # discard the scenario
+            elif distance < updated_threshold and \
+                (actor_speed < actor_speed_threshold or cogmod_speed < cogmod_speed_threshold):
+                    self.scenario_state = ScenarioState.DISCARD
+                    return self.scenario_state
             pass
+
+        elif self.scenario_state == ScenarioState.DISCARD or \
+             self.scenario_state == ScenarioState.END:
+            #  self.scenario_state = ScenarioState.PENDING
+             return self.scenario_state
+        
+        elif self.scenario_state == ScenarioState.RUNNING:
+            rounded_actor_speed = int(actor_speed)
+            rounded_cogmod_speed = int(cogmod_speed)
+            if rounded_actor_speed == 0 and rounded_cogmod_speed == 0:
+                self.scenario_state = ScenarioState.END
+                return self.scenario_state
+        elif self.scenario_state == ScenarioState.START:
+            self.scenario_state = ScenarioState.RUNNING
+            return self.scenario_state
+        # self.logger.info(f"speed Cogmod: {round(cogmod_speed, 2) }, Actor: {round(actor_speed, 2)}")
+        return self.scenario_state
         pass
-
-
-    def updateVehiclesAsynchoronousMode(self, world_snapshot):
-        if len(self.vehicle_list) == 0:
-            self.logger.warn(f"No vehicle to update")
-            exit()
-            return
-
-        agent_to_remove = []
-        for agent in self.cogmod_agent_list:
-            if agent.is_done():
-                agent_to_remove.append(agent)
-            else:
-                control = agent.update_agent(self.cogmod_agent_list)
-                if control is not None:
-                    agent.vehicle.apply_control(control)
-
-        for agent in agent_to_remove:
-            self.destroyAgent(agent)
-            
-  
-        pass
-
-

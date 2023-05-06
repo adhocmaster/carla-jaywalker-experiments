@@ -7,7 +7,7 @@ PROJECT_DIR = 'C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\
 # PROJECT_DIR = 'C:/Users/abjawad/Documents/GitHub/drone-dataset-tools/src/highD_code'
 
 # Path for the HighD dataset  
-DATA_DIRECTORY = 'C:\\Users\\abjawad\\Documents\\GitHub\\drone-dataset-tools\\data\\highD_dataset'
+DATA_DIRECTORY = 'D:\\highD_data\\highD_dataset'
 # DATA_DIRECTORY = "C:/Users/abjawad/Documents/GitHub/drone-dataset-tools/data/highD_dataset"
 
 # Path for the output directory
