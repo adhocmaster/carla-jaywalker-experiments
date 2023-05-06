@@ -3,16 +3,16 @@
 
 # Directory of the project (path for the highD_tools folder)
 
-PROJECT_DIR = 'C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools'
+PROJECT_DIR = r'C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools'
 
 # Path for the HighD dataset  
-DATA_DIRECTORY = 'C:\\Users\\abjaw\\Documents\\GitHub\\drone-dataset-tools\\data\\highD_dataset'
+DATA_DIRECTORY = r'C:\\Users\\abjaw\\Documents\\GitHub\\drone-dataset-tools\\data\\highD_dataset'
 
 # Path for the output directory
-OUTPUT_DIRECTORY = "C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\output"
+OUTPUT_DIRECTORY = r"C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\output"
 
 # Path for the dill directory
-DILLDIR = "C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\dill"
+DILLDIR = r"C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\dill"
 
 
 

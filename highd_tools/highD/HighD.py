@@ -4,7 +4,7 @@ import pandas as pd
 from .DataContainer import DataContainer
 from .Visual import Visualizer
 from .ManeuverFilter import *
-from .config import *
+from config import *
 from .HighDStats import HighDStats
 
 class HighD:

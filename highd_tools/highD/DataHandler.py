@@ -5,7 +5,7 @@
 
 from .DataContainer import DataContainer
 from .HighD import HighD
-from .config import *
+from config import *
 import pandas as pd
 import cv2
 import os
