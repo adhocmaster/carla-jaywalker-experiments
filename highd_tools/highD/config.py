@@ -1,27 +1,24 @@
 # This is the settings file for the program
 # Set the directory addresses accordingly
 
-# Directory of the project (path for the highD_code folder)
-# C:\Users\abjawad\Documents\GitHub\cogmod-human-driver-model\highd_tools\highd_tools
-PROJECT_DIR = 'C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\highd_tools'
-# PROJECT_DIR = 'C:/Users/abjawad/Documents/GitHub/drone-dataset-tools/src/highD_code'
+# Directory of the project (path for the highD_tools folder)
+
+PROJECT_DIR = 'C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools'
 
 # Path for the HighD dataset  
-DATA_DIRECTORY = 'D:\\highD_data\\highD_dataset'
-# DATA_DIRECTORY = "C:/Users/abjawad/Documents/GitHub/drone-dataset-tools/data/highD_dataset"
+DATA_DIRECTORY = 'C:\\Users\\abjaw\\Documents\\GitHub\\drone-dataset-tools\\data\\highD_dataset'
 
 # Path for the output directory
-OUTPUT_DIRECTORY = "C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\highd_tools\\output"
+OUTPUT_DIRECTORY = "C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\output"
 
-# dillDir = "C:/Users/abjaw/Documents/GitHub/drone-dataset-tools/output/dill"
-# outputDir = "C:/Users/abjaw/Documents/GitHub/drone-dataset-tools/output"
+# Path for the dill directory
+DILLDIR = "C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\dill"
 
 
 
 #  scale factor for drawing vehicles on the highway image 
 #  found in the provided code from highD dataset
 
-# SCALE_FACTOR = 4 * 0.10106
 
 
 
