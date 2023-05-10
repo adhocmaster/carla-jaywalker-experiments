@@ -19,76 +19,36 @@ class FollowType(Enum):
     TRUCK_TRUCK = 4
     
 
-def find_vehicle_following_meta(meta_data,
-                                data,
-                                ego_type,
-                                preceding_type,
-                                thw_lower_bound=0,
-                                thw_upper_bound=6,
-                                min_duration=-1,
-                                distance_threshold=100):
-    
-    car_following_meta = {'ego_id': [],
-                          'preceding_id': [],
-                          'start_frame': [],
-                          'end_frame': []}
-    
-        
+def find_vehicle_following_meta(meta_data, data, ego_type, preceding_type, thw_lower_bound=0, thw_upper_bound=6, min_duration=-1, distance_threshold=100):
+    car_following_meta = {'ego_id': [], 'preceding_id': [], 'start_frame': [], 'end_frame': []}
+
     all_ego_agent_id = set(meta_data[meta_data['class'] == ego_type]['id'].tolist())
     all_preceding_agent_id = set(meta_data[meta_data['class'] == preceding_type]['id'].tolist())
 
-    frame_threshold = 25 * min_duration
-    if min_duration == -1:
-            frame_threshold = 2
+    frame_threshold = 25 * min_duration if min_duration != -1 else 2
 
-    for id in all_ego_agent_id:
-            # filter all frame with id
-            all_frames_with_agent = data[data['id'] == id]
-            agent_list = all_frames_with_agent['precedingId'].tolist()
-            unique_agent_list = list(set(agent_list) - set([0]))
-            unique_preceding_agent_list = list(set(unique_agent_list) & all_preceding_agent_id)
-            for uAgent in unique_preceding_agent_list:
-                    vehicle_follow_frames = all_frames_with_agent[all_frames_with_agent['precedingId'] == uAgent]
-                    thw = vehicle_follow_frames['thw'].tolist()
-                    min_thw = min(thw)
-                    max_thw = max(thw)
-                    initial_distance, initial_velocity = find_distance_velocity(data, id, uAgent, vehicle_follow_frames['frame'].iloc[0])
-                    
-                    # get the class of id from meta data
-                    ego_type = meta_data[meta_data['id'] == id]['class'].iloc[0]
-                    preceding_type = meta_data[meta_data['id'] == uAgent]['class'].iloc[0]
+    for ego_id in all_ego_agent_id:
+        all_frames_with_agent = data[data['id'] == ego_id]
+        unique_preceding_agent_list = list((set(all_frames_with_agent['precedingId'].unique()) & all_preceding_agent_id) - {0})
 
-                    # print('initial distance: ', initial_distance, initial_velocity, ego_type, preceding_type)
-                    if min_thw >= thw_lower_bound and \
-                        max_thw <= thw_upper_bound and \
-                            len(vehicle_follow_frames) >= frame_threshold and \
-                                initial_distance >= distance_threshold:
-                            car_following_meta['ego_id'].append(id)
-                            car_following_meta['preceding_id'].append(uAgent)
-                            car_following_meta['start_frame'].append(vehicle_follow_frames['frame'].iloc[0])
-                            car_following_meta['end_frame'].append(vehicle_follow_frames['frame'].iloc[-1])
-            
+        for preceding_id in unique_preceding_agent_list:
+            vehicle_follow_frames = all_frames_with_agent[all_frames_with_agent['precedingId'] == preceding_id]
+            min_thw, max_thw = vehicle_follow_frames['thw'].min(), vehicle_follow_frames['thw'].max()
+
+            # Compute initial distance and velocity difference directly
+            initial_frame = vehicle_follow_frames['frame'].iloc[0]
+            ego_track = data[(data['id'] == ego_id) & (data['frame'] == initial_frame)].iloc[0]
+            preceding_track = data[(data['id'] == preceding_id) & (data['frame'] == initial_frame)].iloc[0]
+            distance = np.sqrt((ego_track['x'] - preceding_track['x']) ** 2 + (ego_track['y'] - preceding_track['y']) ** 2)
+            del_v = np.sqrt(ego_track['xVelocity'] ** 2 + ego_track['yVelocity'] ** 2) - np.sqrt(preceding_track['xVelocity'] ** 2 + preceding_track['yVelocity'] ** 2)
+
+            if thw_lower_bound <= min_thw <= thw_upper_bound and len(vehicle_follow_frames) >= frame_threshold and distance >= distance_threshold:
+                car_following_meta['ego_id'].append(ego_id)
+                car_following_meta['preceding_id'].append(preceding_id)
+                car_following_meta['start_frame'].append(initial_frame)
+                car_following_meta['end_frame'].append(vehicle_follow_frames['frame'].iloc[-1])
+
     return car_following_meta
-
-def find_distance_velocity(tracks, ego_id, preceding_id, frame):
-
-    ego_track = tracks[(tracks['id'] == ego_id) & (tracks['frame'] == frame)]
-    preceding_track = tracks[(tracks['id'] == preceding_id) & (tracks['frame'] == frame)]
-
-    ego_x = ego_track['x'].iloc[0]
-    ego_y = ego_track['y'].iloc[0]
-    preceding_x = preceding_track['x'].iloc[0]
-    preceding_y = preceding_track['y'].iloc[0]
-
-    ego_xVelocity = ego_track['xVelocity'].iloc[0]
-    ego_yVelocity = ego_track['yVelocity'].iloc[0]
-    preceding_xVelocity = preceding_track['xVelocity'].iloc[0]
-    preceding_yVelocity = preceding_track['yVelocity'].iloc[0]
-
-    del_v = np.sqrt(ego_xVelocity**2 + ego_yVelocity**2) - np.sqrt(preceding_xVelocity**2 + preceding_yVelocity**2)
-    distance = np.sqrt((ego_x - preceding_x)**2 + (ego_y - preceding_y)**2)
-    
-    return distance, del_v
 
 def find_car_following(meta_data, 
                        data, 

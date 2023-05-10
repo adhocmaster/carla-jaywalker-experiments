@@ -6,7 +6,7 @@
 PROJECT_DIR = r'C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools'
 
 # Path for the HighD dataset  
-DATA_DIRECTORY = r'C:\\Users\\abjaw\\Documents\\GitHub\\drone-dataset-tools\\data\\highD_dataset'
+DATA_DIRECTORY = r'C:\\Users\\abjaw\\Documents\\GitHub\\highD-dataset\\Python\\data'
 
 # Path for the output directory
 OUTPUT_DIRECTORY = r"C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\output"

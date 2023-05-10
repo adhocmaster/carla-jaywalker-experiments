@@ -21,51 +21,48 @@ class HighDStats():
         # Create a title for the plot based on the scenario information
         title = f"Scenario {ego_id} - {preceding_id} - {end_frame - start_frame}"
 
-        # Initialize a dictionary to hold the data to plot
-        plot_dict = {
-            'frame': [],
-            'ego_speed': [],
-            'preceding_speed': [],
-            'relative_speed': [],
-            'relative_distance': [],
-            'ttc_ego': [],
-            'thw_ego': [],
-            'dhw_ego': [],
-        }
+        ego_tracks = tracks.loc[(tracks['id'] == ego_id) & (tracks['frame'] >= start_frame) & (tracks['frame'] < end_frame)]
+        preceding_tracks = tracks.loc[(tracks['id'] == preceding_id) & (tracks['frame'] >= start_frame) & (tracks['frame'] < end_frame)]
 
-        # Loop through each frame in the scenario and extract relevant data
-        for frame in range(start_frame, end_frame):
-            ego_track = tracks.loc[(tracks['id'] == ego_id) & (tracks['frame'] == frame)]
-            preceding_track = tracks.loc[(tracks['id'] == preceding_id) & (tracks['frame'] == frame)]
+        # Calculate speeds and distances
+        ego_speed = np.abs(ego_tracks['xVelocity'].values)
+        preceding_speed = np.abs(preceding_tracks['xVelocity'].values)
+        relative_speed = ego_speed - preceding_speed
 
-            ego_speed = abs(ego_track['xVelocity'].values[0])
-            preceding_speed = abs(preceding_track['xVelocity'].values[0])
-            relative_speed = ego_speed - preceding_speed
+        ego_xy = ego_tracks[['x', 'y']].values
+        preceding_xy = preceding_tracks[['x', 'y']].values
+        relative_distance = np.sqrt(np.sum((ego_xy - preceding_xy)**2, axis=1))
 
-            ego_x, ego_y = ego_track['x'].values[0], ego_track['y'].values[0]
-            preceding_x, preceding_y = preceding_track['x'].values[0], preceding_track['y'].values[0]
-            relative_distance = np.sqrt((ego_x - preceding_x)**2 + (ego_y - preceding_y)**2)
+        ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
 
-            ttc_ego, thw_ego, dhw_ego = ego_track[['ttc', 'thw', 'dhw']].values[0]
+        # Create plot dataframe
+        plot_df = pd.DataFrame({
+            'frame': np.arange(start_frame, end_frame),
+            'ego_speed': ego_speed,
+            'preceding_speed': preceding_speed,
+            'relative_speed': relative_speed,
+            'relative_distance': relative_distance,
+            'ttc_ego': 1 / ttc_ego,
+            'thw_ego': thw_ego,
+            'dhw_ego': dhw_ego,
+        })
 
-            # Add the extracted data to the plot_dict
-            plot_dict['frame'].append(frame)
-            plot_dict['ego_speed'].append(ego_speed)
-            plot_dict['preceding_speed'].append(preceding_speed)
-            plot_dict['relative_speed'].append(relative_speed)
-            plot_dict['relative_distance'].append(relative_distance)
-            plot_dict['ttc_ego'].append(1 / ttc_ego)
-            plot_dict['thw_ego'].append(thw_ego)
-            plot_dict['dhw_ego'].append(dhw_ego)
-
-        # Convert the plot_dict to a dataframe for plotting
-        plot_df = pd.DataFrame(plot_dict)
+        # Create a 4-row grid for the plots
+        fig, axs = plt.subplots(1, 4, figsize=(20, 5))
 
         # Create a subplot for each type of data to plot, and set the titles
-        plot_df.plot(x='frame', y=['ego_speed', 'preceding_speed'], title=title)
-        plot_df.plot(x='frame', y=['relative_speed'], title=title)
-        plot_df.plot(x='frame', y=['relative_distance', 'dhw_ego'], title=title)
-        plot_df.plot(x='frame', y=['ttc_ego', 'thw_ego'], title=title)
+        plot_df.plot(x='frame', y=['ego_speed', 'preceding_speed'], ax=axs[0], title=title)
+        plot_df.plot(x='frame', y=['relative_speed'], ax=axs[1], title=title)
+        plot_df.plot(x='frame', y=['relative_distance', 'dhw_ego'], ax=axs[2], title=title)
+        plot_df.plot(x='frame', y=['ttc_ego', 'thw_ego'], ax=axs[3], title=title)
+
+        # Adjust the spacing between the subplots
+        plt.subplots_adjust(hspace=0.5)
+
+        # Show the plot
+        plt.show()
+
+
 
 
     def nFrames_vehicle_follow(self, follow_meta):

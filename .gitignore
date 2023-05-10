@@ -118,3 +118,4 @@ dmypy.json
 # logs/*
 dill/*
 highd_tools/dill/*
+highd_tools/output/*
