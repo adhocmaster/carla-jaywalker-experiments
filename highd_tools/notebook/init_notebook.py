@@ -1,23 +1,22 @@
+import os, sys
+
 # This is the settings file for the program
 # Set the directory addresses accordingly
 
-# Directory of the project (path for the highD_code folder)
-PROJECT_DIR = 'C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-driver-behavior-model\\highd_tools'
-# PROJECT_DIR = 'C:/Users/abjawad/Documents/GitHub/drone-dataset-tools/src/highD_code'
+# Directory of the project (path for the highD_tools folder)
 
-# Path for the HighD dataset 
+PROJECT_DIR = r'C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools'
 
-DATA_DIRECTORY = 'D:\\highD_data\\highD_dataset'
-# DATA_DIRECTORY = "C:/Users/abjawad/Documents/GitHub/drone-dataset-tools/data/highD_dataset"
+# Path for the HighD dataset  
+DATA_DIRECTORY = r'C:\\Users\\abjaw\\Documents\\GitHub\\highD-dataset\\Python\\data'
 
 # Path for the output directory
-OUTPUT_DIRECTORY = "C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\highd_tools\\output"
+OUTPUT_DIRECTORY = r"C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\output"
 
-# dillDir = "C:/Users/abjaw/Documents/GitHub/drone-dataset-tools/output/dill"
-# outputDir = "C:/Users/abjaw/Documents/GitHub/drone-dataset-tools/output"
+# Path for the dill directory
+DILLDIR = r"C:\\Users\\abjaw\\Documents\\GitHub\\CogMod-driver-behavior-model\\highd_tools\\dill"
 
 
-import os, sys
 
 currentFolder = os.path.abspath('')
 try:
