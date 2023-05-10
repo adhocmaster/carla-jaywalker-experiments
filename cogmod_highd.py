@@ -8,7 +8,7 @@ from research import ResearchFactory
 def ResearchCogMod():
 
 
-    max_ticks = 30000
+    max_ticks = 100000
     host = "127.0.0.1"
     port = 2000
     timeout=10

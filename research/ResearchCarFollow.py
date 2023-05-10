@@ -34,7 +34,10 @@ class FilterCarFollow():
                                                                  distance_threshold=self.distance_threshold)
         
         self.car_car_follow = self.follow_meta[self.follow_meta['followType'] == FollowType.CAR_CAR]
-        
+    
+    def get_filter_criteria(self):
+        return self.car_follow_settings
+    
     def get_car_car_follow(self):
         return self.car_car_follow
     
@@ -46,7 +49,7 @@ class FilterCarFollow():
 class DriverModifier():
 
     @staticmethod
-    def change_cogmod_settings_start_simulation(prev_cogmod_settings, ego_agent_df):
+    def driver_settings_at_scenario_start(prev_cogmod_settings, ego_agent_df):
         cogmod_settings = prev_cogmod_settings
         velocity_df = np.sqrt(ego_agent_df['xVelocity']**2 + ego_agent_df['yVelocity']**2)
 
@@ -80,12 +83,15 @@ class DriverModifier():
         return cogmod_settings
 
     @staticmethod
-    def change_cogmod_settings_pending_simulation(preceding_agent, scenario_trigger_distance, base_distance, cogmod_settings):
+    def driver_settings_at_vehicle_spawn(preceding_agent, spawn_distance, cogmod_settings, ego_agent_df):
+        
+        velocity_df = np.sqrt(ego_agent_df['xVelocity']**2 + ego_agent_df['yVelocity']**2)
+        
         map = preceding_agent.vehicle.get_world().get_map()
         preceding_agent_location = preceding_agent.vehicle.get_location()
         nearest_waypoint_preceding_agent = map.get_waypoint(preceding_agent_location, project_to_road=True)
 
-        distance = scenario_trigger_distance + base_distance
+        distance = spawn_distance
         spawn_waypoint = nearest_waypoint_preceding_agent.previous(distance)[0]
         spawn_transform = spawn_waypoint.transform
         spawn_location = spawn_transform.location
@@ -98,12 +104,13 @@ class DriverModifier():
         cogmod_settings['destination'] = destination_location
 
         lane_following_subtask = cogmod_settings['driver_profile']['subtasks_parameters']['lane_following']
-        lane_following_subtask['desired_velocity'] = 40
+        lane_following_subtask['desired_velocity'] = velocity_df.max()
         lane_following_subtask['safe_time_headway'] = 0
         lane_following_subtask['max_acceleration'] = 10
         lane_following_subtask['comfort_deceleration'] = 1
 
         return cogmod_settings
+    
 
 
 class AgentViz():
@@ -158,7 +165,6 @@ class ResearchCarFollow(BaseCogModResearch):
         self.car_car_follow = self.filterCarFollow.get_car_car_follow()
         self.tracks = self.filterCarFollow.get_tracks()
         self.stable_height_dict = HighD_Processor.read_stable_height_dict(self.stableHeightPath)
-        print("car_car_follow length : ", len(self.car_car_follow))
         
         self.left_lane_id = set(self.laneID['left_lane'])
         self.right_lane_id = set(self.laneID['right_lane'])
@@ -172,6 +178,8 @@ class ResearchCarFollow(BaseCogModResearch):
             simulationMode=simulationMode,
             showSpawnPoints=True
         )
+        
+        self.logger.info(f"nCarFollow {len(self.car_car_follow)}, filter criteria {self.filterCarFollow.get_filter_criteria()}")
         
         self.bug_list = [] # 19
         self.scenario_list_df = [i for i in range(0, len(self.car_car_follow))] 
@@ -198,6 +206,7 @@ class ResearchCarFollow(BaseCogModResearch):
         
         all_frames = self.tracks[self.tracks['frame'].between(start_frame, end_frame+1)]
         trigger_distance = self.get_trigger_distance(df)
+        spawn_distance = self.base_distance + trigger_distance
         
         preceding_agent_df = all_frames[(all_frames['id'] == preceding_id)]
         ego_agent_df = all_frames[(all_frames['id'] == ego_id)]
@@ -209,14 +218,19 @@ class ResearchCarFollow(BaseCogModResearch):
         self.world.tick()
         
         cogmod_modifier = DriverModifier()
+        
+        
+        
         self.current_cogmod_agent_settings = self.baseCogmodAgentSettings
-        self.current_cogmod_agent_settings = cogmod_modifier.change_cogmod_settings_pending_simulation(preceding_agent,
-                                                                                                    trigger_distance,
-                                                                                                    base_distance=self.base_distance,
-                                                                                                    cogmod_settings=self.current_cogmod_agent_settings)
+        self.current_cogmod_agent_settings = cogmod_modifier.driver_settings_at_vehicle_spawn(preceding_agent,
+                                                                                              spawn_distance=spawn_distance,
+                                                                                              cogmod_settings=self.current_cogmod_agent_settings,
+                                                                                              ego_agent_df=ego_agent_df,)
         
         ego_agent = self.createCogModAgent(self.current_cogmod_agent_settings)
         
+        subtask = self.current_cogmod_agent_settings['driver_profile']['subtasks_parameters']['lane_following']
+        self.logger.info(f'Spawn Setting {subtask}')
         self.agent_list = {'ego': ego_agent, 'preceding': preceding_agent}
         
         self.preceding_agent_df = preceding_agent_df
@@ -334,7 +348,7 @@ class ResearchCarFollow(BaseCogModResearch):
                 self.frame_tracker = tick
 
                 self.scenario_status = ScenarioState.START
-                cogmod_settings = DriverModifier.change_cogmod_settings_start_simulation(self.current_cogmod_agent_settings,
+                cogmod_settings = DriverModifier.driver_settings_at_scenario_start(self.current_cogmod_agent_settings,
                                                                                self.ego_agent_df)
                 subtask = cogmod_settings['driver_profile']['subtasks_parameters']['lane_following']
                 self.logger.info(f'new setting {subtask}')

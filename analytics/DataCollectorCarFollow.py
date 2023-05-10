@@ -19,7 +19,7 @@ class DataCollectorCarFollow():
         self.trajectory_DF = pd.DataFrame()
         self.initDataDict()
 
-        self.logger.info("DataCollector car follow initialized")
+        self.logger.info("DataCollector CogMod Initialized")
 
 
     def initDataDict(self):
@@ -72,7 +72,6 @@ class DataCollectorCarFollow():
         self.statDict["a_x"].append(actor_agent.get_vehicle().get_location().x)
         self.statDict["a_y"].append(actor_agent.get_vehicle().get_location().y)
         self.statDict["a_speed"].append(actor_agent.get_velocity().length())
-
         pass
     
     def updateTrajectoryDF(self):

@@ -61,7 +61,7 @@ scenarios = {
             'time_duration': 5,
             'distance_threshold': 50,
         },
-        "base_distance": 500,
+        "base_distance": 600,
         "cogmod_agent": {
             "source": None,
             "destination": None,
