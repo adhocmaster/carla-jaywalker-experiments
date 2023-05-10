@@ -117,3 +117,4 @@ dmypy.json
 .vscode/settings.json
 # logs/*
 dill/*
+highd_tools/output/*
