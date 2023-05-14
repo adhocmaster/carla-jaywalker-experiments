@@ -353,20 +353,24 @@ class GIF():
         return gif_path
     
     @staticmethod
-    def create_gif_for_agent(image, tracks, agent_id, 
-                             fps=25, output_dir=None):
+    def create_gif_for_agent(image, df,
+                             fps=25, 
+                             output_dir=None):
 
-        df_ego = tracks[tracks['id'] == agent_id]
-
-        start = min(int(df_ego['initialFrame'].iloc[0]))
-        end = max(int(df_ego['finalFrame'].iloc[0]))
-
-        print(f"start: {start}, end: {end} ")
+        start = np.min(df['frame'])
+        end = np.max(df['frame'])
+        # terminate if more than one agent_id
+        if len(df['id'].unique()) > 1:
+            print('more than one agent_id in the dataframe')
+            return
+        
+        agent_id = df['id'].unique()[0]
+        print(f"agent id {agent_id} start: {start}, end: {end} total frames: {end - start} ")
         gif_name = f'agent_{agent_id}_fr_{start}_to_{end}.gif'
         images = []
 
         for i in range(start, end + 1):
-            img = GIF.draw_frame(image=image, tracks=tracks, frame_id=i,
+            img = GIF.draw_frame(image=image, tracks=df, frame_id=i,
                                         ego_id=agent_id,
                                         ego_color=(0, 255, 0))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
