@@ -306,3 +306,32 @@ def visualize_summary_statistics(tMeta, vehicle_type):
     # Adjust layout
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
+
+
+
+
+
+def combine_data(dfs):
+    combined_dfs = []
+    for df_tuple in dfs:
+        rMeta, tMeta, tracks = df_tuple # unpack tuple
+        # Merge the tracks and tMeta dataframes on the 'id' column
+        combined_df = tracks.merge(tMeta[['id', 'class', 'drivingDirection']], on='id')
+
+        # Add 'locationId' and 'id' from rMeta dataframe as new columns in combined_df
+        combined_df['locationId'] = rMeta.loc[0, 'locationId']
+        combined_df['dataset_id'] = rMeta.loc[0, 'id']
+
+        # Reorder columns in the combined_df
+        combined_df = combined_df[['dataset_id', 'locationId', 
+                                'frame', 'id', 'class', 'drivingDirection', 'laneId',
+                                'x', 'y', 'width', 'height', 'xVelocity', 'yVelocity', 
+                                'xAcceleration', 'yAcceleration', 'frontSightDistance', 'backSightDistance', 
+                                'dhw', 'thw', 'ttc', 'precedingXVelocity', 'precedingId', 'followingId', 
+                                'leftPrecedingId', 'leftAlongsideId', 'leftFollowingId', 
+                                'rightPrecedingId', 'rightAlongsideId', 'rightFollowingId']]
+        print("combined_df.shape", combined_df.shape)
+        combined_dfs.append(combined_df)
+    print("combined_df.columns", combined_df.columns)
+    
+    return combined_dfs
