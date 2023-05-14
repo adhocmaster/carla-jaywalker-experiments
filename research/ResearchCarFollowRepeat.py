@@ -33,7 +33,7 @@ class FilterCarFollow():
                                                                  time_duration=self.time_duration,
                                                                  distance_threshold=self.distance_threshold)
         
-        self.car_car_follow = self.follow_meta[self.follow_meta['followType'] == FollowType.CAR_CAR]
+        # self.car_car_follow = self.follow_meta[self.follow_meta['followType'] == FollowType.CAR_CAR]
         
     def get_car_car_follow(self):
         return self.car_car_follow

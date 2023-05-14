@@ -12,23 +12,42 @@ LC_MARGIN_SECOND = 5
 LC_MARGIN_FRAMES = int(LC_MARGIN_SECOND/TIME_STEP)
 TTC_STAR = 3
 
-class FollowType(Enum):
-    CAR_CAR = 1
-    CAR_TRUCK = 2
-    TRUCK_CAR = 3
-    TRUCK_TRUCK = 4
+class Filter():
+    # this function is used to filter out the data that is not useful for the analysis
+    # each filter name should be self explanatory and static, saying what it does
+    # the filter should be applied in the order of the function name
+    # local fucntions have underscore in the beginning of the name
+    @staticmethod
+    def filter_by_distance_between_vehicles_on_first_frame(df, distance):
+
+        all_ego_agent_id = set(df['id'].tolist())
+        all_preceding_agent_id = set(df['id'].tolist()) - all_ego_agent_id
+
+        for ego_id in all_ego_agent_id:
+            all_frames_with_agent = df[df['id'] == ego_id]
+            unique_preceding_agent_list = list((set(all_frames_with_agent['precedingId'].unique()) & all_preceding_agent_id) - {0})
+            for preceding_id in unique_preceding_agent_list:
+                vehicle_follow_frames = all_frames_with_agent[all_frames_with_agent['precedingId'] == preceding_id]
+                
+        pass
+    pass
+
     
 
-def find_vehicle_following_meta(meta_data, data, ego_type, preceding_type, thw_lower_bound=0, thw_upper_bound=6, min_duration=-1, distance_threshold=100):
+def filter_by_thw(tracks, 
+                  ego_type, preceding_type, 
+                  thw_lower_bound=0, thw_upper_bound=6, 
+                  min_duration=-1, 
+                  distance_threshold=100):
     car_following_meta = {'ego_id': [], 'preceding_id': [], 'start_frame': [], 'end_frame': []}
 
-    all_ego_agent_id = set(meta_data[meta_data['class'] == ego_type]['id'].tolist())
-    all_preceding_agent_id = set(meta_data[meta_data['class'] == preceding_type]['id'].tolist())
+    all_ego_agent_id = set(tracks[tracks['class'] == ego_type]['id'].tolist())
+    all_preceding_agent_id = set(tracks[tracks['class'] == preceding_type]['id'].tolist())
 
     frame_threshold = 25 * min_duration if min_duration != -1 else 2
 
     for ego_id in all_ego_agent_id:
-        all_frames_with_agent = data[data['id'] == ego_id]
+        all_frames_with_agent = tracks[tracks['id'] == ego_id]
         unique_preceding_agent_list = list((set(all_frames_with_agent['precedingId'].unique()) & all_preceding_agent_id) - {0})
 
         for preceding_id in unique_preceding_agent_list:
@@ -37,8 +56,8 @@ def find_vehicle_following_meta(meta_data, data, ego_type, preceding_type, thw_l
 
             # Compute initial distance and velocity difference directly
             initial_frame = vehicle_follow_frames['frame'].iloc[0]
-            ego_track = data[(data['id'] == ego_id) & (data['frame'] == initial_frame)].iloc[0]
-            preceding_track = data[(data['id'] == preceding_id) & (data['frame'] == initial_frame)].iloc[0]
+            ego_track = tracks[(tracks['id'] == ego_id) & (tracks['frame'] == initial_frame)].iloc[0]
+            preceding_track = tracks[(tracks['id'] == preceding_id) & (tracks['frame'] == initial_frame)].iloc[0]
             distance = np.sqrt((ego_track['x'] - preceding_track['x']) ** 2 + (ego_track['y'] - preceding_track['y']) ** 2)
             del_v = np.sqrt(ego_track['xVelocity'] ** 2 + ego_track['yVelocity'] ** 2) - np.sqrt(preceding_track['xVelocity'] ** 2 + preceding_track['yVelocity'] ** 2)
 
@@ -49,6 +68,39 @@ def find_vehicle_following_meta(meta_data, data, ego_type, preceding_type, thw_l
                 car_following_meta['end_frame'].append(vehicle_follow_frames['frame'].iloc[-1])
 
     return car_following_meta
+
+
+def filter_by_ttc(tracks, 
+                  ego_type, preceding_type, 
+                  ttc_lower_bound=0, ttc_upper_bound=6, 
+                  min_duration=-1):
+    car_following_meta = {'ego_id': [], 'preceding_id': [],
+                          'start_frame': [], 'end_frame': []}
+
+    # all_ego_agent_id = set(tracks[(tracks['class'] == ego_type) & (tracks['numLaneChanges'] == 0)]['id'].tolist())
+    # all_preceding_agent_id = set(tracks[(tracks['class'] == preceding_type) & (tracks['numLaneChanges'] == 0)]['id'].tolist())
+
+    all_ego_agent_id = set(tracks[tracks['class'] == ego_type]['id'].unique())
+    all_preceding_agent_id = set(tracks[tracks['class'] == preceding_type]['id'].unique())
+    frame_threshold = 25 * min_duration if min_duration != -1 else 2
+
+    for ego_id in all_ego_agent_id:
+        all_frames_with_agent = tracks[(tracks['id'] == ego_id)]
+        unique_preceding_agent_list = list((set(all_frames_with_agent['precedingId'].unique()) & all_preceding_agent_id))
+
+        for preceding_id in unique_preceding_agent_list:
+            vehicle_follow_frames = all_frames_with_agent[all_frames_with_agent['precedingId'] == preceding_id]
+            min_ttc, max_ttc = vehicle_follow_frames['ttc'].min(), vehicle_follow_frames['ttc'].max()
+            if ttc_lower_bound < min_ttc <= ttc_upper_bound and len(vehicle_follow_frames) >= frame_threshold:
+                car_following_meta['ego_id'].append(ego_id)
+                car_following_meta['preceding_id'].append(preceding_id)
+                car_following_meta['start_frame'].append(
+                    vehicle_follow_frames['frame'].iloc[0])
+                car_following_meta['end_frame'].append(
+                    vehicle_follow_frames['frame'].iloc[-1])
+
+    return car_following_meta
+
 
 def find_car_following(meta_data, 
                        data, 
@@ -197,6 +249,29 @@ def get_vehicle_class(meta_data, id):
     return meta_data[id].get('class')
 
 
+def calculate_ttc(df):
+    # Extract required information from the DataFrame
+    x_lead = df['x'] - df['width']
+    x_follow = df['x']
+    lead_length = df['width']
+    v_lead = df['precedingXVelocity']
+    v_follow = df['xVelocity']
+
+    # Calculate the numerator and denominator of the TTC formula
+    numerator = x_lead - x_follow - lead_length
+    denominator = v_follow - v_lead
+
+    # Avoid division by zero by replacing zeros in the denominator with a small value
+    denominator = np.where(denominator == 0, 1e-9, denominator)
+
+    # Calculate TTC
+    ttc = numerator / denominator
+
+    return ttc
+
+
+
+
 def get_ttc(dhw, my_speed, pred_speed):
     my_speed = abs(my_speed)
     pred_speed = abs(pred_speed)
@@ -207,211 +282,123 @@ def get_ttc(dhw, my_speed, pred_speed):
     else:
         return np.nan
 
+class LaneChange():
+    def find_lane_changes(meta_data, data):
+        """
+        Find out lane-changing situations from the dataset
 
-def find_lane_changes(meta_data, data):
-    """
-    Find out lane-changing situations from the dataset
+        :param meta_data: track meta information from highD dataset
+        :param data: track data from highD dataset
 
-    :param meta_data: track meta information from highD dataset
-    :param data: track data from highD dataset
-
-    :return: a list of dictionary with
-        sumLC: total number of lane changes
-        carLC: total number of lane changes by cars
-        truckLC: total number of lane changes by trucks
-        totalCar: total number of cars
-        totalTruck: total number of trucks
-    """
-    n_car = 0
-    n_car_lc = 0
-    n_truck = 0
-    n_truck_lc = 0
-    for i in range(0, len(data)):
-        ego_id = data[i].get('id')
-        n_lc = meta_data[ego_id].get('numLaneChanges')
-        vtype = meta_data[ego_id].get('class')
-        if vtype == "Car":
-            n_car_lc = n_car_lc + n_lc
-            n_car = n_car + 1
-        elif vtype == "Truck":
-            n_truck_lc = n_truck_lc + n_lc
-            n_truck = n_truck + 1
-        else:
-            print("vehicle class unknown")
-    n_total_lc = n_car_lc + n_truck_lc
-    lc_data = {
-        "sumLC": n_total_lc,
-        "carLC": n_car_lc,
-        "truckLC": n_truck_lc,
-        "totalCar": n_car,
-        "totalTruck": n_truck
-    }
-    return lc_data
-
-
-def get_lane_change_trajectory(meta_data, data):
-    
-    y_accel_car_LC = []
-    y_accel_truck_LC = []
-    y_accel_car_noLC = []
-    y_accel_truck_noLC = []
-    y_pos_car_LC = []
-    y_pos_car_noLC = []
-    y_pos_truck_LC = []
-    y_pos_truck_noLC = []
-    y_speed_car_LC = []
-    y_speed_car_noLC = []
-    y_speed_truck_LC = []
-    y_speed_truck_noLC = []
-    for i in range(0, len(data)):
-        ego_id = data[i].get('id')
-        n_lc = meta_data[ego_id].get('numLaneChanges')
-        vtype = meta_data[ego_id].get('class')
-        if n_lc > 0:
-            # this vehicle changes lane
-            # find lane change frame index
-            LC_index = []
-            totalFrames = len(data[i].get('laneId'))
-            lane_ids = list(data[i].get('laneId'))
-            current_lane = lane_ids[0]
-            for j in range(0, totalFrames):
-                if lane_ids[j] != current_lane:
-                    LC_index.append(j)
-                    current_lane = lane_ids[j]
-            for index in LC_index:
-                if LC_MARGIN_FRAMES < index < (totalFrames - LC_MARGIN_FRAMES):
-                    lower_bound = index - LC_MARGIN_FRAMES
-                    upper_bound = index + LC_MARGIN_FRAMES
-                    if vtype == "Car":
-                        y_accel_car_LC += list(data[i].get('yAcceleration')[lower_bound:upper_bound])
-                        y_speed_car_LC += list(data[i].get('yVelocity')[lower_bound:upper_bound])
-                        y_pos_car_LC = list(data[i].get('bbox')[:, 1][lower_bound:upper_bound])
-                        # plt.plot(data[i].get('y'))
-                        # plt.axvline(x=index)
-                        # plt.show()
-                    elif vtype == "Truck":
-                        y_accel_truck_LC += list(data[i].get('yAcceleration')[lower_bound:upper_bound])
-                        y_speed_truck_LC += list(data[i].get('yVelocity')[lower_bound:upper_bound])
-                        y_pos_truck_LC = list(data[i].get('bbox')[:, 1][lower_bound:upper_bound])
-                    else:
-                        print("vehicle class unknown")
-        else:
-            # this vehicle did not change lane
-            # find out average yAcceleration
-            # this vehicle changes lane
+        :return: a list of dictionary with
+            sumLC: total number of lane changes
+            carLC: total number of lane changes by cars
+            truckLC: total number of lane changes by trucks
+            totalCar: total number of cars
+            totalTruck: total number of trucks
+        """
+        n_car = 0
+        n_car_lc = 0
+        n_truck = 0
+        n_truck_lc = 0
+        for i in range(0, len(data)):
+            ego_id = data[i].get('id')
+            n_lc = meta_data[ego_id].get('numLaneChanges')
+            vtype = meta_data[ego_id].get('class')
             if vtype == "Car":
-                y_accel_car_noLC += list(data[i].get('yAcceleration'))
-                y_speed_car_noLC += list(data[i].get('yVelocity'))
-                # y_pos_car_noLC = list(data[i].get('y'))    # data[i].get('bbox')[0][0]
-                y_pos_car_noLC = list(data[i].get('bbox')[:, 1])    # data[i].get('bbox')[0][0]
+                n_car_lc = n_car_lc + n_lc
+                n_car = n_car + 1
             elif vtype == "Truck":
-                # if absolute value is desired >> [abs(a) for a in list(data[i].get('yAcceleration'))]
-                y_accel_truck_noLC += list(data[i].get('yAcceleration'))
-                y_speed_truck_noLC += list(data[i].get('yVelocity'))
-                # y_pos_truck_noLC = list(data[i].get('y'))
-                y_pos_truck_noLC = list(data[i].get('bbox')[:, 1])
+                n_truck_lc = n_truck_lc + n_lc
+                n_truck = n_truck + 1
             else:
                 print("vehicle class unknown")
-    lc_trajectory = {
-        "Car_yAccel_LC": y_accel_car_LC,
-        "Car_yAccel_noLC": y_accel_car_noLC,
-        "Truck_yAccel_LC": y_accel_truck_LC,
-        "Truck_yAccel_noLC": y_accel_truck_noLC,
-        "Car_ySpeed_LC": y_speed_car_LC,
-        "Car_ySpeed_noLC": y_speed_car_noLC,
-        "Truck_ySpeed_LC": y_speed_truck_LC,
-        "Truck_ySpeed_noLC": y_speed_truck_noLC,
-        "Car_yPos_LC": y_pos_car_LC,
-        "Car_yPos_noLC": y_pos_car_noLC,
-        "Truck_yPos_LC": y_pos_truck_LC,
-        "Truck_yPos_noLC": y_pos_truck_noLC
-    }
-    return lc_trajectory
+        n_total_lc = n_car_lc + n_truck_lc
+        lc_data = {
+            "sumLC": n_total_lc,
+            "carLC": n_car_lc,
+            "truckLC": n_truck_lc,
+            "totalCar": n_car,
+            "totalTruck": n_truck
+        }
+        return lc_data
 
 
-# def get_dataset_profile(recording_meta, track_meta, track):
-#     n_veh = recording_meta.get('numVehicles')
-#     n_cars = recording_meta.get('numCars')
-#     n_trucks = recording_meta.get('numTrucks')
-#     speed_limit = recording_meta.get('speedLimit')
-#     n_LC = 0
-#     n_LC_cars = 0
-#     n_LC_trucks = 0
-#     min_speed_all_array = []
-#     min_speed_cars_array = []
-#     min_speed_trucks_array = []
-#     max_speed_all_array = []
-#     max_speed_cars_array = []
-#     max_speed_trucks_array = []
-#     mean_speed_all_array = []
-#     mean_speed_cars_array = []
-#     mean_speed_trucks_array = []
-#     for i in range(0, len(track)):
-#         ego_id = track[i].get('id')
-#         n_lc = track_meta[ego_id].get('numLaneChanges')
-#         vtype = track_meta[ego_id].get('class')
-#         min_speed = track_meta[ego_id].get('minXVelocity')
-#         max_speed = track_meta[ego_id].get('maxXVelocity')
-#         mean_speed = track_meta[ego_id].get('meanXVelocity')
-#         min_speed_all_array.append(min_speed)
-#         max_speed_all_array.append(max_speed)
-#         mean_speed_all_array.append(mean_speed)
-#         if vtype == "Car":
-#             n_LC_cars = n_LC_cars + n_lc
-#             n_LC = n_LC + n_lc
-#             min_speed_cars_array.append(min_speed)
-#             max_speed_cars_array.append(max_speed)
-#             mean_speed_cars_array.append(mean_speed)
-#         elif vtype == "Truck":
-#             n_LC_trucks = n_LC_trucks + n_lc
-#             n_LC = n_LC + n_lc
-#             min_speed_trucks_array.append(min_speed)
-#             max_speed_trucks_array.append(max_speed)
-#             mean_speed_trucks_array.append(mean_speed)
-#         else:
-#             print("vehicle class unknown")
-#     min_speed_all = min(min_speed_all_array)
-#     max_speed_all = max(max_speed_all_array)
-#     mean_speed_all = statistics.mean(mean_speed_all_array)
-#     min_speed_cars = min(min_speed_cars_array)
-#     max_speed_cars = max(max_speed_cars_array)
-#     mean_sped_cars = statistics.mean(mean_speed_cars_array)
-#     min_speed_trucks = min(min_speed_trucks_array)
-#     max_speed_trucks = max(max_speed_trucks_array)
-#     mean_speed_trucks = statistics.mean(mean_speed_trucks_array)
-#     dataset_profile = {
-#         "number_of_vehicles": n_veh,
-#         "number_of_cars": n_cars,
-#         "number_of_trucks": n_trucks,
-#         "number_of_LC": n_LC,
-#         "number_of_LC_cars": n_LC_cars,
-#         "number_of_LC_trucks": n_LC_trucks,
-#         "speed_limit": speed_limit,
-#         "min_speed_all": min_speed_all,
-#         "max_speed_all": max_speed_all,
-#         "mean_speed_all": mean_speed_all,
-#         "min_speed_cars": min_speed_cars,
-#         "max_speed_cars": max_speed_cars,
-#         "mean_speed_cars": mean_sped_cars,
-#         "min_speed_trucks": min_speed_trucks,
-#         "max_speed_trucks": max_speed_trucks,
-#         "mean_speed_trucks": mean_speed_trucks
-#     }
-#     return dataset_profile
-
-
-
-
-# # else:
-# #     if data[i].get('dhw')[frame] > 0:
-# #         following_dhw.append(data[i].get('dhw')[frame])
-# #         following_ttc.append(get_ttc(data[i].get('dhw')[frame],
-# #                                      data[i].get('xVelocity')[frame],
-# #                                      data[i].get('precedingXVelocity')[frame]))
-# #     if data[i].get('thw')[frame] > 0:
-# #         following_thw.append(data[i].get('thw')[frame])
-# #     else:
-# #         following_thw.append(np.nan)
-# #     ego_speed.append(data[i].get('xVelocity')[frame])
-# #     pred_speed.append(data[i].get('precedingXVelocity')[frame])
-# # following_duration = following_duration + 1
+    def get_lane_change_trajectory(meta_data, data):
+        
+        y_accel_car_LC = []
+        y_accel_truck_LC = []
+        y_accel_car_noLC = []
+        y_accel_truck_noLC = []
+        y_pos_car_LC = []
+        y_pos_car_noLC = []
+        y_pos_truck_LC = []
+        y_pos_truck_noLC = []
+        y_speed_car_LC = []
+        y_speed_car_noLC = []
+        y_speed_truck_LC = []
+        y_speed_truck_noLC = []
+        for i in range(0, len(data)):
+            ego_id = data[i].get('id')
+            n_lc = meta_data[ego_id].get('numLaneChanges')
+            vtype = meta_data[ego_id].get('class')
+            if n_lc > 0:
+                # this vehicle changes lane
+                # find lane change frame index
+                LC_index = []
+                totalFrames = len(data[i].get('laneId'))
+                lane_ids = list(data[i].get('laneId'))
+                current_lane = lane_ids[0]
+                for j in range(0, totalFrames):
+                    if lane_ids[j] != current_lane:
+                        LC_index.append(j)
+                        current_lane = lane_ids[j]
+                for index in LC_index:
+                    if LC_MARGIN_FRAMES < index < (totalFrames - LC_MARGIN_FRAMES):
+                        lower_bound = index - LC_MARGIN_FRAMES
+                        upper_bound = index + LC_MARGIN_FRAMES
+                        if vtype == "Car":
+                            y_accel_car_LC += list(data[i].get('yAcceleration')[lower_bound:upper_bound])
+                            y_speed_car_LC += list(data[i].get('yVelocity')[lower_bound:upper_bound])
+                            y_pos_car_LC = list(data[i].get('bbox')[:, 1][lower_bound:upper_bound])
+                            # plt.plot(data[i].get('y'))
+                            # plt.axvline(x=index)
+                            # plt.show()
+                        elif vtype == "Truck":
+                            y_accel_truck_LC += list(data[i].get('yAcceleration')[lower_bound:upper_bound])
+                            y_speed_truck_LC += list(data[i].get('yVelocity')[lower_bound:upper_bound])
+                            y_pos_truck_LC = list(data[i].get('bbox')[:, 1][lower_bound:upper_bound])
+                        else:
+                            print("vehicle class unknown")
+            else:
+                # this vehicle did not change lane
+                # find out average yAcceleration
+                # this vehicle changes lane
+                if vtype == "Car":
+                    y_accel_car_noLC += list(data[i].get('yAcceleration'))
+                    y_speed_car_noLC += list(data[i].get('yVelocity'))
+                    # y_pos_car_noLC = list(data[i].get('y'))    # data[i].get('bbox')[0][0]
+                    y_pos_car_noLC = list(data[i].get('bbox')[:, 1])    # data[i].get('bbox')[0][0]
+                elif vtype == "Truck":
+                    # if absolute value is desired >> [abs(a) for a in list(data[i].get('yAcceleration'))]
+                    y_accel_truck_noLC += list(data[i].get('yAcceleration'))
+                    y_speed_truck_noLC += list(data[i].get('yVelocity'))
+                    # y_pos_truck_noLC = list(data[i].get('y'))
+                    y_pos_truck_noLC = list(data[i].get('bbox')[:, 1])
+                else:
+                    print("vehicle class unknown")
+        lc_trajectory = {
+            "Car_yAccel_LC": y_accel_car_LC,
+            "Car_yAccel_noLC": y_accel_car_noLC,
+            "Truck_yAccel_LC": y_accel_truck_LC,
+            "Truck_yAccel_noLC": y_accel_truck_noLC,
+            "Car_ySpeed_LC": y_speed_car_LC,
+            "Car_ySpeed_noLC": y_speed_car_noLC,
+            "Truck_ySpeed_LC": y_speed_truck_LC,
+            "Truck_ySpeed_noLC": y_speed_truck_noLC,
+            "Car_yPos_LC": y_pos_car_LC,
+            "Car_yPos_noLC": y_pos_car_noLC,
+            "Truck_yPos_LC": y_pos_truck_LC,
+            "Truck_yPos_noLC": y_pos_truck_noLC
+        }
+        return lc_trajectory
