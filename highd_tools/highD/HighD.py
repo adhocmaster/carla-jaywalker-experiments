@@ -56,3 +56,9 @@ class HighD:
 
     def get_combined_dataframe(self, id):
         return self.combined_dfs[id]
+
+    def get_images(self):
+        return self.images
+
+    def get_combined_dataframes(self):
+        return self.combined_dfs

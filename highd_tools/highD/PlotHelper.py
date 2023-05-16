@@ -46,3 +46,39 @@ class Histogram:
         g.set_axis_labels(xlabel if xlabel else col1, "probability")
         g.set_titles(title if title else f"Distribution of {col1} by {col2}")
         plt.show()
+
+
+
+
+
+
+
+    # @staticmethod
+    # def visualize_summary_statistics(tMeta, vehicle_type):
+    #     # Filter by vehicle type
+    #     vehicle_df = tMeta[tMeta['class'] == vehicle_type]
+
+    #     # Define the columns to analyze
+    #     columns_to_analyze = ['minDHW', 'minTHW', 'minTTC', 'minXVelocity', 'maxXVelocity', 'meanXVelocity']
+
+    #     # Set up the subplots
+    #     nplots = len(columns_to_analyze)
+    #     fig, axes = plt.subplots(2, nplots, figsize=(nplots * 4, 10))
+    #     fig.suptitle(f"Summary Statistics for {vehicle_type}s", fontsize=16)
+
+    #     # Plot box plots and histograms for each column
+    #     for i, col in enumerate(columns_to_analyze):
+    #         sns.boxplot(y=col, data=vehicle_df, ax=axes[0, i], color='royalblue')
+    #         sns.histplot(vehicle_df[col], kde=True, ax=axes[1, i], color='royalblue', alpha=0.6)
+    #         axes[1, i].set_xlabel(col)
+
+    #     # Adjust layout
+    #     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    #     plt.show()
+
+
+
+
+    
+
+

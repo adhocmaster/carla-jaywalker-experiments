@@ -319,20 +319,27 @@ class GIF():
     @staticmethod
     def create_gif_for_agent_with_target(image, tracks, 
                                          agent_id, target_id, 
-                                         fps=25, output_dir=None):
+                                         fps=25, output_dir=None, showBufferScene=False):
 
         df_ego = tracks[tracks['id'] == agent_id]
         df_target = tracks[tracks['id'] == target_id]
 
-        start = min(int(df_ego['frame'].min()), int(df_target['frame'].min()))
-        end = max(int(df_ego['frame'].max()), int(df_target['frame'].max()))
+        temp_image = copy.deepcopy(image)
+        frame_togather = tracks[(tracks['id'] == agent_id) & (tracks['precedingId'] == target_id)]['frame'].values
+
+        if showBufferScene:
+            start = min(int(df_ego['frame'].min()), int(df_target['frame'].min()))
+            end = max(int(df_ego['frame'].max()), int(df_target['frame'].max()))
+        else:
+            start = frame_togather.min()
+            end = frame_togather.max()
 
         print(f"start: {start}, end: {end} ")
         gif_name = f'ego_{agent_id}_pre_{target_id}_fr_{start}_to_{end}.gif'
         images = []
 
         for i in range(start, end + 1):
-            img = GIF.draw_frame(image=image,
+            img = GIF.draw_frame(image=temp_image,
                                         tracks=tracks,
                                         frame_id=i,
                                         ego_id=agent_id,
@@ -353,18 +360,13 @@ class GIF():
         return gif_path
     
     @staticmethod
-    def create_gif_for_agent(image, df,
-                             fps=25, 
-                             output_dir=None):
+    def create_gif_for_agent(image, df, agent_id, 
+                             fps=25, output_dir=None):
 
-        start = np.min(df['frame'])
-        end = np.max(df['frame'])
-        # terminate if more than one agent_id
-        if len(df['id'].unique()) > 1:
-            print('more than one agent_id in the dataframe')
-            return
-        
-        agent_id = df['id'].unique()[0]
+        df_ego = df[df['id'] == agent_id]
+        start = min(df_ego['frame'])
+        end = max(df_ego['frame'])
+
         print(f"agent id {agent_id} start: {start}, end: {end} total frames: {end - start} ")
         gif_name = f'agent_{agent_id}_fr_{start}_to_{end}.gif'
         images = []

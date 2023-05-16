@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
-
+import math
 class Plot():
     # the plot class does not do any filtering, it just plots the data
     @staticmethod
@@ -48,7 +48,6 @@ class Plot():
         plt.show()
 
     
-
     @staticmethod
     def plot_tracks_distributions(tracks, *columns, title,  bins=50):
         # Set up the subplots
@@ -65,119 +64,115 @@ class Plot():
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         plt.show()
 
-    # @staticmethod
-    # def visualize_summary_statistics(tMeta, vehicle_type):
-    #     # Filter by vehicle type
-    #     vehicle_df = tMeta[tMeta['class'] == vehicle_type]
+    @staticmethod
+    def plot_grid(plots):
+        """
+        Plots a list of matplotlib plots in a 4-column grid.
 
-    #     # Define the columns to analyze
-    #     columns_to_analyze = ['minDHW', 'minTHW', 'minTTC', 'minXVelocity', 'maxXVelocity', 'meanXVelocity']
+        :param plots: List of matplotlib plots to be displayed
+        """
+        n_plots = len(plots)
+        n_rows = math.ceil(n_plots / 4)
 
-    #     # Set up the subplots
-    #     nplots = len(columns_to_analyze)
-    #     fig, axes = plt.subplots(2, nplots, figsize=(nplots * 4, 10))
-    #     fig.suptitle(f"Summary Statistics for {vehicle_type}s", fontsize=16)
+        fig, axs = plt.subplots(n_rows, 4, figsize=(20, 5 * n_rows))
+        fig.tight_layout(pad=3.0)
 
-    #     # Plot box plots and histograms for each column
-    #     for i, col in enumerate(columns_to_analyze):
-    #         sns.boxplot(y=col, data=vehicle_df, ax=axes[0, i], color='royalblue')
-    #         sns.histplot(vehicle_df[col], kde=True, ax=axes[1, i], color='royalblue', alpha=0.6)
-    #         axes[1, i].set_xlabel(col)
-
-    #     # Adjust layout
-    #     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    #     plt.show()
+        for i, ax in enumerate(axs.flatten()):
+            if i < n_plots:
+                ax.axis('off')
+                ax.imshow(plots[i].get_array(), cmap=plots[i].get_cmap())
+            else:
+                fig.delaxes(ax)
 
 
 
 
-    # @staticmethod
-    # def plot_agent_following_scenario(tracks, follow_meta, cMin, cMax):
-    #     # Extract information about the scenario from the follow_meta dataframe
-    #     ego_id = follow_meta['ego_id']
-    #     preceding_id = follow_meta['preceding_id']
-    #     start_frame = follow_meta['start_frame']
-    #     end_frame = follow_meta['end_frame']
+    @staticmethod
+    def plot_agent_following_scenario(tracks, follow_meta, cMin, cMax):
+        # Extract information about the scenario from the follow_meta dataframe
+        ego_id = follow_meta['ego_id']
+        preceding_id = follow_meta['preceding_id']
+        start_frame = follow_meta['start_frame']
+        end_frame = follow_meta['end_frame']
 
-    #     # Create a title for the plot based on the scenario information
-    #     title = f"Scenario ego {ego_id} - prec {preceding_id} - start frame {start_frame}, end frame {end_frame}"
+        # Create a title for the plot based on the scenario information
+        title = f"Scenario ego {ego_id} - prec {preceding_id} - start frame {start_frame}, end frame {end_frame}"
 
-    #     # Get the relevant tracks for the scenario
-    #     ego_tracks = tracks.loc[(tracks['id'] == ego_id) & (tracks['frame'] >= start_frame) & (tracks['frame'] < end_frame)]
-    #     preceding_tracks = tracks.loc[(tracks['id'] == preceding_id) & (tracks['frame'] >= start_frame) & (tracks['frame'] < end_frame)]
+        # Get the relevant tracks for the scenario
+        ego_tracks = tracks.loc[(tracks['id'] == ego_id) & (tracks['frame'] >= start_frame) & (tracks['frame'] < end_frame)]
+        preceding_tracks = tracks.loc[(tracks['id'] == preceding_id) & (tracks['frame'] >= start_frame) & (tracks['frame'] < end_frame)]
 
-    #     # Calculate speeds and distances
-    #     ego_speed = np.abs(ego_tracks['xVelocity'].values)
-    #     preceding_speed = np.abs(preceding_tracks['xVelocity'].values)
-    #     relative_speed = ego_speed - preceding_speed
+        # Calculate speeds and distances
+        ego_speed = np.abs(ego_tracks['xVelocity'].values)
+        preceding_speed = np.abs(preceding_tracks['xVelocity'].values)
+        relative_speed = ego_speed - preceding_speed
 
-    #     ego_xy = ego_tracks[['x', 'y']].values
-    #     preceding_xy = preceding_tracks[['x', 'y']].values
-    #     relative_distance = np.sqrt(np.sum((ego_xy - preceding_xy)**2, axis=1))
+        ego_xy = ego_tracks[['x', 'y']].values
+        preceding_xy = preceding_tracks[['x', 'y']].values
+        relative_distance = np.sqrt(np.sum((ego_xy - preceding_xy)**2, axis=1))
 
-    #     # Get ego acceleration from DataFrame
-    #     ego_acceleration = ego_tracks['xAcceleration'].values
+        # Get ego acceleration from DataFrame
+        ego_acceleration = ego_tracks['xAcceleration'].values
 
-    #     # Calculate TTC, THW, and DHW for ego and preceding vehicles
-    #     ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
-    #     ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
+        # Calculate TTC, THW, and DHW for ego and preceding vehicles
+        ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
+        ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
 
-    #     # Calculate TTC, THW, and DHW for ego and preceding vehicles
-    #     ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
-    #     ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
+        # Calculate TTC, THW, and DHW for ego and preceding vehicles
+        ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
+        ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
 
-    #     # Clip values between 0 and 200
-    #     ttc_ego_clipped = np.clip(ttc_ego, cMin, cMax)
-    #     thw_ego_clipped = np.clip(thw_ego, cMin, cMax)
-    #     dhw_ego_clipped = np.clip(dhw_ego, cMin, cMax)
+        # Clip values between 0 and 200
+        ttc_ego_clipped = np.clip(ttc_ego, cMin, cMax)
+        thw_ego_clipped = np.clip(thw_ego, cMin, cMax)
+        dhw_ego_clipped = np.clip(dhw_ego, cMin, cMax)
 
-    #     ttc_prec_clipped = np.clip(ttc_prec, cMin, cMax)
-    #     thw_prec_clipped = np.clip(thw_prec, cMin, cMax)
-    #     dhw_prec_clipped = np.clip(dhw_prec, cMin, cMax)
+        ttc_prec_clipped = np.clip(ttc_prec, cMin, cMax)
+        thw_prec_clipped = np.clip(thw_prec, cMin, cMax)
+        dhw_prec_clipped = np.clip(dhw_prec, cMin, cMax)
 
-    #     # Normalize ego values
-    #     ttc_ego_norm = ttc_ego_clipped / np.linalg.norm(ttc_ego_clipped)
-    #     thw_ego_norm = thw_ego_clipped / np.linalg.norm(thw_ego_clipped)
-    #     dhw_ego_norm = dhw_ego_clipped / np.linalg.norm(dhw_ego_clipped)
+        # Normalize ego values
+        ttc_ego_norm = ttc_ego_clipped / np.linalg.norm(ttc_ego_clipped)
+        thw_ego_norm = thw_ego_clipped / np.linalg.norm(thw_ego_clipped)
+        dhw_ego_norm = dhw_ego_clipped / np.linalg.norm(dhw_ego_clipped)
 
-    #     # Normalize preceding values
-    #     ttc_prec_norm = ttc_prec_clipped / np.linalg.norm(ttc_prec_clipped)
-    #     thw_prec_norm = thw_prec_clipped / np.linalg.norm(thw_prec_clipped)
-    #     dhw_prec_norm = dhw_prec_clipped / np.linalg.norm(dhw_prec_clipped)
+        # Normalize preceding values
+        ttc_prec_norm = ttc_prec_clipped / np.linalg.norm(ttc_prec_clipped)
+        thw_prec_norm = thw_prec_clipped / np.linalg.norm(thw_prec_clipped)
+        dhw_prec_norm = dhw_prec_clipped / np.linalg.norm(dhw_prec_clipped)
 
-    #     # Create a single plot with six subplots
-    #     fig, axs = plt.subplots(3, 2, figsize=(15, 15), sharex='col')
-    #     fig.suptitle(title)
+        # Create a single plot with six subplots
+        fig, axs = plt.subplots(3, 2, figsize=(15, 15), sharex='col')
+        fig.suptitle(title)
 
-    #     # Plot each type of data in a separate subplot
-    #     axs[0, 0].plot(ego_tracks['frame'], ego_speed, label='Ego Speed')
-    #     axs[0, 0].plot(ego_tracks['frame'], preceding_speed, label='Preceding Speed')
-    #     axs[0, 0].set_title('Ego and Preceding Speed')
-    #     axs[0, 0].legend()
+        # Plot each type of data in a separate subplot
+        axs[0, 0].plot(ego_tracks['frame'], ego_speed, label='Ego Speed')
+        axs[0, 0].plot(ego_tracks['frame'], preceding_speed, label='Preceding Speed')
+        axs[0, 0].set_title('Ego and Preceding Speed')
+        axs[0, 0].legend()
 
-    #     axs[0, 1].plot(ego_tracks['frame'], ego_acceleration, label='Ego Acceleration')
-    #     axs[0, 1].set_title('Ego Acceleration')
-    #     axs[0, 1].legend()
+        axs[0, 1].plot(ego_tracks['frame'], ego_acceleration, label='Ego Acceleration')
+        axs[0, 1].set_title('Ego Acceleration')
+        axs[0, 1].legend()
 
-    #     axs[1, 0].plot(ego_tracks['frame'], relative_speed, label='Relative Speed')
-    #     axs[1, 0].set_title('Relative Speed')
-    #     axs[1, 0].legend()
+        axs[1, 0].plot(ego_tracks['frame'], relative_speed, label='Relative Speed')
+        axs[1, 0].set_title('Relative Speed')
+        axs[1, 0].legend()
 
-    #     axs[1, 1].plot(ego_tracks['frame'], relative_distance, label='Relative Distance')
-    #     axs[1, 1].set_title('Relative Distance')
-    #     axs[1, 1].legend()
+        axs[1, 1].plot(ego_tracks['frame'], relative_distance, label='Relative Distance')
+        axs[1, 1].set_title('Relative Distance')
+        axs[1, 1].legend()
 
-    #     axs[2, 0].plot(ego_tracks['frame'], ttc_ego_norm, label='TTC')
-    #     axs[2, 0].plot(ego_tracks['frame'], thw_ego_norm, label='THW')
-    #     axs[2, 0].plot(ego_tracks['frame'], dhw_ego_norm, label='DHW')
-    #     axs[2, 0].set_title('TTC, THW, and DHW for Ego')
-    #     axs[2, 0].legend()
+        axs[2, 0].plot(ego_tracks['frame'], ttc_ego_norm, label='TTC')
+        axs[2, 0].plot(ego_tracks['frame'], thw_ego_norm, label='THW')
+        axs[2, 0].plot(ego_tracks['frame'], dhw_ego_norm, label='DHW')
+        axs[2, 0].set_title('TTC, THW, and DHW for Ego')
+        axs[2, 0].legend()
 
-    #     axs[2, 1].plot(preceding_tracks['frame'], ttc_prec_norm, label='TTC')
-    #     axs[2, 1].plot(preceding_tracks['frame'], thw_prec_norm, label='THW')
-    #     axs[2, 1].plot(preceding_tracks['frame'], dhw_prec_norm, label='DHW')
-    #     axs[2, 1].set_title('TTC, THW, and DHW for Preceding Vehicle')
-    #     axs[2, 1].legend()
+        # axs[2, 1].plot(preceding_tracks['frame'], ttc_prec_norm, label='TTC')
+        # axs[2, 1].plot(preceding_tracks['frame'], thw_prec_norm, label='THW')
+        # axs[2, 1].plot(preceding_tracks['frame'], dhw_prec_norm, label='DHW')
+        # axs[2, 1].set_title('TTC, THW, and DHW for Preceding Vehicle')
+        # axs[2, 1].legend()
 
-
-
+        
