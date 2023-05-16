@@ -51,6 +51,9 @@ scenarios = {
         "dataset_id": 1,
         "stable_height_path": f"C:\\Users\\abjawad\\Documents\\GitHub\\cogmod-human-driver-model\\stable_height.csv",
         "lane_id": {
+            # ---------------
+            # ------ < ------ direction of look ahead
+            # ---------------
             "left_lane":[4, 5, 6],
             "right_lane":[2,3],
         },

@@ -1,213 +1,64 @@
+import os
+import cv2
 import pandas as pd
 
 
-from .DataContainer import DataContainer
-from .Visual import Visualizer
-from .ManeuverFilter import *
-from config import *
-from .HighDStats import HighDStats
-
 class HighD:
-    def __init__(self, 
-                 data_container: DataContainer):
-        
-        self.id = data_container.id
+    def __init__(self, ids, data_directory):
+        self.ids = ids
+        self.data_directory = data_directory
+        self.dfs, self.images = self._load_data_and_images()
+        self.combined_dfs = self._combine_dataframes()
 
-        self.image = data_container.image
-        self.recordingMeta = data_container.recordingMeta
-        self.tracksMeta = data_container.tracksMeta
-        self.tracks = data_container.tracks
+    def _load_data_and_images(self):
+        dfs = []
+        images = []
 
-        self.recordingMeta_dict = data_container.recordingMeta_dict
-        self.tracksMeta_dict = data_container.tracksMeta_dict
-        self.track_dict = data_container.tracks_dict
+        for i in self.ids:
+            dfs.append(self._load_dataframes(i))
+            images.append(self._load_image(i))
+            print(f"Loaded data and image for dataset {i}.")
 
-        self.output_path = OUTPUT_DIRECTORY
+        return dfs, images
 
-        self.highD_stats = HighDStats(data_container)
+    def _load_dataframes(self, i):
+        def read_csv(filename):
+            return pd.read_csv(os.path.join(self.data_directory, f"{i}_{filename}.csv"))
 
-        self.car_follow = None
-        self.lane_change = None
+        return read_csv("recordingMeta"), read_csv("tracksMeta"), read_csv("tracks")
 
-        pass
+    def _load_image(self, i):
+        return cv2.imread(os.path.join(self.data_directory, f"{i}_highway.PNG"))
 
-    def get_highway_image(self):
-        return self.image
+    def _combine_dataframes(self):
+        combined_dfs = []
 
-    def get_recordingMeta(self):
-        return self.recordingMeta
+        for r_meta, t_meta, tracks in self.dfs:
+            combined_df = tracks.merge(t_meta[['id', 'class', 'drivingDirection']], on='id')
+            combined_df['locationId'] = r_meta.loc[0, 'locationId']
+            combined_df['dataset_id'] = r_meta.loc[0, 'id']
+            combined_df = combined_df[[
+                'dataset_id', 'locationId', 'frame', 'id', 'class', 'drivingDirection', 'laneId',
+                'x', 'y', 'width', 'height', 'xVelocity', 'yVelocity', 'xAcceleration', 'yAcceleration',
+                'frontSightDistance', 'backSightDistance', 'dhw', 'thw', 'ttc', 'precedingXVelocity',
+                'precedingId', 'followingId', 'leftPrecedingId', 'leftAlongsideId', 'leftFollowingId',
+                'rightPrecedingId', 'rightAlongsideId', 'rightFollowingId'
+            ]]
+            combined_dfs.append(combined_df)
 
-    def get_tracksMeta(self):
-        return self.tracksMeta
-    
-    def get_tracks(self):
-        return self.tracks
+        return combined_dfs
 
-    def get_nFrame_follow_scenario(self, thw_lower_bound, thw_upper_bound, time_duration, distance_threshold, follow_type):
-        follow_meta = self.get_vehicle_follow_meta(thw_lower_bound, thw_upper_bound, time_duration, distance_threshold) # 0 is for distance threshold        
-        follow_interaction_type = self.get_follow_interaction_type(follow_type)
-        follow_meta = follow_meta[follow_meta['followType'] == follow_interaction_type]
-        return self.highD_stats.nFrames_vehicle_follow(follow_meta)
+    def get_dataframe_tuple(self, id):
+        return self.dfs[id]
 
-    def follow_distance_distribution(self, thw_lower_bound, thw_upper_bound, duration_threshold, distance_threshold, follow_type):
-        follow_meta = self.get_vehicle_follow_meta(thw_lower_bound, thw_upper_bound, duration_threshold, distance_threshold) # 0 is for distance threshold
-        print('follow meta : ', len(follow_meta))
-        follow_interaction_type = self.get_follow_interaction_type(follow_type)
-        follow_meta = follow_meta[follow_meta['followType'] == follow_interaction_type]
-        self.highD_stats.follow_distance_distribution(follow_meta)
-        pass
+    def get_image(self, id):
+        return self.images[id]
 
-    def follow_relative_speed_distribution(self, thw_lower_bound, thw_upper_bound, duration_threshold, distance_threshold, follow_type):
-        follow_meta = self.get_vehicle_follow_meta(thw_lower_bound, thw_upper_bound, duration_threshold, distance_threshold) # 0 is for distance threshold
-        follow_interaction_type = self.get_follow_interaction_type(follow_type)
-        follow_meta = follow_meta[follow_meta['followType'] == follow_interaction_type]
-        self.highD_stats.follow_relative_speed_distribution(follow_meta)
-        pass
+    def get_combined_dataframe(self, id):
+        return self.combined_dfs[id]
 
-    def follow_speed_distance_ratio(self, thw_lower_bound, thw_upper_bound, duration_threshold, distance_threshold, follow_type):
-        follow_meta = self.get_vehicle_follow_meta(thw_lower_bound, thw_upper_bound, duration_threshold, distance_threshold) # 0 is for distance threshold
-        follow_interaction_type = self.get_follow_interaction_type(follow_type)
-        follow_meta = follow_meta[follow_meta['followType'] == follow_interaction_type]
-        self.highD_stats.follow_speed_distance_ratio(follow_meta)
-        pass
+    def get_images(self):
+        return self.images
 
-    def get_follow_interaction_type(self, follow_type):
-        follow_interaction_type = None
-        if follow_type == "car_car":
-            follow_interaction_type = FollowType.CAR_CAR
-        elif follow_type == "car_truck":
-            follow_interaction_type = FollowType.CAR_TRUCK
-        elif follow_type == "truck_truck":
-            follow_interaction_type = FollowType.TRUCK_TRUCK
-        elif follow_type == "truck_car":
-            follow_interaction_type = FollowType.TRUCK_CAR
-        return follow_interaction_type
-
-    
-
-    def draw_frame(self, frame_id, ego_id, target_id, ego_color, target_color):
-        
-        # print(self.tracks)
-        data = Visualizer.draw_frame(image=self.image,
-                                     tracks=self.tracks,
-                                     frame_id=frame_id,
-                                     ego_id=ego_id,
-                                     target_id=target_id,
-                                     ego_color=ego_color,
-                                     target_color=target_color)
-
-        return data
-
-    def create_and_save_video_from_frames(self, start, end, fps=25, video_name=None):
-        Visualizer.create_video_from_frames(image=self.image,
-                                            tracks=self.tracks,
-                                            start=start,
-                                            end=end,
-                                            fps=fps,
-                                            video_name=video_name,
-                                            output_dir=self.output_path)
-        pass
-
-    def create_and_save_video_for_agent(self, agent_id, fps=25, video_name=None):
-        Visualizer.create_video_for_agent(image=self.image,
-                                          tracks=self.tracks,
-                                          tracksMeta=self.tracksMeta,
-                                          agent_id=agent_id,
-                                          fps=fps,
-                                          video_name=video_name,
-                                          output_dir=self.output_path)
-        pass
-
-
-    def create_and_save_video_with_two_agents(self, agent_id, target_id, fps=25, video_name=None):
-        Visualizer.create_video_with_two_agents(image=self.image,
-                                                tracks=self.tracks,
-                                                tracksMeta=self.tracksMeta,
-                                                agent_id=agent_id,
-                                                target_id=target_id,
-                                                fps=fps,
-                                                video_name=video_name,
-                                                output_dir=self.output_path)
-        pass
-
-
-    # This function filters the car vehicle following scenarios 
-    # total 4 types of interaction is possible between two vehicles
-    # (Car, Car), (Car, Truck), (Truck, Car), (Truck, Truck)
-    
-    def get_vehicle_follow_meta(self, thw_lower_bound, thw_upper_bound, time_duration=-1, distance_threshold=100):
-        
-        df = pd.DataFrame()
-        # enumarate over all followtype enum
-        car_car_follow = find_vehicle_following_meta(self.tracksMeta,
-                                                 self.tracks,
-                                                 ego_type="Car",
-                                                 preceding_type="Car",
-                                                 thw_lower_bound=thw_lower_bound,
-                                                 thw_upper_bound=thw_upper_bound,
-                                                 min_duration=time_duration,
-                                                 distance_threshold=distance_threshold)
-        car_car_follow = pd.DataFrame(car_car_follow)
-        car_car_follow["followType"] = FollowType.CAR_CAR
-
-        car_truck_follow = find_vehicle_following_meta(self.tracksMeta,
-                                                   self.tracks,
-                                                    ego_type="Car",
-                                                    preceding_type="Truck",
-                                                    thw_lower_bound=thw_lower_bound,
-                                                    thw_upper_bound=thw_upper_bound,
-                                                    min_duration=time_duration,
-                                                    distance_threshold=distance_threshold)
-        car_truck_follow = pd.DataFrame(car_truck_follow)
-        car_truck_follow["followType"] = FollowType.CAR_TRUCK
-
-        truck_car_follow = find_vehicle_following_meta(self.tracksMeta,
-                                                   self.tracks,
-                                                   ego_type="Truck",
-                                                    preceding_type="Car",
-                                                    thw_lower_bound=thw_lower_bound,
-                                                    thw_upper_bound=thw_upper_bound,
-                                                    min_duration=time_duration,
-                                                    distance_threshold=distance_threshold)
-        truck_car_follow = pd.DataFrame(truck_car_follow)
-        truck_car_follow["followType"] = FollowType.TRUCK_CAR
-
-        truck_truck_follow = find_vehicle_following_meta(self.tracksMeta,
-                                                        self.tracks,
-                                                        ego_type="Truck",
-                                                        preceding_type="Truck",
-                                                        thw_lower_bound=thw_lower_bound,
-                                                        thw_upper_bound=thw_upper_bound,
-                                                        min_duration=time_duration,
-                                                        distance_threshold=distance_threshold)
-        truck_truck_follow = pd.DataFrame(truck_truck_follow)
-        truck_truck_follow["followType"] = FollowType.TRUCK_TRUCK
-
-        follow_meta = pd.concat([car_car_follow, car_truck_follow, truck_car_follow, truck_truck_follow])
-        return follow_meta
-
-
-
-    # def filter_lane_change(self):
-    #     self.lane_change = get_lane_change_trajectory(self.tracksMeta_dict, self.track_dict)
-    #     return self.lane_change
-
-    # def lane_change_stats(self):
-    #     result = find_lane_changes(self.tracksMeta_dict, self.track_dict)
-    #     return result
-
-
-#     def split_dataset(self):
-#         df = self.tracksMeta
-#         l2r = df.loc[(df["drivingDirection"] == 1)]
-#         r2l = df.loc[(df["drivingDirection"] == 2)]
-
-#         agent_l2r = l2r['id'].values
-#         agent_r2l = r2l['id'].values
-
-#         l2r_df = self.tracks.loc[(self.tracks["id"].isin(agent_l2r))]
-#         r2l_df = self.tracks.loc[(self.tracks["id"].isin(agent_r2l))]
-        
-#         return l2r_df, r2l_df
-
-
+    def get_combined_dataframes(self):
+        return self.combined_dfs

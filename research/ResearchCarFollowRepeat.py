@@ -6,7 +6,7 @@ import logging
 from lib import SimulationMode, Simulator
 from research.BaseCogModResearch import BaseCogModResearch
 from settings.CogModSettings import CogModSettings
-from highd_tools.highD.ManeuverFilter import FollowType
+from highd_tools.highD.Filter import FollowType
 from agents.vehicles.TrajectoryAgent.helper import HighD_Processor
 from analytics.DataCollectorCarFollowWithRepeat import DataCollectorCarFollowWithRepeat
 from .ResearchCogMod import ScenarioState
@@ -33,7 +33,7 @@ class FilterCarFollow():
                                                                  time_duration=self.time_duration,
                                                                  distance_threshold=self.distance_threshold)
         
-        self.car_car_follow = self.follow_meta[self.follow_meta['followType'] == FollowType.CAR_CAR]
+        # self.car_car_follow = self.follow_meta[self.follow_meta['followType'] == FollowType.CAR_CAR]
         
     def get_car_car_follow(self):
         return self.car_car_follow
