@@ -144,7 +144,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
                  pickedScenario=0,
                  nRepeat=1):
         
-        self.name = "CogMod-HighD"
+        self.name = "CogMod-Repeat"
         self.scenarioID = scenarioID
         self.researchSettings = CogModSettings(scenarioID)
         self.filterCarFollow = FilterCarFollow(self.researchSettings)

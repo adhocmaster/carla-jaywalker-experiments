@@ -120,3 +120,4 @@ dill/*
 highd_tools/dill/*
 highd_tools/output/*
 highd_tools/notebook/init_notebook.py
+logs/*
