@@ -37,25 +37,25 @@ class BaseCogModResearch(BaseResearch):
     def onStart(self):
         raise NotImplementedInterface("onStart")
 
-    def onTick(self, world_snapshot):
-        for agent_id, agent in self.agent_list.items():
-            control = agent.run_step()
-            if control is not None:
-                agent.get_vehicle().apply_control(control)
-        # self.logger.info(f"ticked all agents {world_snapshot.frame}")
+    # def onTick(self, world_snapshot):
+    #     for agent_id, agent in self.agent_list.items():
+    #         control = agent.run_step()
+    #         if control is not None:
+    #             agent.get_vehicle().apply_control(control)
+    #     # self.logger.info(f"ticked all agents {world_snapshot.frame}")
         
-        pass
+    #     pass
 
-    def onEnd(self):
-        self.logger.info("Ending simulation")
-        # self.logger.info(f"length of vehicle list {len(self.agent_list)}")
+    # def onEnd(self):
+    #     self.logger.info("Ending simulation")
+    #     # self.logger.info(f"length of vehicle list {len(self.agent_list)}")
         
-        for agent_id, agent in self.agent_list.items():
-            self.logger.info(f"destroying {agent_id} agent")
-            agent.get_vehicle().destroy()
-        self.agent_list.clear()
-        self.logger.info("destroyed all vehicles")
-        pass
+    #     for agent_id, agent in self.agent_list.items():
+    #         self.logger.info(f"destroying {agent_id} agent")
+    #         agent.get_vehicle().destroy()
+    #     self.agent_list.clear()
+    #     self.logger.info("destroyed all vehicles")
+    #     pass
 
     def run(self, maxTicks=100):
         raise NotImplementedInterface("run")
@@ -65,16 +65,27 @@ class BaseCogModResearch(BaseResearch):
     def createCogModAgent(self, agent_settings):
         # self.logger.info("createCogModAgent")
         spawn_wp = self.LocationToWaypoint(agent_settings['source'])
+        print('COGMOD spawn wp ', spawn_wp)
         destination_wp = self.LocationToWaypoint(agent_settings['destination'])
         driver_profile = agent_settings['driver_profile']
 
-        vehicle = self.vehicle_factory.spawn(spawn_wp)
+        #  get blueprint 
+        bpLib = self.world.get_blueprint_library()
+        vehicleBps = bpLib.filter('vehicle.audi.*')
+        # spawn the vehicle
+        # vehicle = self.vehicle_factory.spawn(spawn_transform)
+        response = self.client.apply_batch_sync([carla.command.SpawnActor(vehicleBps[0], spawn_wp)], True)[0]
+        print('COGMOD actor id ', response.actor_id)
+        print('COGMOD has error ', response.has_error())
+        vehicle = self.world.get_actor(response.actor_id)
+        
+        # vehicle = self.vehicle_factory.spawn(spawn_wp)
         if vehicle is None:
             self.logger.error(f"Cannot create vehicle - stopping simulation")
             exit("cannot spawn cogmod vehicle")
         else:
             self.logger.info(f"successfully spawned cogmod actor {vehicle.id}")
-            self.world.tick()
+            # self.world.tick()
             # self.logger.info(f"vehicle location {vehicle.get_location()}")
             cogmod_agent = CogModAgent(vehicle=vehicle, 
                                        destination_point=destination_wp, 
@@ -100,7 +111,7 @@ class BaseCogModResearch(BaseResearch):
             self.logger.error(f"Cannot create vehicle - stopping simulation")
             exit("cannot spawn trajectory vehicle")
         else:
-            self.logger.info(f"successfully spawned trajectory actor {vehicle.id}")
+            self.logger.info(f"successfully spawned trajectory actor {vehicle.id} at {spawn_location}")
             trajectory_agent = TrajectoryAgent(vehicle=vehicle,
                                                pivot=pivot,
                                                agent_id=agent_id)
@@ -116,8 +127,16 @@ class BaseCogModResearch(BaseResearch):
         spawn_location = carla.Location(x=x, y=y, z=0.5)
         rotation = carla.Rotation()
         spawn_transform = carla.Transform(spawn_location, rotation)
+        
+        #  get blueprint 
+        bpLib = self.world.get_blueprint_library()
+        vehicleBps = bpLib.filter('vehicle.audi.*')
         # spawn the vehicle
-        vehicle = self.vehicle_factory.spawn(spawn_transform)
+        # vehicle = self.vehicle_factory.spawn(spawn_transform)
+        response = self.client.apply_batch_sync([carla.command.SpawnActor(vehicleBps[0], spawn_transform)], True)[0]
+        print('actor id ', response.actor_id)
+        print('has error ', response.has_error())
+        vehicle = self.world.get_actor(response.actor_id)
         if vehicle is None:
             self.logger.error(f"Cannot create vehicle - stopping simulation")
             exit("cannot spawn trajectory vehicle")
@@ -161,7 +180,7 @@ class BaseCogModResearch(BaseResearch):
         if waypoint is None:
             msg = f"{self.name}: Cannot create way point near {location}"
             self.error(msg)
-        transform = carla.Transform(location = waypoint.transform.location + carla.Location(z=1), rotation = waypoint.transform.rotation)
+        transform = carla.Transform(location = waypoint.transform.location + carla.Vector3D(0, 0, location.z), rotation = waypoint.transform.rotation)
         return transform
 
 

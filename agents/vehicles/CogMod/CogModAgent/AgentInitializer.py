@@ -46,7 +46,7 @@ class AgentIntializer():
         pass
     
     def set_local_map(self):
-
+        print(f'agent tracking radius {self.local_map_settings["vehicle_tracking_radius"]}')
         local_map = LocalMap(self.vehicle,
                              self.destination,
                              self.local_map_settings['vehicle_tracking_radius'],

@@ -27,9 +27,10 @@ class DataCollectorCarFollowWithRepeat():
         self.statDict = {
             "scenario_id": [], "exec_num": [], "frame": [], "scenario_status": [],
 
-            "ego_id": [], "c_x": [], "c_y": [], "c_speed": [],
+            "ego_id": [], "c_x": [], "c_y": [], 
+            "c_speed": [], "c_acceleration": [], 
             "c_steer": [], "c_throttle": [], "c_brake": [],
-            # "perceived_c_x": [], "perceived_c_y": [], "perceived_c_speed": [],
+            "perceived_c_x": [], "perceived_c_y": [], "perceived_c_speed": [],
             "gaze_direction": [],
 
             "preceding_id": [],
@@ -49,25 +50,20 @@ class DataCollectorCarFollowWithRepeat():
         self.statDict["ego_id"].append(ego_id)
         self.statDict["c_x"].append(cogmod_agent.get_vehicle().get_location().x)
         self.statDict["c_y"].append(cogmod_agent.get_vehicle().get_location().y)
+        
         self.statDict["c_speed"].append(cogmod_agent.get_vehicle().get_velocity().length())
+        self.statDict["c_acceleration"].append(cogmod_agent.get_vehicle().get_velocity().length())
+        
         self.statDict["c_steer"].append(cogmod_agent.get_vehicle().get_control().steer)
         self.statDict["c_throttle"].append(cogmod_agent.get_vehicle().get_control().throttle)
         self.statDict["c_brake"].append(cogmod_agent.get_vehicle().get_control().brake)
+        
+        front_WM = cogmod_agent.local_map.trackedAgentManager.surrounding_agents['front']
+        self.statDict["perceived_c_x"].append(front_WM.location_t_1.x)
+        self.statDict["perceived_c_y"].append(front_WM.location_t_1.y)
+        self.statDict["perceived_c_speed"].append(front_WM.velocity_t_1.length())
 
         self.statDict["gaze_direction"].append(cogmod_agent.gaze.get_gaze_direction())
-
-        # vehicle_at_front = cogmod_agent.local_map.trackedAgentManager.is_there_vehicle('front')
-        # if vehicle_at_front:
-        #     agent_working_memory = cogmod_agent.local_map.trackedAgentManager.surrounding_agents['front'] 
-        #     location = agent_working_memory.get_location()
-        #     speed = agent_working_memory.get_speed()
-        #     self.statDict["perceived_c_x"].append(location.x)
-        #     self.statDict["perceived_c_y"].append(location.y)
-        #     self.statDict["perceived_c_speed"].append(speed)
-        # else:
-        #     self.statDict["perceived_c_x"].append(None)
-        #     self.statDict["perceived_c_y"].append(None)
-        #     self.statDict["perceived_c_speed"].append(None)
 
         self.statDict["preceding_id"].append(preceding_id)
         self.statDict["a_x"].append(actor_agent.get_vehicle().get_location().x)

@@ -68,7 +68,7 @@ class Gaze():
     # y = np.random.normal(3.5, 0.4, 100000) # vehicle follow
 
     def get_gaze_distribution(self, maneuver_type):
-        
+        # print('maneuver type ', maneuver_type)
         if maneuver_type == ManeuverType.LANEFOLLOW:
             val = np.random.normal(3.5, 0.1, 1)
             val = int(val)

@@ -132,9 +132,12 @@ class Plot():
         dhw_prec_clipped = np.clip(dhw_prec, cMin, cMax)
 
         # Normalize ego values
-        ttc_ego_norm = ttc_ego_clipped / np.linalg.norm(ttc_ego_clipped)
-        thw_ego_norm = thw_ego_clipped / np.linalg.norm(thw_ego_clipped)
-        dhw_ego_norm = dhw_ego_clipped / np.linalg.norm(dhw_ego_clipped)
+        # ttc_ego_norm = ttc_ego_clipped / np.linalg.norm(ttc_ego_clipped)
+        # thw_ego_norm = thw_ego_clipped / np.linalg.norm(thw_ego_clipped)
+        # dhw_ego_norm = dhw_ego_clipped / np.linalg.norm(dhw_ego_clipped)
+        ttc_ego_norm = ttc_ego_clipped 
+        thw_ego_norm = thw_ego_clipped 
+        dhw_ego_norm = dhw_ego_clipped 
 
         # Normalize preceding values
         ttc_prec_norm = ttc_prec_clipped / np.linalg.norm(ttc_prec_clipped)

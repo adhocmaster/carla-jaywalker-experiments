@@ -1,12 +1,10 @@
 
 import carla
-from highd_tools.highD.DataHandler import *
 from datetime import datetime as date
 import logging
 from lib import SimulationMode, Simulator
 from research.BaseCogModResearch import BaseCogModResearch
 from settings.CogModSettings import CogModSettings
-from highd_tools.highD.Filter import FollowType
 from agents.vehicles.TrajectoryAgent.helper import HighD_Processor
 from analytics.DataCollectorCarFollow import DataCollectorCarFollow
 from .ResearchCogMod import ScenarioState

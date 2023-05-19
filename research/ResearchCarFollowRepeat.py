@@ -1,15 +1,18 @@
 
 import carla
-from highd_tools.highD.DataHandler import *
 from datetime import datetime as date
 import logging
 from lib import SimulationMode, Simulator
 from research.BaseCogModResearch import BaseCogModResearch
 from settings.CogModSettings import CogModSettings
-from highd_tools.highD.Filter import FollowType
 from agents.vehicles.TrajectoryAgent.helper import HighD_Processor
 from analytics.DataCollectorCarFollowWithRepeat import DataCollectorCarFollowWithRepeat
+from highd_tools.highD.HighD import HighD 
+from highd_tools.highD.Filter import Filter
+import pandas as pd
+import numpy as np
 from .ResearchCogMod import ScenarioState
+
 
 
 class FilterCarFollow():
@@ -20,26 +23,28 @@ class FilterCarFollow():
         self.dataset_id = self.cogmod_settings.getDatasetID()
         self.car_follow_settings = self.cogmod_settings.getCarFollowSettings()
         
-        self.highD = read_dataset([self.dataset_id], self.highDPath)
-        self.tracks = self.highD[0].tracks
+        self.highD = HighD([self.dataset_id], self.highDPath)
+        self.df = self.highD.get_combined_dataframe(int(self.dataset_id))
         
-        self.thw_lower_bound = self.car_follow_settings['thw_lower_bound']
-        self.thw_upper_bound = self.car_follow_settings['thw_upper_bound']
+        self.ego_type = self.car_follow_settings['ego_type']
+        self.preceding_type = self.car_follow_settings['preceding_type']
         self.time_duration = self.car_follow_settings['time_duration']
         self.distance_threshold = self.car_follow_settings['distance_threshold']
         
-        self.follow_meta = self.highD[0].get_vehicle_follow_meta(thw_lower_bound=self.thw_lower_bound,
-                                                                 thw_upper_bound=self.thw_upper_bound,
-                                                                 time_duration=self.time_duration,
-                                                                 distance_threshold=self.distance_threshold)
+        self.follow_meta = Filter.filter_vehicle_follow_scenario(self.df, 
+                                                                 self.ego_type,
+                                                                 self.preceding_type,
+                                                                 self.time_duration,
+                                                                 self.distance_threshold,
+                                                                 100)
         
-        # self.car_car_follow = self.follow_meta[self.follow_meta['followType'] == FollowType.CAR_CAR]
+        # print(f'total extracted scenarios {len(self.follow_meta)}')
         
-    def get_car_car_follow(self):
-        return self.car_car_follow
+    def get_follow_meta(self):
+        return self.follow_meta
     
-    def get_tracks(self):
-        return self.tracks
+    def get_combined_df(self):
+        return self.df
     
     
 
@@ -80,15 +85,22 @@ class DriverModifier():
         return cogmod_settings
 
     @staticmethod
-    def change_cogmod_settings_pending_simulation(preceding_agent, scenario_trigger_distance, base_distance, cogmod_settings):
+    def change_cogmod_settings_pending_simulation(preceding_agent, spawn_distance, tracking_distance, cogmod_settings, ego_agent_df):
+        
         map = preceding_agent.vehicle.get_world().get_map()
         preceding_agent_location = preceding_agent.vehicle.get_location()
         nearest_waypoint_preceding_agent = map.get_waypoint(preceding_agent_location, project_to_road=True)
-
-        distance = scenario_trigger_distance + base_distance
-        spawn_waypoint = nearest_waypoint_preceding_agent.previous(distance)[0]
+        velocity_df = np.sqrt(ego_agent_df['xVelocity']**2 + ego_agent_df['yVelocity']**2)
+        desired_velocity = velocity_df.max()
+        
+        local_map = cogmod_settings['driver_profile']['local_map']
+        local_map['vehicle_tracking_radius'] = tracking_distance
+        
+        spawn_waypoint = nearest_waypoint_preceding_agent.previous(spawn_distance)[0]
         spawn_transform = spawn_waypoint.transform
         spawn_location = spawn_transform.location
+        spawn_location = carla.Vector3D(spawn_location.x, spawn_location.y, 1.0)
+        print('cogmod spawn location ', spawn_location)
 
         destination_transform = preceding_agent.get_destination_transform()
         destination_waypoint = map.get_waypoint(destination_transform.location, project_to_road=True)
@@ -98,7 +110,7 @@ class DriverModifier():
         cogmod_settings['destination'] = destination_location
 
         lane_following_subtask = cogmod_settings['driver_profile']['subtasks_parameters']['lane_following']
-        lane_following_subtask['desired_velocity'] = 50
+        lane_following_subtask['desired_velocity'] = desired_velocity
         lane_following_subtask['safe_time_headway'] = 0
         lane_following_subtask['max_acceleration'] = 20
         lane_following_subtask['comfort_deceleration'] = 0.5
@@ -123,7 +135,7 @@ class AgentViz():
         location, rotation = AgentViz.get_vehicle_transform(row, center_x, center_y, 0.5, left_lane_id)
         debug.draw_point(location, size=0.1, color=carla.Color(255, 0, 0), life_time=0.1)
         if show_speed:
-            print('ego speed in data ', round(np.sqrt(xVel**2 + yVel**2), 2))
+            # print('ego speed in data ', round(np.sqrt(xVel**2 + yVel**2), 2))
             pass  # Do something with the speed
         
     @staticmethod
@@ -133,6 +145,19 @@ class AgentViz():
         center_y = float(y + height/2 + pivot.location.y)
         return center_x, center_y
 
+
+def read_stable_height_dict(path):
+    stable_height = pd.read_csv(path)
+    stable_height_dict = {}
+    for i in range(len(stable_height)):
+        stable_height_dict[stable_height.iloc[i,0]] = stable_height.iloc[i,1]
+    return stable_height_dict
+
+def get_left_right_lanes(df):
+    left_lanes = df[df['drivingDirection'] == 1]['laneId'].unique()
+    right_lanes = df[df['drivingDirection'] == 2]['laneId'].unique()
+
+    return left_lanes, right_lanes
 
 class ResearchCarFollowRepeat(BaseCogModResearch):
     def __init__(self, 
@@ -157,13 +182,12 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         self.baseCogmodAgentSettings = self.researchSettings.getCogModAgentSettings()
         self.base_distance = self.researchSettings.getBaseDistance()
         
-        self.car_car_follow = self.filterCarFollow.get_car_car_follow()
-        self.tracks = self.filterCarFollow.get_tracks()
-        self.stable_height_dict = HighD_Processor.read_stable_height_dict(self.stableHeightPath)
-        print("car_car_follow length : ", len(self.car_car_follow))
+        self.follow_scenario = self.filterCarFollow.get_follow_meta()
+        self.combined_df = self.filterCarFollow.get_combined_df()
+        self.stable_height_dict = read_stable_height_dict(self.stableHeightPath)
+        # print("follow scenario length : ", len(self.follow_scenario))
         
-        self.left_lane_id = set(self.laneID['left_lane'])
-        self.right_lane_id = set(self.laneID['right_lane'])
+        self.left_lane_id, self.right_lane_id = get_left_right_lanes(self.combined_df)
         
         super().__init__(
             name = self.name,
@@ -181,18 +205,18 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         self.frame_tracker = 0
         
         self.pickedScenario = pickedScenario
-        self.df = self.car_car_follow.iloc[self.pickedScenario]
-        self.start_frame = self.df['start_frame']
-        self.end_frame = self.df['end_frame']
-        self.ego_id = self.df['ego_id']
-        self.preceding_id = self.df['preceding_id']
+        self.follow_meta_df = self.follow_scenario.iloc[self.pickedScenario]
+        self.start_frame = self.follow_meta_df['start_frame']
+        self.end_frame = self.follow_meta_df['end_frame']
+        self.ego_id = self.follow_meta_df['ego_id']
+        self.preceding_id = self.follow_meta_df['preceding_id']
         self.nRepeat = nRepeat
-        self.logger.info(f"create_simulation {self.pickedScenario}, {self.df.values}")
+        self.logger.info(f"create_simulation {self.pickedScenario}, {self.follow_meta_df.values}")
         
-        all_frames = self.tracks[self.tracks['frame'].between(self.start_frame, self.end_frame+1)]
+        all_frames = self.combined_df[self.combined_df['frame'].between(self.start_frame, self.end_frame+1)]
         self.preceding_agent_df = all_frames[(all_frames['id'] == self.preceding_id)]
         self.ego_agent_df = all_frames[(all_frames['id'] == self.ego_id)]
-        self.trigger_distance = self.get_trigger_distance_for_scenario(self.df)
+        self.trigger_distance = self.follow_meta_df['start_distance']
         pass
     
     def create_simulation(self):
@@ -206,30 +230,33 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
                                                              laneID=self.laneID)
         self.world.tick()
         
+        distance = self.trigger_distance + self.base_distance
         self.current_cogmod_agent_settings = self.baseCogmodAgentSettings
-        self.current_cogmod_agent_settings = DriverModifier.change_cogmod_settings_pending_simulation(preceding_agent,
-                                                                                                    self.trigger_distance,
-                                                                                                    base_distance=self.base_distance,
-                                                                                                    cogmod_settings=self.current_cogmod_agent_settings)
+        self.current_cogmod_agent_settings = DriverModifier.change_cogmod_settings_pending_simulation(preceding_agent=preceding_agent,
+                                                                                                      spawn_distance=distance,
+                                                                                                      tracking_distance=self.trigger_distance,
+                                                                                                      cogmod_settings=self.current_cogmod_agent_settings,
+                                                                                                      ego_agent_df=self.ego_agent_df)
         
+        print("current cogmod settings : ", self.current_cogmod_agent_settings['source'])
         ego_agent = self.createCogModAgent(self.current_cogmod_agent_settings)
         self.agent_list = {'ego': ego_agent, 'preceding': preceding_agent}
         
         pass
     
     
-    def get_trigger_distance_for_scenario(self, df):
+    # def get_trigger_distance_for_scenario(self, df):
         
-        preceding_id, ego_id, start_frame = df['preceding_id'], df['ego_id'], df['start_frame']
+    #     preceding_id, ego_id, start_frame = df['preceding_id'], df['ego_id'], df['start_frame']
         
-        preceding_agent_df = self.tracks[(self.tracks['id'] == preceding_id) & (self.tracks['frame'] == start_frame)]
-        ego_agent_df = self.tracks[(self.tracks['id'] == ego_id) & (self.tracks['frame'] == start_frame)]
+    #     preceding_agent_df = self.follow_meta_df[(self.follow_meta_df['id'] == preceding_id) & (self.follow_meta_df['frame'] == start_frame)]
+    #     ego_agent_df = self.follow_meta_df[(self.follow_meta_df['id'] == ego_id) & (self.follow_meta_df['frame'] == start_frame)]
 
-        xPre, yPre = preceding_agent_df[['x', 'y']].values[0]
-        xEgo, yEgo = ego_agent_df[['x', 'y']].values[0]
-        scenario_trigger_distance = np.sqrt((xPre-xEgo)**2 + (yPre-yEgo)**2)
+    #     xPre, yPre = preceding_agent_df[['x', 'y']].values[0]
+    #     xEgo, yEgo = ego_agent_df[['x', 'y']].values[0]
+    #     scenario_trigger_distance = np.sqrt((xPre-xEgo)**2 + (yPre-yEgo)**2)
     
-        return scenario_trigger_distance
+    #     return scenario_trigger_distance
     
     
     def run(self, maxTicks=100):
@@ -243,7 +270,24 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         self.simulator.run(maxTicks=maxTicks)
         pass
     
-    
+    def onEnd(self):
+        print('onEnd')
+        all_vehicle_actors = self.world.get_actors().filter('vehicle.*')
+        id_list = []
+        for actor in all_vehicle_actors:
+            id_list.append(actor.id)
+        print("all vehicle ids : ", id_list)
+        command_list = []
+        for id in id_list:
+            command_list.append(carla.command.DestroyActor(id))
+        res = self.client.apply_batch_sync(command_list, True)
+        
+        for r in res:
+            if r.error:
+                print('actor ', r.actor_id, r.error)
+            else:
+                print('actor ', r.actor_id, 'destroyed')
+        pass
     
     def onTick(self, tick):
         
@@ -259,6 +303,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         ego_agent = self.agent_list['ego']
         preceding_agent = self.agent_list['preceding']
         del_t = self.time_delta # access the time delta from base class
+        # print('del_t : ', del_t)
 
         ego_vehicle = ego_agent.vehicle
         preceding_vehicle = preceding_agent.vehicle
@@ -270,7 +315,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         # camera_location = (ego_location + preceding_location) / 2
 
         self.SetSpectator(ego_location, height=200)
-        print('cogmod speed:     ', round(ego_vehicle.get_velocity().length(), 2))
+        # print('cogmod speed:     ', round(ego_vehicle.get_velocity().length(), 2))
         if self.scenario_status == ScenarioState.START:
             # change the cogmod setting at the start of the simulation
             cogmod_settings = DriverModifier.change_cogmod_settings_start_simulation(self.current_cogmod_agent_settings,
@@ -281,23 +326,25 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
             # apply control
             ego_control = ego_agent.run_step(del_t)
             if ego_control is not None:
-                ego_vehicle.apply_control(ego_control)
+                # ego_vehicle.apply_control(ego_control)
+                self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
             # start the scenario so move the preceding vehicle
             frame = self.start_frame + tick - self.frame_tracker
             preceding_agent.run_step(frame)
-            AgentViz.draw_ego(frame, self.tracks, self.ego_id, self.left_lane_id, 
+            AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
                                   self.world.debug, self.pivot, True)
             pass
         
         if self.scenario_status == ScenarioState.RUNNING:
             ego_control = ego_agent.run_step(del_t)
             if ego_control is not None:
-                ego_vehicle.apply_control(ego_control)
+                # ego_vehicle.apply_control(ego_control)
+                self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
             frame = self.start_frame + tick - self.frame_tracker
             preceding_agent.run_step(frame)
-            AgentViz.draw_ego(frame, self.tracks, self.ego_id, self.left_lane_id, 
+            AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
                                   self.world.debug, self.pivot, True)
             pass
         
@@ -305,11 +352,12 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
             ego_control = ego_agent.run_step(del_t)
             # print('cogmod speed:     ', round(ego_vehicle.get_velocity().length(), 2))
             if ego_control is not None:
-                ego_vehicle.apply_control(ego_control)
+                # ego_vehicle.apply_control(ego_control)
+                self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
         
         if self.scenario_status == ScenarioState.END:
-            # self.simulator.onEnd()
+            self.onEnd()
             self.restart_scenario()
             pass
         
@@ -349,14 +397,13 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
     
     
     def restart_scenario(self):
-        
-        actor_list = self.world.get_actors()
-        vehicle_list = actor_list.filter("*vehicle*")
-        self.logger.info(f"destroying {len(vehicle_list)} vehicles")
-        for agent in vehicle_list:
-            agent.destroy()
-        self.world.tick()
-        
+        # TODO: restart the scenario
+        # actor_list = self.world.get_actors()
+        # vehicle_list = actor_list.filter("*vehicle*")
+        # self.logger.info(f"destroying {len(vehicle_list)} vehicles")
+        # for agent in vehicle_list:
+        #     agent.destroy()
+        # self.world.tick()
         if self.nRepeat == 0:
             print('scenario simulated for all repeats')
             dateStr = date.now().strftime("%Y-%m-%d-%H-%M-%S")
@@ -372,7 +419,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
                 self.create_simulation()
             except Exception as e:
                 self.logger.error(f"error in creating simulation {e}")
-                # self.simulator.onEnd()
+                self.onEnd()
                 self.restart_scenario()
                 
                 

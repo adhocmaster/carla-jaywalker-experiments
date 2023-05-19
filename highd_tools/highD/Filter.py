@@ -61,25 +61,24 @@ class Filter():
     @staticmethod
     def filter_vehicle_follow_scenario(dataframe, 
                                        ego_type, preceding_type, 
-                                       minDuration, startDistance):
-        print('Filtering vehicle follow scenario', ego_type, preceding_type, minDuration, startDistance)
-        # this function returns a dataframe with only the lane follow data
-        # start, end, ego_id, preceding_id
+                                       minDuration=None, 
+                                       minStartDistance=None, maxStartDistance=None):
+        print('Filtering vehicle follow scenario', ego_type, preceding_type, minDuration, minStartDistance, maxStartDistance)
 
-        car_following_meta = {'ego_id': [], 'preceding_id': [], 'start_frame': [], 'end_frame': [], 'duration': [], 'distance': []}
+        car_following_meta = {'ego_id': [], 'preceding_id': [], 
+                            'start_frame': [], 'end_frame': [], 
+                            'duration': [], 'start_distance': [],
+                            'max_distance': [], 'min_distance': []}
 
-        # min duration is in seconds and 25 fps is the frame rate
         fps = 25
-        frame_threshold = fps * minDuration if minDuration != -1 else 2
 
         fActor = Filter._filter_actors(dataframe, 
-                                       'class', ego_type,
-                                       'nLane', 1)
+                                    'class', ego_type,
+                                    'nLane', 1)
         pActor = Filter._filter_actors(dataframe,
-                                      'class', preceding_type,
-                                      'nLane', 1)
+                                    'class', preceding_type,
+                                    'nLane', 1)
 
-        # first find all the car-following scenarios
         for actor in fActor:
             actor_df = dataframe[dataframe['id'] == actor]
             preceding_id = list(set(actor_df['precedingId'].unique()) - {0})
@@ -88,23 +87,34 @@ class Filter():
                 frames_togather = actor_df[actor_df['precedingId'] == p_id]
                 start_frame = frames_togather['frame'].iloc[0]
                 end_frame = frames_togather['frame'].iloc[-1]
-                ego_track = dataframe[(dataframe['id'] == actor) & (dataframe['frame'] == start_frame)].iloc[0]
-                preceding_track = dataframe[(dataframe['id'] == p_id) & (dataframe['frame'] == start_frame)].iloc[0]
-                startDistance = np.sqrt((ego_track['x'] - preceding_track['x']) ** 2 + (ego_track['y'] - preceding_track['y']) ** 2)
+                ego_tracks = dataframe[(dataframe['id'] == actor) & (dataframe['frame'].isin(frames_togather['frame']))]
+                preceding_tracks = dataframe[(dataframe['id'] == p_id) & (dataframe['frame'].isin(frames_togather['frame']))]
+                
+                # Calculate all distances using NumPy functions
+                distances = np.sqrt((ego_tracks['x'].values - preceding_tracks['x'].values) ** 2 
+                                + (ego_tracks['y'].values - preceding_tracks['y'].values) ** 2)
 
                 car_following_meta['ego_id'].append(actor)
                 car_following_meta['preceding_id'].append(p_id)
                 car_following_meta['start_frame'].append(start_frame)
                 car_following_meta['end_frame'].append(end_frame)
                 car_following_meta['duration'].append((end_frame - start_frame)/fps)
-                car_following_meta['distance'].append(startDistance)
+                car_following_meta['start_distance'].append(distances[0])  # Initial distance
+                car_following_meta['max_distance'].append(np.max(distances))  # Maximum distance
+                car_following_meta['min_distance'].append(np.min(distances))  # Minimum distance
+
+        df = pd.DataFrame(car_following_meta)
+        copy_df = df.copy()
+
+        if minDuration is not None:
+            df = df[df['duration'] >= minDuration]
         
-        # filter by duration and distance
-        all_scenario_df = pd.DataFrame(car_following_meta)
-        filter_by_distance_duration = all_scenario_df[(all_scenario_df['distance'] >= startDistance) & (all_scenario_df['duration'] >= minDuration)]
-        print(f'total scenario {len(all_scenario_df)}, filtered scenario {len(filter_by_distance_duration)}, ratio {len(filter_by_distance_duration) / len(all_scenario_df)}')
-        return filter_by_distance_duration
+        if minStartDistance is not None:
+            df = df[df['start_distance'] >= minStartDistance]
+        
+        if maxStartDistance is not None:
+            df = df[df['start_distance'] <= maxStartDistance]
+        
+        print(f'total scenario {len(copy_df)}, filtered scenario {len(df)}, ratio {len(df) / len(copy_df)}')
+        return df
 
-
-
-    

@@ -49,13 +49,13 @@ class HighD:
         return combined_dfs
 
     def get_dataframe_tuple(self, id):
-        return self.dfs[id]
+        return self.dfs[id-1]
 
     def get_image(self, id):
-        return self.images[id]
+        return self.images[id-1]
 
     def get_combined_dataframe(self, id):
-        return self.combined_dfs[id]
+        return self.combined_dfs[id-1]
 
     def get_images(self):
         return self.images

@@ -15,14 +15,6 @@ class HighD_Processor:
         return highD_data
 
     @staticmethod
-    def read_stable_height_dict(path):
-        stable_height = pd.read_csv(path)
-        stable_height_dict = {}
-        for i in range(len(stable_height)):
-            stable_height_dict[stable_height.iloc[i,0]] = stable_height.iloc[i,1]
-        return stable_height_dict
-
-    @staticmethod
     def process_tracks(tracksDF):
 
         df = tracksDF
