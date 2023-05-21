@@ -46,8 +46,8 @@ class TrajectoryFollower():
         cur_destination_transform = carla.Transform(location, rotation)
         self.vehicle.set_transform(cur_destination_transform)
         self.velocity =  carla.Vector3D(x=cur_row["xVelocity"].values[0], y=cur_row["yVelocity"].values[0], z=0)
-        self.vehicle.set_target_velocity(self.velocity)
-        print(f"trajecytory agent {self.agent_id} is running step {frame_id} with velocity {self.vehicle.get_velocity()}")
+        # self.vehicle.set_target_velocity(self.velocity)
+        # print(f"trajecytory agent {self.agent_id} is running step {frame_id} with velocity {self.vehicle.get_velocity()}")
         
         pass
 

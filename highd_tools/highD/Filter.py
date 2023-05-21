@@ -84,6 +84,13 @@ class Filter():
             preceding_id = list(set(actor_df['precedingId'].unique()) - {0})
             filtered_preceding_id = np.intersect1d(preceding_id, pActor)
             for p_id in filtered_preceding_id:
+                
+                # Check if preceding agent's preceding agent has a lane change
+                preceding_agent_df = dataframe[dataframe['id'] == p_id]
+                preceding_preceding_id = preceding_agent_df['precedingId'].unique()
+                if len(preceding_preceding_id) > 1:
+                    continue
+                
                 frames_togather = actor_df[actor_df['precedingId'] == p_id]
                 start_frame = frames_togather['frame'].iloc[0]
                 end_frame = frames_togather['frame'].iloc[-1]

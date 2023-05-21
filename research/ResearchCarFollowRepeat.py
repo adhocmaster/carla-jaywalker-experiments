@@ -69,8 +69,9 @@ class DriverModifier():
             comfort_deceleration = 1
 
         desired_velocity = velocity_df.max()
-        safe_time_headway = (1/ego_agent_df['dhw'].max()) * ego_agent_df['thw'].max() * 3.6**2 
+        safe_time_headway = (1 / ego_agent_df[ego_agent_df['thw'] != 0]['thw'].min())
 
+        
         subtasks_parameters = cogmod_settings['driver_profile']['subtasks_parameters']
         lane_following_subtask = subtasks_parameters['lane_following']
 
@@ -81,7 +82,7 @@ class DriverModifier():
 
         subtasks_parameters['lane_following'] = lane_following_subtask
         cogmod_settings['driver_profile']['subtasks_parameters'] = subtasks_parameters
-
+        print('cogmod settings after ', cogmod_settings)
         return cogmod_settings
 
     @staticmethod
@@ -91,7 +92,7 @@ class DriverModifier():
         preceding_agent_location = preceding_agent.vehicle.get_location()
         nearest_waypoint_preceding_agent = map.get_waypoint(preceding_agent_location, project_to_road=True)
         velocity_df = np.sqrt(ego_agent_df['xVelocity']**2 + ego_agent_df['yVelocity']**2)
-        desired_velocity = velocity_df.max()
+        desired_velocity = velocity_df.iloc[0]
         
         local_map = cogmod_settings['driver_profile']['local_map']
         local_map['vehicle_tracking_radius'] = tracking_distance
@@ -100,7 +101,6 @@ class DriverModifier():
         spawn_transform = spawn_waypoint.transform
         spawn_location = spawn_transform.location
         spawn_location = carla.Vector3D(spawn_location.x, spawn_location.y, 1.0)
-        print('cogmod spawn location ', spawn_location)
 
         destination_transform = preceding_agent.get_destination_transform()
         destination_waypoint = map.get_waypoint(destination_transform.location, project_to_road=True)
@@ -114,7 +114,7 @@ class DriverModifier():
         lane_following_subtask['safe_time_headway'] = 0
         lane_following_subtask['max_acceleration'] = 20
         lane_following_subtask['comfort_deceleration'] = 0.5
-
+        print('cogmod settings before ', cogmod_settings)
         return cogmod_settings
 
 
@@ -331,6 +331,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
                 pass
             # start the scenario so move the preceding vehicle
             frame = self.start_frame + tick - self.frame_tracker
+            # print('frame ScenarioState.START: ', frame)
             preceding_agent.run_step(frame)
             AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
                                   self.world.debug, self.pivot, True)
@@ -343,6 +344,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
                 self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
             frame = self.start_frame + tick - self.frame_tracker
+            # print('frame ScenarioState.Running: ', frame)
             preceding_agent.run_step(frame)
             AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
                                   self.world.debug, self.pivot, True)

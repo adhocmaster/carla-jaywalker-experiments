@@ -2,6 +2,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
 import math
+import pandas as pd
+
 class Plot():
     # the plot class does not do any filtering, it just plots the data
     @staticmethod
@@ -116,33 +118,33 @@ class Plot():
 
         # Calculate TTC, THW, and DHW for ego and preceding vehicles
         ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
-        ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
+        # ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
 
         # Calculate TTC, THW, and DHW for ego and preceding vehicles
         ttc_ego, thw_ego, dhw_ego = ego_tracks[['ttc', 'thw', 'dhw']].values.T
-        ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
+        # ttc_prec, thw_prec, dhw_prec = preceding_tracks[['ttc', 'thw', 'dhw']].values.T
 
         # Clip values between 0 and 200
         ttc_ego_clipped = np.clip(ttc_ego, cMin, cMax)
         thw_ego_clipped = np.clip(thw_ego, cMin, cMax)
         dhw_ego_clipped = np.clip(dhw_ego, cMin, cMax)
 
-        ttc_prec_clipped = np.clip(ttc_prec, cMin, cMax)
-        thw_prec_clipped = np.clip(thw_prec, cMin, cMax)
-        dhw_prec_clipped = np.clip(dhw_prec, cMin, cMax)
+        # ttc_prec_clipped = np.clip(ttc_prec, cMin, cMax)
+        # thw_prec_clipped = np.clip(thw_prec, cMin, cMax)
+        # dhw_prec_clipped = np.clip(dhw_prec, cMin, cMax)
 
         # Normalize ego values
-        # ttc_ego_norm = ttc_ego_clipped / np.linalg.norm(ttc_ego_clipped)
-        # thw_ego_norm = thw_ego_clipped / np.linalg.norm(thw_ego_clipped)
-        # dhw_ego_norm = dhw_ego_clipped / np.linalg.norm(dhw_ego_clipped)
+        ttc_ego_norm = ttc_ego_clipped / np.linalg.norm(ttc_ego_clipped)
+        thw_ego_norm = thw_ego_clipped / np.linalg.norm(thw_ego_clipped)
+        dhw_ego_norm = dhw_ego_clipped / np.linalg.norm(dhw_ego_clipped)
         ttc_ego_norm = ttc_ego_clipped 
         thw_ego_norm = thw_ego_clipped 
         dhw_ego_norm = dhw_ego_clipped 
 
         # Normalize preceding values
-        ttc_prec_norm = ttc_prec_clipped / np.linalg.norm(ttc_prec_clipped)
-        thw_prec_norm = thw_prec_clipped / np.linalg.norm(thw_prec_clipped)
-        dhw_prec_norm = dhw_prec_clipped / np.linalg.norm(dhw_prec_clipped)
+        # ttc_prec_norm = ttc_prec_clipped / np.linalg.norm(ttc_prec_clipped)
+        # thw_prec_norm = thw_prec_clipped / np.linalg.norm(thw_prec_clipped)
+        # dhw_prec_norm = dhw_prec_clipped / np.linalg.norm(dhw_prec_clipped)
 
         # Create a single plot with six subplots
         fig, axs = plt.subplots(3, 2, figsize=(15, 15), sharex='col')
@@ -172,10 +174,151 @@ class Plot():
         axs[2, 0].set_title('TTC, THW, and DHW for Ego')
         axs[2, 0].legend()
 
-        # axs[2, 1].plot(preceding_tracks['frame'], ttc_prec_norm, label='TTC')
-        # axs[2, 1].plot(preceding_tracks['frame'], thw_prec_norm, label='THW')
-        # axs[2, 1].plot(preceding_tracks['frame'], dhw_prec_norm, label='DHW')
-        # axs[2, 1].set_title('TTC, THW, and DHW for Preceding Vehicle')
-        # axs[2, 1].legend()
-
+        # Plotting TTC distribution
+        ttc_ego_clipped = ttc_ego_clipped[ttc_ego_clipped != cMin]
+        ttc_ego_clipped = ttc_ego_clipped[ttc_ego_clipped != cMax]
+        axs[2, 1].hist(ttc_ego_clipped, bins=20, edgecolor='black')
+        axs[2, 1].set_xlabel('TTC Values')
+        axs[2, 1].set_ylabel('Frequency')
+        axs[2, 1].set_title('Distribution of TTC for Ego Vehicle')
         
+    @staticmethod
+    def plot_all_exec_nums(dataframe):
+        # Assuming df is your DataFrame
+        df = dataframe.copy()
+        # group by exec_num
+        grouped = df.groupby('exec_num')
+
+        fig, axs = plt.subplots(1, 6, figsize=(30, 5))  # Increase number of subplots to 6
+
+        # iterate over each group
+        for name, group in grouped:
+            # change frame number for each group to start at 1
+            group['frame'] = group['frame'] - group['frame'].min() + 1
+            
+            group = group[group['scenario_status'] != 'ScenarioState.PENDING']
+            
+            axs[0].plot(group['frame'], group['a_speed'], label=f'a_speed {name}')
+            axs[0].plot(group['frame'], group['c_speed'], label=f'c_speed {name}')
+
+            axs[1].plot(group['frame'], group['c_steer'], label=f'exec_num {name}')
+            axs[2].plot(group['frame'], group['c_throttle'], label=f'exec_num {name}')
+            axs[3].plot(group['frame'], group['c_brake'], label=f'exec_num {name}')
+
+            # plot gaze_direction
+            group['gaze_direction'].value_counts().plot(kind='bar', ax=axs[4], label=f'exec_num {name}')
+
+            # plot perceived_c_x, perceived_c_y, a_x, a_y in the sixth plot
+            axs[5].plot(group['frame'], group['perceived_c_x'], label=f'perceived_c_x {name}')
+            axs[5].plot(group['frame'], group['perceived_c_y'], label=f'perceived_c_y {name}')
+            axs[5].plot(group['frame'], group['a_x'], label=f'a_x {name}')
+            axs[5].plot(group['frame'], group['a_y'], label=f'a_y {name}')
+
+        # Set labels and titles
+        axs[0].set_xlabel('Frame')
+        axs[0].set_ylabel('Speed')
+        axs[0].set_title('Cogmod Speed across all Executions')
+        # axs[0].legend()
+
+        axs[1].set_xlabel('Frame')
+        axs[1].set_ylabel('Steer')
+        axs[1].set_title('Cogmod Steer across all Executions')
+        # axs[1].legend()
+
+        axs[2].set_xlabel('Frame')
+        axs[2].set_ylabel('Throttle')
+        axs[2].set_title('Cogmod Throttle across all Executions')
+        # axs[2].legend()
+
+        axs[3].set_xlabel('Frame')
+        axs[3].set_ylabel('Brake')
+        axs[3].set_title('Cogmod Brake across all Executions')
+        # axs[3].legend()
+
+        axs[4].set_xlabel('Gaze Direction')
+        axs[4].set_ylabel('Count')
+        axs[4].set_title('Gaze Direction across all Executions')
+        # axs[4].legend()
+
+        # set labels and title for the new plot
+        axs[5].set_xlabel('Frame')
+        axs[5].set_ylabel('Values')
+        axs[5].set_title('Perceived and Actual Values across all Executions')
+        # axs[5].legend()
+
+        plt.tight_layout()
+        plt.show()
+
+
+    @staticmethod
+    def plot_individual_exec_nums(dataframe):
+        # group by exec_num
+        grouped = dataframe.groupby('exec_num')
+
+        for name, group in grouped:
+            fig, axs = plt.subplots(1, 4, figsize=(20, 6))
+
+            # change frame number for each group to start at 1
+            group['frame'] = group['frame'] - group['frame'].min() + 1
+            group = group[group['scenario_status'] == 'ScenarioState.RUNNING']
+            # remove the first frame 
+            # group = group.drop(group.index[:2])
+            
+            # Create a new DataFrame for calculations
+            calc_df = pd.DataFrame()
+            calc_df['frame'] = group['frame']
+            calc_df['perceived_distance'] = np.sqrt((group['c_x'] - group['perceived_c_x'])**2 
+                                                    + (group['c_y'] - group['perceived_c_y'])**2)
+            calc_df['actual_distance'] = np.sqrt((group['c_x'] - group['a_x'])**2 
+                                                + (group['c_y'] - group['a_y'])**2)
+
+            # scatter plot perceived_distance and actual_distance
+            # axs[0].plot(calc_df['frame'], calc_df['perceived_distance'], label='Perceived Distance')
+            # axs[0].plot(calc_df['frame'], calc_df['actual_distance'], label='Actual Distance')
+            axs[0].plot(group['frame'], group['perceived_c_speed'], label='Perceived Velocity')
+            axs[0].plot(group['frame'], group['a_speed'], label='Actual Velocity')
+            
+            
+            axs[0].set_xlabel('Frame')
+            axs[0].set_ylabel('Distance')
+            axs[0].set_title(f'Perceived and Actual Distances and speed for exec_num {name}')
+            axs[0].legend()
+
+            for index, row in group.iterrows():
+                frame = row['frame']
+                direction = row['gaze_direction']
+                color = Gaze_Settings[direction]
+                axs[1].plot([frame, frame], [0, 10], color=color, linewidth=2)
+            axs[1].set_xlabel('Gaze Direction')
+            axs[1].set_title('Gaze Direction across all Executions')
+            
+            axs[2].plot(group['frame'], group['a_speed'], label=f'a_speed {name}')
+            axs[2].plot(group['frame'], group['c_speed'], label=f'c_speed {name}')
+            axs[2].set_xlabel('Frame')
+            axs[2].set_ylabel('Speed')
+            axs[2].set_title('Cogmod and Actor Speed across all Executions')
+            
+            axs[3].plot(group['frame'], group['c_throttle'], label=f'c throttle')
+            axs[3].plot(group['frame'], group['c_brake'], label=f'c brake')
+            axs[3].set_xlabel('Frame')
+            axs[3].set_ylabel('throttle and brake')
+            axs[3].set_title('Cogmod Throttle and Brake across all Executions')
+            
+            
+            plt.tight_layout()
+            plt.show()
+
+
+
+Gaze_Settings = {
+    'GazeDirection.CENTER': 'lightcoral',
+    'GazeDirection.LEFT': 'lightgreen',
+    'GazeDirection.RIGHT': 'lightblue',
+    'GazeDirection.LEFTBLINDSPOT': 'lightgreen',
+    'GazeDirection.RIGHTBLINDSPOT': 'lightblue',
+    'GazeDirection.LEFTMIRROR': 'lightgreen',
+    'GazeDirection.RIGHTMIRROR': 'lightblue',
+    'GazeDirection.BACK':  'lightcyan',
+}
+
+

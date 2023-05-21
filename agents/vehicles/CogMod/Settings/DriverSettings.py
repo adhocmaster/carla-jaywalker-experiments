@@ -40,8 +40,8 @@ driver_profile = {
 
     'driver2': {
         'servers': {
-            'longterm_memory': {'queue_length': 10, 'tick_frequency': 2,},
-            'complex_cognition': {'queue_length': 10, 'tick_frequency': 2,},
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 1,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 1,},
             'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
         },
         'local_map': {
@@ -50,10 +50,10 @@ driver_profile = {
         },
         'gaze': Gaze_Settings1,
         'controller': {
-            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
-            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
+            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.04,},
+            'longitudinal_PID': {'K_P': 0.8, 'K_I': 0.05, 'K_D': 0.01, 'dt': 0.04,},
             'max_throttle': 0.95,
-            'max_brake': 0.9,
+            'max_brake': 0.5,
             'max_steering': 0.8,
             'offset': 0.0,
         },
@@ -63,9 +63,9 @@ driver_profile = {
                 'safe_time_headway': 0.37, # s
                 'max_acceleration': 2.44, # m/s^2
                 'comfort_deceleration': 0.68, # m/s^2
-                'acceleration_exponent': 4, 
-                'minimum_distance': 0, # m
-                'vehicle_length': 0, # m
+                'acceleration_exponent': 5, 
+                'minimum_distance': 2, # m
+                'vehicle_length': 4, # m
                 'far_distance': CONST,                                 # important parameter
             },
             'lane_keeping': {

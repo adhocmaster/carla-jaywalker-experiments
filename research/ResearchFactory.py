@@ -107,7 +107,7 @@ class ResearchFactory:
                                            logLevel=defaultLogLevel,
                                            outputDir="logs",
                                            scenarioID=scenarioID,
-                                           pickedScenario=1,
-                                           nRepeat=10)
+                                           pickedScenario=0,
+                                           nRepeat=1)
         research.run(maxTicks=maxTicks)
         pass

@@ -65,7 +65,7 @@ class TrackedAgentManager:
         for agent in exact_update_agent_list:
             # print(agent, exact_update_agent_list)
             if agent in agent_to_zone_map.keys():
-                print('inside if exact ')
+                # print('inside if exact ')
                 other_vehicle = self.world.get_actor(agent)
                 zone = agent_to_zone_map[agent]
                 self.surrounding_agents[zone].update(ego_vehicle=self.vehicle, 
@@ -74,7 +74,7 @@ class TrackedAgentManager:
         for agent in approximate_update_agent_list:
             # print(agent, approximate_update_agent_list)
             if agent in agent_to_zone_map.keys():
-                print('inside if approximate ')
+                # print('inside if approximate ')
                 zone = agent_to_zone_map[agent]
                 self.surrounding_agents[zone].update(ego_vehicle=self.vehicle, 
                                                      other_vehicle=None,
@@ -91,7 +91,7 @@ class TrackedAgentManager:
             if vehicle is None:
                 continue
             distance = self.vehicle.get_location().distance(vehicle.get_location())
-            print(f'distance {distance}, tracking radius {self.vehicle_tracking_radius}')
+            # print(f'distance {distance}, tracking radius {self.vehicle_tracking_radius}')
             if distance > self.vehicle_tracking_radius:
                 continue
             else:

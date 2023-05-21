@@ -2,11 +2,15 @@
 import carla
 
 # main issue is we dont have velocity visible for the agent, so we need to calculate it
+# so we update velcoity when we see vehicle twice
+# each update make corresponding boolean true    
+
 class WorkingMemory():
 
     def __init__(self):
 
         self.tracked_vehicle_id = None
+        self.threshold_multiplier = 0.05
 
         self.location_t_1 = carla.Vector3D()
         self.location_t_2 = carla.Vector3D()
@@ -16,28 +20,37 @@ class WorkingMemory():
         self.ego_velocity_t_1 = None
         
         self.is_first_update = False
+        
+        self.tick_passed_since_last_update = 0
         pass
     
+    # at least take two observation to calculate the velocity
     def update(self, ego_vehicle, other_vehicle, del_t):
         
         location_t = None
         velocity_t = None
+        #  this checks we don't update velocity unless we have both t_1 and t_2
         if self.is_first_update:
             if other_vehicle is None:
                 return
             location_t = other_vehicle.get_location()
-            velocity_t = (location_t - self.location_t_2) / del_t
             self.is_first_update = False
-            
             self.location_t_1 = location_t
-            self.velocity_t_1 = velocity_t
         else:
             if other_vehicle is None:
+                self.tick_passed_since_last_update += 1
                 location_t = self.location_t_1 + self.velocity_t_1 * del_t
                 velocity_t = self.velocity_t_1
             else:
                 location_t = other_vehicle.get_location()
                 velocity_t = (location_t - self.location_t_1) / del_t
+                if self.tick_passed_since_last_update != 0:
+                    diff = velocity_t - self.velocity_t_1
+                    mul = self.tick_passed_since_last_update * self.threshold_multiplier
+                    if diff.length() > mul:
+                        diff = diff.make_unit_vector() * mul
+                    velocity_t = self.velocity_t_1 + diff
+                    self.tick_passed_since_last_update = 0
             
             self.location_t_2 = self.location_t_1
             self.location_t_1 = location_t
@@ -45,21 +58,24 @@ class WorkingMemory():
         self.ego_location_t_1 = ego_vehicle.get_location()
         self.ego_velocity_t_1 = ego_vehicle.get_velocity()
         
-        print('L t-1 ', self.location_t_1, ' L t-2 ', self.location_t_2, ' V t-1 ', self.velocity_t_1)
+        # print('L t-1 ', self.location_t_1, ' L t-2 ', self.location_t_2, ' V t-1 ', self.velocity_t_1)
 
     # while setting the speed of the vehicle we set the initial speed of the vehicle as ego speed
     def set_agent(self, other_vehicle, ego_vehicle):
         self.tracked_vehicle_id = other_vehicle.id
+        # self.velocity_t_1 = ego_vehicle.get_velocity()    # assumption
         self.location_t_2 = other_vehicle.get_location()
-        self.velocity_t_1 = ego_vehicle.get_velocity()    # assumption
         
         self.ego_location_t_1 = ego_vehicle.get_location()
         self.ego_velocity_t_1 = ego_vehicle.get_velocity()
         
         self.is_first_update = True
+        print('agent set ')
         pass
     
     def get_speed(self):
+        if self.velocity_t_1.length() == 0:
+            return self.ego_velocity_t_1.length()
         return self.velocity_t_1.length() 
     
     def is_set(self):
