@@ -63,6 +63,9 @@ class LongTermMemory(BaseCognitiveServer):
     def get_idm_parameters(self):
         return self.subtask_parameters['lane_following']
 
+    def print_server_stats(self):
+        print(f'Memory control #req {len(self.request_queue)}, #resp {len(self.response_queue)}')
+        pass
 
     # def __init__(self, frequency=1):
     #     super().__init__(frequency)

@@ -87,3 +87,7 @@ class ComplexCognition(BaseCognitiveServer):
             next_waypoint = localMap.global_plan[-1][0]
 
         return next_waypoint
+    
+    def print_server_stats(self):
+        print(f'Computation control #req {len(self.request_queue)}, #resp {len(self.response_queue)}')
+        pass

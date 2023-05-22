@@ -79,4 +79,8 @@ class MotorControl(BaseCognitiveServer):
 
     def get_response(self):
         return super().get_response()
+    
+    def print_server_stats(self):
+        print(f'Motor control #req {len(self.request_queue)}, #resp {len(self.response_queue)}')
+        pass
 
