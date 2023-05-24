@@ -46,7 +46,7 @@ class IntelligentDriverModel():
             pass
             
 
-        acceleration = math.pow((vehicle_velocity / self.desired_velocity), 4)
+        acceleration = math.pow((vehicle_velocity / self.desired_velocity), self.acceleration_exponent)
         deceleration = math.pow(self.calc_desired_gap() / min(self.far_distance, gap), 2)
 
         ret = float(self.max_acceleration * (1 - acceleration - deceleration))

@@ -28,7 +28,7 @@ class DataCollectorCarFollowWithRepeat():
             "scenario_id": [], "exec_num": [], "frame": [], "scenario_status": [],
 
             "ego_id": [], "c_x": [], "c_y": [], 
-            "c_speed": [], "c_acceleration": [], 
+            "c_speed": [], "c_acceleration": [], "target_speed": [],
             "c_steer": [], "c_throttle": [], "c_brake": [],
             "perceived_c_x": [], "perceived_c_y": [], "perceived_c_speed": [],
             "gaze_direction": [],
@@ -53,6 +53,7 @@ class DataCollectorCarFollowWithRepeat():
         
         self.statDict["c_speed"].append(cogmod_agent.get_vehicle().get_velocity().length())
         self.statDict["c_acceleration"].append(cogmod_agent.get_vehicle().get_velocity().length())
+        self.statDict["target_speed"].append(cogmod_agent.motor_control.target_velocity)
         
         self.statDict["c_steer"].append(cogmod_agent.get_vehicle().get_control().steer)
         self.statDict["c_throttle"].append(cogmod_agent.get_vehicle().get_control().throttle)

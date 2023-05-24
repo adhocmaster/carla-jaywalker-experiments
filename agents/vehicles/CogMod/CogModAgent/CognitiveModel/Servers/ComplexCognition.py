@@ -52,7 +52,7 @@ class ComplexCognition(BaseCognitiveServer):
         idm_parameters = curRequest.data['idm_parameters']
 
         idm = IntelligentDriverModel(idm_parameters, localMap)
-        velocity = idm.calc_velocity() * 3.6
+        velocity = idm.calc_velocity()
 
         # print(f'next velocity is {velocity}')
 

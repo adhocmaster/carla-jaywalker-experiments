@@ -55,10 +55,6 @@ class MotorControl(BaseCognitiveServer):
         if target_velocity == -1:
             if self.target_velocity == -1:
                 return
-            else:
-                response_dict = {'target_velocity': self.target_velocity}
-                curRequest.after_process(response_dict)
-                self.response_queue.append(curRequest)
         else: 
             self.target_velocity = target_velocity
             # print(f'updated the target velocity to {self.target_velocity}')

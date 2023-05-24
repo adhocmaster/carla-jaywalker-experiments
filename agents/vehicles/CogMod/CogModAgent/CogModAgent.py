@@ -1,4 +1,5 @@
 import os
+import logging
 from .AgentInitializer import AgentIntializer
 from .CognitiveModel.Subtasks.LaneKeeping import LaneKeeping
 from .CognitiveModel.Subtasks.LaneFollow import LaneFollow
@@ -6,16 +7,8 @@ from .RequestHandler import RequestHandler
 from lib import LoggerFactory
 from ..CogModEnum import ManeuverType
 
-
-
-
-# from agents.vehicles.CogModAgent.AgentInitializer import AgentIntializer
-# from agents.vehicles.CogModAgent.CognitiveModel.Subtasks.LaneKeeping import LaneKeeping
-# from agents.vehicles.CogModAgent.CognitiveModel.Subtasks.LaneFollow import LaneFollow
-# from agents.vehicles.CogModAgent.RequestHandler import RequestHandler
-# from lib import LoggerFactory
-# from agents.vehicles.CogModAgent.CognitiveModel.CogModEnum import ManeuverType
-
+# time tracker for logging purpose
+import time
 
 class CogModAgent():
     def __init__(self, vehicle, destination_point, driver_profile):
@@ -34,7 +27,7 @@ class CogModAgent():
                                                   self.destination_point,
                                                   self.driver_profile)
         
-        self.logger = LoggerFactory.create(self.name)
+        self.logger = LoggerFactory.create(self.name, {'LOG_LEVEL':logging.ERROR})
 
         self.local_map = self.driver_initializer.get_local_map()
 
@@ -53,6 +46,10 @@ class CogModAgent():
         self.subtasks_queue = [self.lane_following_task, self.lane_keeping_task]
 
         self.request_handler = RequestHandler(self.subtasks_queue, self.servers_dict)
+        
+        self.counter = 0
+        self.bigbang = time.time()
+        self.logger.info(f"CogModAgent is initialized {self.counter} system time {self.bigbang}")
         pass
 
 
@@ -88,12 +85,14 @@ class CogModAgent():
     #   if target velocity and waypoint are set
 
     def update_agent(self, global_vehicle_list, del_t):
+        cur_time = time.time()
+        self.counter += 1
+        self.logger.info(f"update_agent {self.counter}, {cur_time-self.bigbang}")
         manuever_type = self.get_current_manuever()
 
-        # print('global_vehicle_list: ', global_vehicle_list)
-        # print("manuever_type: ", manuever_type)
         vehicle_inside_gaze_direction = self.gaze.filter_object_inside_gaze_direction(global_vehicle_list, manuever_type)
-        # print("vehicle_inside_gaze_direction: ", vehicle_inside_gaze_direction)
+        self.logger.info(f"vehicle: {vehicle_inside_gaze_direction}, dir {self.gaze.gaze_direction}")
+        
         self.local_map.update(vehicle_inside_gaze_direction, del_t)
 
         self.request_handler.process_request_in_cognitive_servers()
@@ -105,11 +104,10 @@ class CogModAgent():
         subtask_requests = self.request_handler.get_request_from_subtasks()
 
         self.request_handler.send_request_to_servers(subtask_requests)
-
+        self.logger.info(f"subtask state follow {self.lane_following_task.subtask_state}, keep {self.lane_keeping_task.subtask_state}")
         if self.motor_control.target_waypoint is not None and self.motor_control.target_velocity  != -1:
             control = self.vehicle_controller.run_step(target_speed=self.motor_control.target_velocity, 
                                                         waypoint=self.motor_control.target_waypoint)
-            # print("control", control)
             return control
         return None
     

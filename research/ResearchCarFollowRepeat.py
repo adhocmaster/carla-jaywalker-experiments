@@ -79,10 +79,14 @@ class DriverModifier():
         lane_following_subtask['safe_time_headway'] = 0
         lane_following_subtask['max_acceleration'] = max_acceleration
         lane_following_subtask['comfort_deceleration'] = comfort_deceleration
+        lane_following_subtask['acceleration_exponent'] = 5
+        lane_following_subtask['minimum_distance'] = 2
+        lane_following_subtask['vehicle_length'] = 4
+        
 
         subtasks_parameters['lane_following'] = lane_following_subtask
         cogmod_settings['driver_profile']['subtasks_parameters'] = subtasks_parameters
-        print('cogmod settings after ', cogmod_settings)
+        print('cogmod settings after ', lane_following_subtask)
         return cogmod_settings
 
     @staticmethod
@@ -114,7 +118,10 @@ class DriverModifier():
         lane_following_subtask['safe_time_headway'] = 0
         lane_following_subtask['max_acceleration'] = 20
         lane_following_subtask['comfort_deceleration'] = 0.5
-        print('cogmod settings before ', cogmod_settings)
+        lane_following_subtask['acceleration_exponent'] = 5
+        lane_following_subtask['minimum_distance'] = 2
+        lane_following_subtask['vehicle_length'] = 4
+        print('cogmod settings before ', lane_following_subtask)
         return cogmod_settings
 
 
@@ -239,7 +246,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
                                                                                                       ego_agent_df=self.ego_agent_df)
         
         print("current cogmod settings : ", self.current_cogmod_agent_settings['source'])
-        ego_agent = self.createCogModAgent(self.current_cogmod_agent_settings)
+        ego_agent = self.createCogModAgent(self.current_cogmod_agent_settings, loglevel=logging.ERROR)
         self.agent_list = {'ego': ego_agent, 'preceding': preceding_agent}
         
         pass
@@ -320,8 +327,6 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
             # change the cogmod setting at the start of the simulation
             cogmod_settings = DriverModifier.change_cogmod_settings_start_simulation(self.current_cogmod_agent_settings,
                                                                            self.ego_agent_df)
-            # subtask = cogmod_settings['driver_profile']['subtasks_parameters']['lane_following']
-            # self.logger.info(f'new setting {subtask}')
             ego_agent.reset_driver(cogmod_settings['driver_profile'])
             # apply control
             ego_control = ego_agent.run_step(del_t)

@@ -251,7 +251,7 @@ class Plot():
 
 
     @staticmethod
-    def plot_individual_exec_nums(dataframe):
+    def plot_individual_exec_nums(dataframe, only_running=False):
         # group by exec_num
         grouped = dataframe.groupby('exec_num')
 
@@ -260,7 +260,9 @@ class Plot():
 
             # change frame number for each group to start at 1
             group['frame'] = group['frame'] - group['frame'].min() + 1
-            group = group[group['scenario_status'] == 'ScenarioState.RUNNING']
+            
+            if only_running:
+                group = group[group['scenario_status'] == 'ScenarioState.RUNNING']
             # remove the first frame 
             # group = group.drop(group.index[:2])
             
@@ -294,9 +296,11 @@ class Plot():
             
             axs[2].plot(group['frame'], group['a_speed'], label=f'a_speed {name}')
             axs[2].plot(group['frame'], group['c_speed'], label=f'c_speed {name}')
+            # axs[2].plot(group['frame'], group['target_speed'], label=f'target_speed {name}')
             axs[2].set_xlabel('Frame')
             axs[2].set_ylabel('Speed')
             axs[2].set_title('Cogmod and Actor Speed across all Executions')
+            axs[2].legend()
             
             axs[3].plot(group['frame'], group['c_throttle'], label=f'c throttle')
             axs[3].plot(group['frame'], group['c_brake'], label=f'c brake')

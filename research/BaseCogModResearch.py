@@ -1,4 +1,5 @@
 import carla
+import logging
 from lib.exceptions import NotImplementedInterface
 from .BaseResearch import BaseResearch
 from agents.vehicles import VehicleFactory
@@ -62,7 +63,7 @@ class BaseCogModResearch(BaseResearch):
     
     # in synchronous mode if we dont tick the vehicle is spawned on origin (0, 0)
     #  right after tick vehicle is shifted at the correct location
-    def createCogModAgent(self, agent_settings):
+    def createCogModAgent(self, agent_settings, loglevel=logging.INFO):
         # self.logger.info("createCogModAgent")
         spawn_wp = self.LocationToWaypoint(agent_settings['source'])
         print('COGMOD spawn wp ', spawn_wp)
