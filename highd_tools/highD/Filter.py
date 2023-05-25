@@ -62,7 +62,8 @@ class Filter():
     def filter_vehicle_follow_scenario(dataframe, 
                                        ego_type, preceding_type, 
                                        minDuration=None, 
-                                       minStartDistance=None, maxStartDistance=None):
+                                       minStartDistance=None, maxStartDistance=None,
+                                       removeStrictDistanceInc=False):
         print('Filtering vehicle follow scenario', ego_type, preceding_type, minDuration, minStartDistance, maxStartDistance)
 
         car_following_meta = {'ego_id': [], 'preceding_id': [], 
@@ -101,6 +102,11 @@ class Filter():
                 distances = np.sqrt((ego_tracks['x'].values - preceding_tracks['x'].values) ** 2 
                                 + (ego_tracks['y'].values - preceding_tracks['y'].values) ** 2)
 
+                if removeStrictDistanceInc:
+                    # Remove scenario where distance is strictly increasing
+                    if np.all(np.diff(distances) > 0):
+                        continue
+                
                 car_following_meta['ego_id'].append(actor)
                 car_following_meta['preceding_id'].append(p_id)
                 car_following_meta['start_frame'].append(start_frame)

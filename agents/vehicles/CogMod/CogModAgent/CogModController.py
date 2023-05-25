@@ -10,6 +10,8 @@ import math
 import numpy as np
 import carla
 from agents.tools.misc import get_speed
+import logging
+from lib import LoggerFactory
 
 
 class VehiclePIDController():
@@ -122,19 +124,20 @@ class PIDLongitudinalController():
         self._k_d = K_D
         self._dt = dt
         self._error_buffer = deque(maxlen=10)
+        self.logger = LoggerFactory.create("Controller", {'LOG_LEVEL':logging.INFO})
 
     def run_step(self, target_speed, debug=False):
         """
         Execute one step of longitudinal control to reach a given target speed.
 
-            :param target_speed: target speed in Km/h
+            :param target_speed: target speed in M/S
             :param debug: boolean for debugging
             :return: throttle control
         """
         current_speed = get_speed(self._vehicle)
 
         if debug:
-            print('Current speed = {}'.format(current_speed))
+            print(f'Current speed = {current_speed}')
 
         return self._pid_control(target_speed, current_speed)
 
@@ -156,8 +159,10 @@ class PIDLongitudinalController():
         else:
             _de = 0.0
             _ie = 0.0
-
-        return np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0)
+        
+        ret = np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0)
+        self.logger.info(f'target speed {target_speed}    error {round(error,2)}     sum {round(sum(self._error_buffer),2)}    ret {ret}')
+        return ret
 
     def change_parameters(self, K_P, K_I, K_D, dt):
         """Changes the PID parameters"""

@@ -49,3 +49,21 @@ def ks_test_ttc(data: pd.DataFrame) -> float:
     ks_statistic, p_value = stats.ks_2samp(ttc, calculated_ttc)
     
     return ks_statistic, p_value
+
+
+
+def get_scenario_data(dfs, follow_meta_df, scenario_id):
+    # Retrieve scenario data
+    scenario_df = follow_meta_df.iloc[scenario_id]
+
+    dataset_id = scenario_df['dataset_id']
+    ego_id = scenario_df['ego_id']
+    prec_id = scenario_df['preceding_id']
+    start_frame = scenario_df['start_frame']
+    end_frame = scenario_df['end_frame']
+    
+    df = dfs[int(dataset_id)-1]
+    ego_df = df[(df['id'] == ego_id) & (df['frame'].between(start_frame, end_frame))]
+    prec_df = df[(df['id'] == prec_id) & (df['frame'].between(start_frame, end_frame))]
+
+    return ego_df, prec_df

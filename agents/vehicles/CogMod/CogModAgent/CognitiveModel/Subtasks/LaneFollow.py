@@ -1,12 +1,14 @@
 from ....CogModEnum import SubtaskType, SubtaskState, ServerType
 from ..Request import Request
-
+import logging
+from lib import LoggerFactory
 
 class LaneFollow():
     def __init__(self, localMap):
 
         self.subtask_type = SubtaskType.LANEFOLLOWING
-
+        self.logger = LoggerFactory.create("LaneFollow", {'LOG_LEVEL':logging.ERROR})
+        
         self.tick_frequency = 1
         self.tick_counter = 0
         self.IDM = None
@@ -27,11 +29,14 @@ class LaneFollow():
     def get_request(self):
         result = self.request_queue
         self.request_queue = []
+        for r in result:
+            self.logger.info(f'get_request() {str(r)}')
         return result
 
     # on every tick increase counter and accumulate responses
     def onTick(self, responses, localMap):
-        # print('LaneFollow onTick()')
+        for r in responses:
+            self.logger.info(f'onTick response {str(r)}')
         self.tick_counter += 1
         self.local_map = localMap
         
@@ -53,9 +58,9 @@ class LaneFollow():
 
 
     def lateTick(self, responses_queue):
-        # print('LaneFollow lateTick()')
+        self.logger.info(f'lateTick() {str(responses_queue)}')
         for response in responses_queue:
-            # print(f'response: {response}')
+            self.logger.info(f'lateTick() {str(response)}')
             if response.data.__contains__('idm_parameters'):
                 self.local_memory['idm_parameters'] = response.data['idm_parameters'] 
                 pass
