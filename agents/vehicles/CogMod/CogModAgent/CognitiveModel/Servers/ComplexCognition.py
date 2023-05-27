@@ -1,12 +1,18 @@
 import carla
+import logging
+from lib import LoggerFactory
 from .BaseCognitiveServer import BaseCognitiveServer
 from ..Subtasks.IntelligentDriverModel import IntelligentDriverModel
 
 
 class ComplexCognition(BaseCognitiveServer):
-    def __init__(self, queue_length=10, frequency=5):
+    def __init__(self, queue_length=10, frequency=5, time_delta=1):
         super().__init__(queue_length, frequency)
+        self.delta = time_delta
+        self.logLevel = logging.INFO
+        self.logger = LoggerFactory.create("ComplexCognition", {'LOG_LEVEL':self.logLevel})
         self.tick_counter = 0
+        self.logger.info(f"Creating complex cognition {self.tick_counter}")
         pass
 
     def add_request(self, request):
@@ -51,8 +57,8 @@ class ComplexCognition(BaseCognitiveServer):
         localMap = curRequest.data['local_map']
         idm_parameters = curRequest.data['idm_parameters']
 
-        idm = IntelligentDriverModel(idm_parameters, localMap)
-        velocity = idm.calc_velocity()
+        idm = IntelligentDriverModel(idm_parameters, localMap, self.logger)
+        velocity = idm.calc_velocity(delta_time=self.delta)
 
         # print(f'next velocity is {velocity}')
 
@@ -73,7 +79,7 @@ class ComplexCognition(BaseCognitiveServer):
         # print(f'vehicle location is {vehicle_location}')
         nearest_waypoint = localMap.map.get_waypoint(vehicle_location)
 
-        # iterate over the waypoints from global plan and print distance 
+        # iterate over the waypoints from global plan 
         next_waypoint = None  #  waypoint immediately after far distance
         distance = 0 
         for wp, _ in localMap.global_plan:

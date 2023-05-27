@@ -108,6 +108,6 @@ class ResearchFactory:
                                            outputDir="logs",
                                            scenarioID=scenarioID,
                                            pickedScenario=0,
-                                           nRepeat=1)
+                                           nRepeat=0)
         research.run(maxTicks=maxTicks)
         pass

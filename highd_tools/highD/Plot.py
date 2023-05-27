@@ -251,7 +251,7 @@ class Plot():
 
 
     @staticmethod
-    def plot_individual_exec_nums(dataframe, only_running=False):
+    def plot_individual_exec_nums(dataframe, only_running=False, from_start=False):
         # group by exec_num
         grouped = dataframe.groupby('exec_num')
 
@@ -261,8 +261,12 @@ class Plot():
             # change frame number for each group to start at 1
             group['frame'] = group['frame'] - group['frame'].min() + 1
             
+            if from_start:
+                group = group[group['scenario_status'] != 'ScenarioState.PENDING']
+            
             if only_running:
                 group = group[group['scenario_status'] == 'ScenarioState.RUNNING']
+            
             # remove the first frame 
             # group = group.drop(group.index[:2])
             

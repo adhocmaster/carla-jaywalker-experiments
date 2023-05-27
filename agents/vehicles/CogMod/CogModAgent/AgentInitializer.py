@@ -26,7 +26,7 @@ class AgentIntializer():
 
         self.local_map = self.set_local_map()
 
-        self.servers_dict = self.set_cognitive_servers()
+        self.servers_dict = self.set_cognitive_servers(time_delta=1)
         self.longterm_memory = self.servers_dict[ServerType.LONGTERM_MEMORY]
         self.complex_cognition = self.servers_dict[ServerType.COMPLEX_COGNITION]
         self.motor_control = self.servers_dict[ServerType.MOTOR_CONTROL]
@@ -37,9 +37,14 @@ class AgentIntializer():
 
         pass
 
-    def reset_driver(self, driver_profile):
+    def reset_driver(self, driver_profile, time_delta):
         self.driver_profile = driver_profile
-        self.servers_dict = self.set_cognitive_servers()
+        # remove old servers
+        self.longterm_memory = None
+        self.complex_cognition = None
+        self.motor_control = None
+        # set new servers
+        self.servers_dict = self.set_cognitive_servers(time_delta)
         self.longterm_memory = self.servers_dict[ServerType.LONGTERM_MEMORY]
         self.complex_cognition = self.servers_dict[ServerType.COMPLEX_COGNITION]
         self.motor_control = self.servers_dict[ServerType.MOTOR_CONTROL]
@@ -56,13 +61,14 @@ class AgentIntializer():
         
     
 
-    def set_cognitive_servers(self):
+    def set_cognitive_servers(self, time_delta):
         longterm_memory = LongTermMemory(self.server_settings['longterm_memory']['queue_length'],
                                          self.server_settings['longterm_memory']['tick_frequency'],
                                          self.subtask_settings)
 
         complex_cognition = ComplexCognition(self.server_settings['complex_cognition']['queue_length'],
-                                             self.server_settings['complex_cognition']['tick_frequency']) 
+                                             self.server_settings['complex_cognition']['tick_frequency'],
+                                             time_delta) 
         
         motor_control = MotorControl(self.server_settings['motor_control']['queue_length'],
                                      self.server_settings['motor_control']['tick_frequency']) 

@@ -26,8 +26,8 @@ class CogModAgent():
         self.driver_initializer = AgentIntializer(self.vehicle,
                                                   self.destination_point,
                                                   self.driver_profile)
-        
-        self.logger = LoggerFactory.create(self.name, {'LOG_LEVEL':logging.ERROR})
+        self.logLevel = logging.INFO
+        # self.logger = LoggerFactory.create(self.name, {'LOG_LEVEL':self.logLevel})
 
         self.local_map = self.driver_initializer.get_local_map()
 
@@ -45,19 +45,19 @@ class CogModAgent():
 
         self.subtasks_queue = [self.lane_following_task, self.lane_keeping_task]
 
-        self.request_handler = RequestHandler(self.subtasks_queue, self.servers_dict)
+        self.request_handler = RequestHandler(self.subtasks_queue, self.servers_dict, self.logLevel)
         
         self.counter = 0
         self.bigbang = time.time()
-        self.logger.info(f"CogModAgent is initialized {self.counter} system time {self.bigbang}")
+        # self.logger.info(f"CogModAgent is initialized {self.counter} system time {self.bigbang}")
         pass
 
 
     def get_vehicle(self):
         return self.vehicle
 
-    def reset_driver(self, driver_profile):
-        self.driver_initializer.reset_driver(driver_profile)
+    def reset_driver(self, driver_profile, time_delta):
+        self.driver_initializer.reset_driver(driver_profile, time_delta)
         pass
 
     # depending on what the drivier is doing, we select a manuever type 
@@ -87,11 +87,11 @@ class CogModAgent():
     def update_agent(self, global_vehicle_list, del_t):
         cur_time = time.time()
         self.counter += 1
-        self.logger.info(f"update_agent {self.counter}, {cur_time-self.bigbang}")
+        # self.logger.info(f"update_agent {self.counter}, {cur_time-self.bigbang}")
         manuever_type = self.get_current_manuever()
 
         vehicle_inside_gaze_direction = self.gaze.filter_object_inside_gaze_direction(global_vehicle_list, manuever_type)
-        self.logger.info(f"vehicle: {vehicle_inside_gaze_direction}, dir {self.gaze.gaze_direction}")
+        # self.logger.info(f"vehicle: {vehicle_inside_gaze_direction}, dir {self.gaze.gaze_direction}")
         
         self.local_map.update(vehicle_inside_gaze_direction, del_t)
 
@@ -104,7 +104,7 @@ class CogModAgent():
         subtask_requests = self.request_handler.get_request_from_subtasks()
 
         self.request_handler.send_request_to_servers(subtask_requests)
-        self.logger.info(f"subtask state follow {self.lane_following_task.subtask_state}, keep {self.lane_keeping_task.subtask_state}")
+        # self.logger.info(f"subtask state follow {self.lane_following_task.subtask_state}, keep {self.lane_keeping_task.subtask_state}")
         if self.motor_control.target_waypoint is not None and self.motor_control.target_velocity  != -1:
             control = self.vehicle_controller.run_step(target_speed=self.motor_control.target_velocity, 
                                                         waypoint=self.motor_control.target_waypoint)

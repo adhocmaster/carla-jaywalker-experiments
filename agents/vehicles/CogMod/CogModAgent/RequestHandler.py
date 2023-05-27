@@ -3,10 +3,10 @@ from lib import LoggerFactory
 
 
 class RequestHandler():
-    def __init__(self, subtasks_queue, servers_dict):
+    def __init__(self, subtasks_queue, servers_dict, loglevel=logging.ERROR):
         self.subtasks_queue = subtasks_queue
         self.servers_dict = servers_dict
-        self.logger = LoggerFactory.create("RequestHandler", {'LOG_LEVEL':logging.ERROR})
+        # self.logger = LoggerFactory.create("RequestHandler", {'LOG_LEVEL':loglevel})
         pass
 
     # each server implements a process_request method
@@ -14,7 +14,7 @@ class RequestHandler():
     # request queue of the server
     def process_request_in_cognitive_servers(self):
         for key, val in self.servers_dict.items():
-            self.logger.info(f"server {key} is processing request req {val.request_queue}, res {val.response_queue}")
+            # self.logger.info(f"server {key} is processing request req {val.request_queue}, res {val.response_queue}")
             val.process_request()
             # self.logger.info(f" after process {key} is processing request req {val.request_queue}, res {val.response_queue}")
         pass
@@ -57,13 +57,13 @@ class RequestHandler():
         for subtask in self.subtasks_queue:
             # self.logger.info(f"subtask {subtask.subtask_type} is creating request")
             request_queue = request_queue + subtask.get_request()
-        self.logger.info(f"request queue {request_queue}")
+        # self.logger.info(f"request queue {request_queue}")
         return request_queue
 
     def send_request_to_servers(self, subtask_requests):
-        self.logger.info(f"request to server")   
+        # self.logger.info(f"request to server")   
         for request in subtask_requests:
             self.servers_dict[request.receiver].add_request(request)
-            self.logger.info(f"{request} to server {request.receiver}")
+            # self.logger.info(f"{request} to server {request.receiver}")
         pass
         

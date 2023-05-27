@@ -51,7 +51,7 @@ driver_profile = {
         'gaze': Gaze_Settings1,
         'controller': {
             'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.04,},
-            'longitudinal_PID': {'K_P': 1.5, 'K_I': 0.05, 'K_D': 0.01, 'dt': 0.04,},
+            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.00, 'K_D': 0.0, 'dt': 0.04,},
             'max_throttle': 0.99,
             'max_brake': 0.5,
             'max_steering': 0.8,

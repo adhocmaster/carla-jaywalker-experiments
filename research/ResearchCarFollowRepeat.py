@@ -59,14 +59,14 @@ class DriverModifier():
         negative_acceleration_df = ego_agent_df[ego_agent_df['xAcceleration'] < 0]
 
         if not positive_acceleration_df.empty:
-            max_acceleration = np.max(np.sqrt(positive_acceleration_df['xAcceleration']**2 + positive_acceleration_df['yAcceleration']**2)) * 3.6**2
-        else:
-            max_acceleration = 1
+            max_acceleration = np.max(np.sqrt(positive_acceleration_df['xAcceleration']**2 + positive_acceleration_df['yAcceleration']**2))
+        # else:
+        #     max_acceleration = 1
 
         if not negative_acceleration_df.empty:
             comfort_deceleration = np.nanmean(np.sqrt(negative_acceleration_df['xAcceleration']**2 + negative_acceleration_df['yAcceleration']**2)) * 3.6**2
         else:
-            comfort_deceleration = 1
+            comfort_deceleration = 1e-5
 
         desired_velocity = velocity_df.max()
         safe_time_headway = (1 / ego_agent_df[ego_agent_df['thw'] != 0]['thw'].min())
@@ -76,12 +76,12 @@ class DriverModifier():
         lane_following_subtask = subtasks_parameters['lane_following']
 
         lane_following_subtask['desired_velocity'] = desired_velocity
-        lane_following_subtask['safe_time_headway'] = 0
-        lane_following_subtask['max_acceleration'] = max_acceleration
-        lane_following_subtask['comfort_deceleration'] = comfort_deceleration
-        lane_following_subtask['acceleration_exponent'] = 5
+        lane_following_subtask['safe_time_headway'] = 1e-6
+        lane_following_subtask['max_acceleration'] = 10
+        lane_following_subtask['comfort_deceleration'] = 1.67
+        lane_following_subtask['acceleration_exponent'] = 4
         lane_following_subtask['minimum_distance'] = 2
-        lane_following_subtask['vehicle_length'] = 4
+        lane_following_subtask['vehicle_length'] = 5
         
 
         subtasks_parameters['lane_following'] = lane_following_subtask
@@ -96,7 +96,7 @@ class DriverModifier():
         preceding_agent_location = preceding_agent.vehicle.get_location()
         nearest_waypoint_preceding_agent = map.get_waypoint(preceding_agent_location, project_to_road=True)
         velocity_df = np.sqrt(ego_agent_df['xVelocity']**2 + ego_agent_df['yVelocity']**2)
-        desired_velocity = velocity_df.iloc[0]
+        desired_velocity = velocity_df.max()
         
         local_map = cogmod_settings['driver_profile']['local_map']
         local_map['vehicle_tracking_radius'] = tracking_distance
@@ -219,11 +219,13 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         self.preceding_id = self.follow_meta_df['preceding_id']
         self.nRepeat = nRepeat
         self.logger.info(f"create_simulation {self.pickedScenario}, {self.follow_meta_df.values}")
+        self.isDriverChanged = False
         
         all_frames = self.combined_df[self.combined_df['frame'].between(self.start_frame, self.end_frame+1)]
         self.preceding_agent_df = all_frames[(all_frames['id'] == self.preceding_id)]
         self.ego_agent_df = all_frames[(all_frames['id'] == self.ego_id)]
         self.trigger_distance = self.follow_meta_df['start_distance']
+        
         pass
     
     def create_simulation(self):
@@ -248,7 +250,7 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         print("current cogmod settings : ", self.current_cogmod_agent_settings['source'])
         ego_agent = self.createCogModAgent(self.current_cogmod_agent_settings, loglevel=logging.ERROR)
         self.agent_list = {'ego': ego_agent, 'preceding': preceding_agent}
-        
+        self.isDriverChanged = False
         pass
     
     
@@ -324,32 +326,28 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         self.SetSpectator(ego_location, height=200)
         # print('cogmod speed:     ', round(ego_vehicle.get_velocity().length(), 2))
         if self.scenario_status == ScenarioState.START:
-            # change the cogmod setting at the start of the simulation
-            cogmod_settings = DriverModifier.change_cogmod_settings_start_simulation(self.current_cogmod_agent_settings,
-                                                                           self.ego_agent_df)
-            ego_agent.reset_driver(cogmod_settings['driver_profile'])
-            # apply control
+            if not self.isDriverChanged:
+                cogmod_settings = DriverModifier.change_cogmod_settings_start_simulation(self.current_cogmod_agent_settings,
+                                                                            self.ego_agent_df)
+                ego_agent.reset_driver(cogmod_settings['driver_profile'], time_delta=0.04)
+                self.isDriverChanged = True
+                pass
             ego_control = ego_agent.run_step(del_t)
             if ego_control is not None:
-                # ego_vehicle.apply_control(ego_control)
                 self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
-            # start the scenario so move the preceding vehicle
-            frame = self.start_frame + tick - self.frame_tracker
-            # print('frame ScenarioState.START: ', frame)
-            preceding_agent.run_step(frame)
-            AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
-                                  self.world.debug, self.pivot, True)
+            # frame = self.start_frame + tick - self.frame_tracker
+            # preceding_agent.run_step(frame)
+            # AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
+            #                       self.world.debug, self.pivot, True)
             pass
         
         if self.scenario_status == ScenarioState.RUNNING:
             ego_control = ego_agent.run_step(del_t)
             if ego_control is not None:
-                # ego_vehicle.apply_control(ego_control)
                 self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
             frame = self.start_frame + tick - self.frame_tracker
-            # print('frame ScenarioState.Running: ', frame)
             preceding_agent.run_step(frame)
             AgentViz.draw_ego(frame, self.combined_df, self.ego_id, self.left_lane_id, 
                                   self.world.debug, self.pivot, True)
@@ -357,9 +355,8 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         
         if self.scenario_status == ScenarioState.PENDING:
             ego_control = ego_agent.run_step(del_t)
-            # print('cogmod speed:     ', round(ego_vehicle.get_velocity().length(), 2))
+            # print('cogmod speed:     ', round(ego_vehicle.get_velocity().length(), 2), 'target_speed', self.ego_agent_df['xVelocity'].iloc[0])
             if ego_control is not None:
-                # ego_vehicle.apply_control(ego_control)
                 self.client.apply_batch_sync([carla.command.ApplyVehicleControl(ego_vehicle.id, ego_control)])
                 pass
         
@@ -375,24 +372,29 @@ class ResearchCarFollowRepeat(BaseCogModResearch):
         
         ego_agent = self.agent_list['ego']
         preceding_agent = self.agent_list['preceding']
-
-        if ego_agent is None or preceding_agent is None:
-            self.scenario_status = ScenarioState.END
-            return 
-        if self.scenario_status == ScenarioState.START:
-            self.scenario_status = ScenarioState.RUNNING
-            return
         
         ego_vehicle = ego_agent.vehicle
         preceding_vehicle = preceding_agent.vehicle
         ego_location = ego_vehicle.get_location()
         preceding_location = preceding_vehicle.get_location()
-
+        ego_velocity = ego_vehicle.get_velocity().length()
+        target_velocity = self.ego_agent_df['xVelocity'].iloc[0]
+        
         distance = preceding_location.distance(ego_location)
+
+        self.logger.info(f"{self.scenario_status}, tick: {tick} distance: {round(distance,2)}, target: {target_velocity}, cur: {round(ego_velocity,2)}")
+        
+        if ego_agent is None or preceding_agent is None:
+            self.scenario_status = ScenarioState.END
+            return 
+        
+        if ego_velocity >= target_velocity  and self.scenario_status == ScenarioState.PENDING:
+            self.scenario_status = ScenarioState.START
+            return
         
         # starting scenario if distance is less than trigger distance and scenario is pending
-        if distance < self.trigger_distance and self.scenario_status == ScenarioState.PENDING:
-            self.scenario_status = ScenarioState.START
+        if distance < self.trigger_distance and self.scenario_status == ScenarioState.START:
+            self.scenario_status = ScenarioState.RUNNING
             self.frame_tracker = tick
             return
             

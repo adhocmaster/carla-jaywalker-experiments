@@ -1,14 +1,18 @@
 import math
-import carla 
+import carla
+
+import logging
+from lib import LoggerFactory
+ 
 TIME_STEP = 1
 
 class IntelligentDriverModel():
 
-    def __init__(self, parameters_dict, local_map):
+    def __init__(self, parameters_dict, local_map, logger=None):
         if parameters_dict is None:
             print('IDM.__init__(): parameters_dict is None')
             return
-
+        
         self.desired_velocity = parameters_dict["desired_velocity"]
         self.safe_time_headway = parameters_dict["safe_time_headway"]
         self.max_acceleration = parameters_dict["max_acceleration"]
@@ -22,6 +26,7 @@ class IntelligentDriverModel():
         self.local_map = local_map
         # self.vehicle = self.local_map.vehicle
         # self.vehicle_velocity = math.sqrt(self.vehicle.get_velocity().squared_length())
+        self.logger = logger
         pass
 
     def calc_acceleration(self):
@@ -45,11 +50,11 @@ class IntelligentDriverModel():
             gap = surrounding_agent['front'].get_distance()
             pass
             
-
         acceleration = math.pow((vehicle_velocity / self.desired_velocity), self.acceleration_exponent)
         deceleration = math.pow(self.calc_desired_gap() / min(self.far_distance, gap), 2)
 
         ret = float(self.max_acceleration * (1 - acceleration - deceleration))
+        self.logger.info(f'calc_acc {acceleration}, dec {deceleration}, ret {str(ret)}')
         return ret
 
     def vehicle_velocity2D(self):
@@ -75,19 +80,25 @@ class IntelligentDriverModel():
         ab = self.max_acceleration * self.comfort_deceleration
         c = ((self.safe_time_headway * pv) + ((pv * del_v) / (2 * math.sqrt(ab))))
         ret = float(self.minimum_distance + max(0, c))
+        self.logger.info(f'calc_desired_gap: del_v {del_v}, ab {round(ab,2)}, c {round(c,2)}, ret {round(ret,2)}')
         return ret
 
 
-    def calc_velocity(self):
+    def calc_velocity(self, delta_time=-1):
         new_velocity = self.calc_raw_velocity()
-        return float(max(0, new_velocity))
+        ret = float(max(0, new_velocity))
+        self.logger.info(f'calc_velocity: {round(ret,2)}, ')
+        return ret
 
 
-    def calc_raw_velocity(self):
+    def calc_raw_velocity(self,delta_time=-1):
         vehicle_velocity = self.vehicle_velocity2D()
         acceleration = self.calc_acceleration()
-
-        result = float(vehicle_velocity + (acceleration * TIME_STEP))
+        if delta_time > 0:
+            result = float(vehicle_velocity + (acceleration * delta_time))
+        else:
+            result = float(vehicle_velocity + (acceleration * TIME_STEP))
+        self.logger.info(f'veh vel {round(vehicle_velocity,2)}, acce {round(acceleration,2)}, calc_raw_velocity: {round(result,2)}, ')
         return result
 
 

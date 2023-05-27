@@ -73,7 +73,7 @@ class Gaze():
             val = np.random.normal(3.5, 0.1, 1)
             val = int(val)
             if self.check_valid_direction(val):
-                return val
+                return 3
             else:
                 return 3
         
@@ -81,25 +81,25 @@ class Gaze():
             val = np.random.normal(3.5, 1, 1)
             val = int(val)
             if self.check_valid_direction(val):
-                return val
+                return 3
             else:
                 return 3
         
-        elif maneuver_type == ManeuverType.LANECHANGE_RIGHT:
-            val = np.random.lognormal(1, 1, 1)
-            val = int(val)
-            if self.check_valid_direction(val):
-                return val
-            else:
-                return 1
+        # elif maneuver_type == ManeuverType.LANECHANGE_RIGHT:
+        #     val = np.random.lognormal(1, 1, 1)
+        #     val = int(val)
+        #     if self.check_valid_direction(val):
+        #         return val
+        #     else:
+        #         return 1
         
-        elif maneuver_type == ManeuverType.LANECHANGE_LEFT:
-            val = np.random.lognormal(1, 1, 1)
-            val = 6 - int(val)
-            if self.check_valid_direction(val):
-                return val
-            else:
-                return 5
+        # elif maneuver_type == ManeuverType.LANECHANGE_LEFT:
+        #     val = np.random.lognormal(1, 1, 1)
+        #     val = 6 - int(val)
+        #     if self.check_valid_direction(val):
+        #         return val
+        #     else:
+        #         return 5
 
         pass
 

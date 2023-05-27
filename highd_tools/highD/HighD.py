@@ -62,3 +62,6 @@ class HighD:
 
     def get_combined_dataframes(self):
         return self.combined_dfs
+    
+    def get_scenario_meta(self, id):
+        return self.dfs[0][id-1]

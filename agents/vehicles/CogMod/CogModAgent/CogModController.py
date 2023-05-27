@@ -67,6 +67,7 @@ class VehiclePIDController():
         acceleration = self._lon_controller.run_step(target_speed)
         current_steering = self._lat_controller.run_step(waypoint)
         control = carla.VehicleControl()
+        
         if acceleration >= 0.0:
             control.throttle = min(acceleration, self.max_throt)
             control.brake = 0.0
@@ -160,8 +161,10 @@ class PIDLongitudinalController():
             _de = 0.0
             _ie = 0.0
         
-        ret = np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0)
-        self.logger.info(f'target speed {target_speed}    error {round(error,2)}     sum {round(sum(self._error_buffer),2)}    ret {ret}')
+        
+        output = (self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie)
+        ret = np.clip(output, -1.0, 1.0)
+        self.logger.info(f'target {round(target_speed,2)}, cur {round(current_speed,2)}, error {round(error,2)}, sum {round(sum(self._error_buffer),2)}, out {round(output,2)}, ret {ret}')
         return ret
 
     def change_parameters(self, K_P, K_I, K_D, dt):
