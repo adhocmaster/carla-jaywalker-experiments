@@ -163,7 +163,7 @@ class DestinationModel(ForceModel):
         
         self.agent.logger.debug(f"next destination is {self.nextDestination}")
         if self.debug:
-            self.agent.visualizer.drawPoint(self.nextDestination, color=(100, 100, 200, 100), life_time=1.0)
+            self.agent.visualizer.drawPoint(self.nextDestination, color=(0, 0, 255, 100), life_time=0.5)
         return Utils.getDirection(self.agent.feetLocation, self.nextDestination, ignoreZ=True)
         
         

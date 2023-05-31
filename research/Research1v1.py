@@ -192,7 +192,8 @@ class Research1v1(BaseResearch):
         self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=self.logLevel, optionalFactors=self.optionalFactors, config=config)
 
         self.walkerAgent.setDestination(self.walkerDestination)
-        self.visualizer.drawDestinationPoint(self.walkerDestination)
+        self.visualizer.drawDestinationPoint(self.walkerDestination, life_time=15.0)
+        self.walkerAgent.debug = False
 
         # self.walkerAgent.updateLogLevel(logging.INFO)
 
@@ -240,7 +241,10 @@ class Research1v1(BaseResearch):
         destination = self.vehicleSetting.destination
 
         self.vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
-        self.visualizer.drawDestinationPoint(destination)
+        plan = self.vehicleAgent.get_local_planner().get_plan()
+        # Utils.draw_trace_route(self._vehicle.get_world().debug, plan)
+        self.visualizer.drawTraceRoute(plan, color=(10, 10, 0, 0), life_time=15.0)
+        self.visualizer.drawDestinationPoint(destination, color=(0, 0, 255, 0), life_time=15.0)
 
         pass
 
@@ -410,7 +414,9 @@ class Research1v1(BaseResearch):
         self.updateVehicle(world_snapshot)
 
         # draw waypoints upto walker
+        # self.drawWaypointsToWalker()
 
+    def drawWaypointsToWalker(self):
         walkerWp = self.map.get_waypoint(self.walkerAgent.location).transform.location
         waypoints = Utils.getWaypointsToDestination(self.vehicle, walkerWp)
         self.visualizer.drawWaypoints(waypoints, color=(0, 0, 0), z=1, life_time=0.1)

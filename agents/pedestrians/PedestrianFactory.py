@@ -116,7 +116,13 @@ class PedestrianFactory(ClientUser):
         
         return agent
 
-    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None, logLevel=logging.INFO):
+    def addPlanners(
+            self, 
+            agent: PedestrianAgent, 
+            internalFactorsPath = None, 
+            optionalFactors: List[Factors] = None, 
+            logLevel=logging.INFO
+        ):
         
         actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
         obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)

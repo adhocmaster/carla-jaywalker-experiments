@@ -138,7 +138,7 @@ class BasicAgent(object):
         self.logger.debug(f"Calling trace_route")
         route_trace = self.trace_route(start_waypoint, end_waypoint)
         
-        Utils.draw_trace_route(self._vehicle.get_world().debug, route_trace)
+        # Utils.draw_trace_route(self._vehicle.get_world().debug, route_trace)
 
         # exit(0)
 

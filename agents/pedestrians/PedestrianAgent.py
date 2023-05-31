@@ -143,7 +143,9 @@ class PedestrianAgent(InfoAgent):
         conflictPoint = self._localPlanner.getPredictedConflictPoint()
         if conflictPoint is None:
             return
-        self.visualizer.drawPoint(conflictPoint, size=0.2, color=(255, 0, 0), life_time = 0.1)
+        conflictPointLocation = carla.Location(x=conflictPoint.x, y=conflictPoint.y, z=1.0)
+
+        self.visualizer.drawPoint(conflictPointLocation, size=0.2, color=(100, 0, 0), life_time = 0.1)
 
     
 
@@ -204,11 +206,13 @@ class PedestrianAgent(InfoAgent):
         if self.destination is None:
             raise Exception("Destination is none")
 
-        self.visualiseState()
+        if self.debug:
+            self.visualiseState()
 
         if self.isInitializing():
-            self.logger.info(f"Pedestrian is initializing.")
-            self.visualiseState()
+            if self.debug:
+                self.logger.info(f"Pedestrian is initializing.")
+                self.visualiseState()
             return self._localPlanner.getStopControl()
 
         # if self.isFinished():
@@ -228,9 +232,10 @@ class PedestrianAgent(InfoAgent):
         direction = control.direction
         self.visualizer.drawDirection(location, direction, life_time=0.1)
 
-        self.visualizeConflictPoint()
-        self.visualiseState()
-        self.visualiseForces()
+        if self.debug:
+            self.visualizeConflictPoint()
+            self.visualiseState()
+            self.visualiseForces()
         
 
         return control
@@ -332,8 +337,8 @@ class PedestrianAgent(InfoAgent):
         labeledObjects = self.getObstaclesToDistance()
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
-                if self.visualizer is not None:
-                    self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
+                # if self.visualizer is not None and self.debug:
+                #     self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
                 # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
                 # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
                 distance = actorLocation.distance_2d(lb.location)

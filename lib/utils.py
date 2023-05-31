@@ -340,31 +340,31 @@ class Utils:
             thickness=0.1, color=color, life_time=lt, persistent_lines=False)
         debug.draw_point(w1.transform.location + carla.Location(z=0.25), 0.1, color, lt, False)
     
-    @staticmethod
-    def draw_waypoints(debug, waypoints, z=0.5, color=(255,0,0), life_time=1.0):
-        """
-        Draw a list of waypoints at a certain height given in z.
+    # @staticmethod
+    # def draw_waypoints(debug, waypoints, z=0.5, color=(255,0,0), life_time=1.0):
+    #     """
+    #     Draw a list of waypoints at a certain height given in z.
 
-            :param world: carla.world object
-            :param waypoints: list or iterable container with the waypoints to draw
-            :param z: height in meters
-        """
-        for wpt in waypoints:
-            wpt_t = wpt.transform
-            begin = wpt_t.location + carla.Location(z=z)
-            angle = math.radians(wpt_t.rotation.yaw)
-            end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
-            debug.draw_arrow(begin, end, arrow_size=0.3, color=carla.Color(*color), life_time=life_time)
+    #         :param world: carla.world object
+    #         :param waypoints: list or iterable container with the waypoints to draw
+    #         :param z: height in meters
+    #     """
+    #     for wpt in waypoints:
+    #         wpt_t = wpt.transform
+    #         begin = wpt_t.location + carla.Location(z=z)
+    #         angle = math.radians(wpt_t.rotation.yaw)
+    #         end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
+    #         debug.draw_arrow(begin, end, arrow_size=0.3, color=carla.Color(*color), life_time=life_time)
 
-    @staticmethod
-    def draw_trace_route(debug, route, color=(150, 150, 0), life_time=10):
+    # @staticmethod
+    # def draw_trace_route(debug, route, color=(150, 150, 0), life_time=10):
         
-        # print(f"Utils->draw_trace_route: length of trace route {len(route)}")
-        wps = []
-        for (wp, ro) in route:
-            wps.append(wp)
+    #     # print(f"Utils->draw_trace_route: length of trace route {len(route)}")
+    #     wps = []
+    #     for (wp, ro) in route:
+    #         wps.append(wp)
         
-        Utils.draw_waypoints(debug, wps, color=color, life_time=life_time)
+    #     Utils.draw_waypoints(debug, wps, color=color, life_time=life_time)
 
     @staticmethod
     def log_route(logger, route):
