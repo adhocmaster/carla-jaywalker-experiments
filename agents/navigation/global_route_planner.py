@@ -58,6 +58,9 @@ class GlobalRoutePlanner(object):
             edge = self._graph.edges[route[i], route[i+1]]
             path = []
 
+            # print(edge["length"], edge["entry_waypoint"].transform.location, edge["exit_waypoint"].transform.location, edge["type"])
+            self.logger.debug(f"route no {i}")
+
             if edge['type'] != RoadOption.LANEFOLLOW and edge['type'] != RoadOption.VOID:
                 route_trace.append((current_waypoint, road_option))
                 exit_wp = edge['exit_waypoint']
@@ -76,9 +79,15 @@ class GlobalRoutePlanner(object):
                 closest_index = self._find_closest_in_list(current_waypoint, path)
                 for waypoint in path[closest_index:]:
                     current_waypoint = waypoint
+                    self.logger.debug(f"current_waypoint: {current_waypoint.transform.location}")
                     route_trace.append((current_waypoint, road_option))
-                    if len(route)-i <= 2 and waypoint.transform.location.distance(destination) < 2*self._sampling_resolution:
-                        break
+
+                    self.logger.debug(f"distance to dest {waypoint.transform.location.distance(destination)}")
+                    
+                    # if len(route)-i <= 2 and waypoint.transform.location.distance(destination) < 2*self._sampling_resolution: # the first condition creates a loop,
+                    #     break
+                    if waypoint.transform.location.distance(destination) < self._sampling_resolution:
+                        return route_trace
                     elif len(route)-i <= 2 and current_waypoint.road_id == destination_waypoint.road_id and current_waypoint.section_id == destination_waypoint.section_id and current_waypoint.lane_id == destination_waypoint.lane_id:
                         destination_index = self._find_closest_in_list(destination_waypoint, path)
                         if closest_index > destination_index:

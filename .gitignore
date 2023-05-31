@@ -9,6 +9,7 @@ _out/
 
 
 logs/*.csv
+_out/
 
 # Distribution / packaging
 .Python

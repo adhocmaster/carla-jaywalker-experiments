@@ -1,0 +1,22 @@
+{
+    "available_scenarios": [
+        {
+            "circle_t_junctions": [
+                {
+                    "available_event_configurations": [
+                        {
+                            "transform": {
+                                "pitch": "0.0",
+                                "x": "-121.3",
+                                "y": "-6.8",
+                                "yaw": "-0.5",
+                                "z": "0"
+                            }
+                        }
+                    ],
+                    "scenario_type": "Scenario2"
+                }
+            ]                       
+        }
+    ]
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+   <route id="0" town="circle_t_junctions">
+      <!-- MID: Going up from -143.1, -6.7  -->
+      <waypoint pitch="0.0" roll="0.0" x="-143.1" y="-6.7" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-121.3" y="-6.8" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-109.2" y="-7.5" yaw="-17.0" z="0.0" />
+   </route>
+   <route id="1" town="circle_t_junctions">
+      <!-- MID: Going up top right from -143.1, -6.7  -->
+      <waypoint pitch="0.0" roll="0.0" x="-143.1" y="-6.7" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-121.3" y="-6.8" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-109.2" y="-7.5" yaw="-17.0" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-109.5" y="12.0" yaw="146.7" z="0.0" />
+   </route>
+   <route id="2" town="circle_t_junctions">
+      <!-- MID: Going up top left from -143.1, -6.7  -->
+      <waypoint pitch="0.0" roll="0.0" x="-143.1" y="-6.7" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-121.3" y="-6.8" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-109.2" y="-7.5" yaw="-17.0" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-98.7" y="-23.0" yaw="-134.9" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-104.3" y="-38.0" yaw="-85.0" z="0.0" />
+   </route>
+   <route id="3" town="circle_t_junctions">
+      <!-- MID: Going up turning right in the mid intersection -156.7, -14.7  -->
+      <waypoint pitch="0.0" roll="0.0" x="-156.7" y="-14.7" yaw="75.8" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-143.1" y="-6.7" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-131.5" y="0.1" yaw="90.6" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-131.6" y="8.7" yaw="91.0" z="0.0" />
+   </route>
+
+   <route id="4" town="circle_t_junctions">
+      <!-- RIGHT: Going left turning left in the mid intersection -121.7, 16  -->
+      <waypoint pitch="0.0" roll="0.0" x="-121.7" y="16.0" yaw="192.6" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-128.1" y="8.8" yaw="-89.0" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-139.3" y="-10.2" yaw="179.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-153.1" y="-14.8" yaw="249.4" z="0.0" />
+   </route>
+
+   <route id="5" town="circle_t_junctions">
+      <!-- RIGHT: Going left turning right in the mid intersection -121.7, 16  -->
+      <waypoint pitch="0.0" roll="0.0" x="-121.7" y="16.0" yaw="192.6" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-128.1" y="8.8" yaw="-89.0" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-121.3" y="-6.8" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-109.2" y="-7.5" yaw="-17.0" z="0.0" />
+   </route>
+
+   <route id="6" town="circle_t_junctions">
+      <!-- RIGHT: Going right in the mid intersection -143.1, -6.7  -->
+      <waypoint pitch="0.0" roll="0.0" x="-143.1" y="-6.7" yaw="-0.5" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-131.5" y="0.1" yaw="90.6" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-131.6" y="8.7" yaw="91.0" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-122.4" y="20.4" yaw="372.6" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-107.5" y="14.9" yaw="326.7" z="0.0" />
+   </route>
+   <route id="7" town="circle_t_junctions">
+      <!-- LEFT: Going right in the top intersection -106.7, -36.2 -->
+      <waypoint pitch="0.0" roll="0.0" x="-106.7" y="-36.2" yaw="42.1" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-102.6" y="-20.6" yaw="-259.3" z="0.0" />
+      <waypoint pitch="0.0" roll="0.0" x="-109.5" y="12.0" yaw="146.7" z="0.0" />
+   </route>
+</routes>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<scenarios>
+    <scenario name="Scenario1v1_1" type="Scenario1v1" town="circle_t_junctions">
+        <ego_vehicle x="-144.0" y="-7.0" z="0.5" yaw="0" model="vehicle.lincoln.mkz_2017" />
+        <other_actor x="-125.0" y="-7.0" z="0.5" yaw="0" model="vehicle.lincoln.mkz_2017" random_location="true" autopilot="true" />
+        <weather cloudiness="0" precipitation="0" precipitation_deposits="0" wind_intensity="0" sun_azimuth_angle="0" sun_altitude_angle="75" />
+    </scenario>
+    <scenario name="Scenario1v1_2" type="Scenario1v1" town="circle_t_junctions">
+        <ego_vehicle x="-144.0" y="-7.0" z="0.5" yaw="0" model="vehicle.lincoln.mkz_2017" />
+        <other_actor x="-125.0" y="-7.0" z="0.5" yaw="0" model="vehicle.lincoln.mkz_2017" autopilot="true" />
+    </scenario>
+</scenarios>

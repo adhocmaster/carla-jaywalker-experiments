@@ -60,10 +60,10 @@ class MapManager(ClientUser):
         return nav_points
 
     
-    def load(self, mapName: MapNames, layers=carla.MapLayer.NONE):
+    def load(self, mapName: MapNames, layers=carla.MapLayer.NONE, forceReload=False):
         
         currentMapName = self.getMapName(self.map)
-        if mapName.value != currentMapName:
+        if (mapName.value != currentMapName) or forceReload:
             logging.info(f"MapManager: loading new map {mapName.value}")
             self.client.load_world(mapName.value, map_layers=layers)
 
@@ -80,8 +80,8 @@ class MapManager(ClientUser):
         self.configureSpectator()
 
 
-    def generateWaypoints(self):
-        self._waypoints = self.map.generate_waypoints(distance=5.0)
+    def generateWaypoints(self, distance=5.0):
+        self._waypoints = self.map.generate_waypoints(distance=distance)
 
 
     def configureSpectator(self):

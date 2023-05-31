@@ -201,7 +201,7 @@ class SimulationVisualization(ClientUser):
 
         
 
-    def drawAllWaypoints(self, z=0.5, life_time=1.0):
+    def drawAllWaypoints(self, z=0.5, life_time=1.0, position=False):
         """
         Draw a list of waypoints at a certain height given in z.
 
@@ -209,9 +209,9 @@ class SimulationVisualization(ClientUser):
             :param waypoints: list or iterable container with the waypoints to draw
             :param z: height in meters
         """
-        self.drawWaypoints(self.mapManager.waypoints, life_time=life_time)
+        self.drawWaypoints(self.mapManager.waypoints, life_time=life_time, position=position)
 
-    def drawWaypoints(self, waypoints, color=(25, 25, 25), z=0.5, life_time=1.0):
+    def drawWaypoints(self, waypoints, color=(25, 25, 25), z=0.5, life_time=1.0, position=False):
         """
         Draw a list of waypoints at a certain height given in z.
 
@@ -231,6 +231,15 @@ class SimulationVisualization(ClientUser):
                 color=carla.Color(*color), 
                 life_time=life_time
                 )
+            
+            if position:
+                textLoc = carla.Location(wpt_t.location.x, wpt_t.location.y, 1.0)
+                if wpt_t.rotation.yaw > 0:
+                    # textLoc.x += 3
+                    textLoc.y -= 12
+                # print(textLoc)
+                self.drawTextOnMap(location=textLoc, text=f"({wpt_t.location.x:.1f}, {wpt_t.location.y:.1f}, {wpt_t.rotation.yaw:.1f})")
+
 
 
     def drawDirection(self, location, direction, z=0.5, life_time=1.0):
