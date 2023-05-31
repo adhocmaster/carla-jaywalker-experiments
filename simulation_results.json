@@ -5,11 +5,11 @@
             "infractions": {
                 "collisions_layout": 0.0,
                 "collisions_pedestrian": 0.0,
-                "collisions_vehicle": 25.861428991439087,
+                "collisions_vehicle": 0.0,
                 "outside_route_lanes": 0.0,
                 "red_light": 0.0,
-                "route_dev": 25.861428991439087,
-                "route_timeout": 0.0,
+                "route_dev": 0.0,
+                "route_timeout": 142.9955301915951,
                 "stop_infraction": 0.0,
                 "vehicle_blocked": 0.0
             },
@@ -18,15 +18,15 @@
                     [
                         "RouteScenario_0",
                         0,
-                        "Failed - Agent deviated from the route"
+                        "Failed - Agent timed out"
                     ]
                 ]
             },
             "route_id": -1,
             "scores": {
-                "score_composed": 19.502572465059366,
-                "score_penalty": 0.6,
-                "score_route": 32.50428744176561
+                "score_composed": 20.510067466907877,
+                "score_penalty": 1.0,
+                "score_route": 20.510067466907877
             },
             "scores_std_dev": {
                 "score_composed": "NaN",
@@ -45,30 +45,28 @@
                 "infractions": {
                     "collisions_layout": [],
                     "collisions_pedestrian": [],
-                    "collisions_vehicle": [
-                        "Agent collided against object with type=vehicle.audi.a2 and id=443 at (x=-104.435, y=-10.63, z=0.033)"
-                    ],
+                    "collisions_vehicle": [],
                     "outside_route_lanes": [],
                     "red_light": [],
-                    "route_dev": [
-                        "Agent deviated from the route at (x=-86.936, y=-31.433, z=-19.879)"
+                    "route_dev": [],
+                    "route_timeout": [
+                        "Route timeout."
                     ],
-                    "route_timeout": [],
                     "stop_infraction": [],
                     "vehicle_blocked": []
                 },
                 "meta": {
-                    "duration_game": 22.70000033825636,
-                    "duration_system": 7.940960884094238,
-                    "route_length": 118.96160957835592
+                    "duration_game": 13.050000194460154,
+                    "duration_system": 4.27830171585083,
+                    "route_length": 34.09655084923356
                 },
                 "route_id": "RouteScenario_0",
                 "scores": {
-                    "score_composed": 19.502572465059366,
-                    "score_penalty": 0.6,
-                    "score_route": 32.50428744176561
+                    "score_composed": 20.510067466907877,
+                    "score_penalty": 1.0,
+                    "score_route": 20.510067466907877
                 },
-                "status": "Failed - Agent deviated from the route"
+                "status": "Failed - Agent timed out"
             }
         ]
     },
@@ -93,17 +91,17 @@
         "carla_speedometer"
     ],
     "values": [
-        "19.503",
-        "32.504",
-        "0.600",
-        "0.000",
-        "25.861",
+        "20.510",
+        "20.510",
+        "1.000",
         "0.000",
         "0.000",
         "0.000",
         "0.000",
-        "25.861",
         "0.000",
+        "0.000",
+        "0.000",
+        "142.996",
         "0.000"
     ]
 }
