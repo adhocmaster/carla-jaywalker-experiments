@@ -107,7 +107,7 @@ class CrosswalkGeometry:
         new_points = [start]
         pointsOL = self.pointsOnLine(start, end, nInterPoints)
         for i in range(len(pointsOL) - 2):
-            start = pointsOL[1]
+            start = pointsOL[1] # these are constants and should be initiliazed outside the loop. Essentially what we need is the segment length
             end = pointsOL[2]
             done = False
             while not done:
@@ -125,7 +125,7 @@ class CrosswalkGeometry:
                     prev_line = None
                     if i > 0:
                         prev_line = LineString([new_points[-2], new_points[-1]])
-                    if new_line.length <= segment.length*maxInterPointsDistance:
+                    if new_line.length <= segment.length*maxInterPointsDistance: # we can actually ensure the max length by specifiying the d before
                         if prev_line == None:
                             done = True
                         else:

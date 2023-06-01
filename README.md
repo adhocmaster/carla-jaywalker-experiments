@@ -47,6 +47,9 @@ conda install -c conda-forge gym
 # Running experiments
 
 There are three ways experiments can be run, based on scenarios, and based on the research settings. Research settings are more useful for pedestrian behavior modeling and the scenarios are useful for ego vehicle modeling. Leaderboard scenarios are for evaluation.
+```
+python r1v1-default.py --max_ticks=500
+```
 
 ## Running Scenarios
 
