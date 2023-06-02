@@ -1,7 +1,7 @@
 
 from .GazeSettings import *
 
-CONST = 100
+CONST = 500
 driver_profile = {
     # 'driver1': {
     #     'servers': {
@@ -51,7 +51,7 @@ driver_profile = {
         'gaze': Gaze_Settings1,
         'controller': {
             'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.04,},
-            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.00, 'K_D': 0.0, 'dt': 0.04,},
+            'longitudinal_PID': {'K_P': 20.0, 'K_I': 5, 'K_D': 0.0, 'dt': 0.04,},
             'max_throttle': 0.99,
             'max_brake': 0.5,
             'max_steering': 0.8,
@@ -59,11 +59,11 @@ driver_profile = {
         },
         'subtasks_parameters': {
             'lane_following': {
-                'desired_velocity': 14.12, # m/s
-                'safe_time_headway': 0.37, # s
-                'max_acceleration': 2.44, # m/s^2
-                'comfort_deceleration': 0.68, # m/s^2
-                'acceleration_exponent': 5, 
+                'desired_velocity': 50, # m/s
+                'safe_time_headway': 0.5, # s
+                'max_acceleration': 2.9, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
                 'minimum_distance': 2, # m
                 'vehicle_length': 4, # m
                 'far_distance': CONST,                                 # important parameter

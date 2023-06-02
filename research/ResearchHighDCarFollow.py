@@ -16,7 +16,7 @@ from .ResearchCogMod import ScenarioState
 
 
 class FilterCarFollow():
-    def __init__(self, cogmod_settings):
+    def __init__(self, dataset_id):
         
         self.highDPath = f'D:\\highD_data\\highD_dataset'
         self.car_follow_settings = {
@@ -27,7 +27,7 @@ class FilterCarFollow():
                         'distance_threshold': 50,
                 },
             }
-        
+        self.dataset_id = dataset_id
         self.highD = HighD([self.dataset_id], self.highDPath)
         self.df = self.highD.get_combined_dataframe(int(self.dataset_id))
         

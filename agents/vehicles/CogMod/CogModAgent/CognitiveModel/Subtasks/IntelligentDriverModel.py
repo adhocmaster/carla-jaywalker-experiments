@@ -28,6 +28,16 @@ class IntelligentDriverModel():
         # self.vehicle_velocity = math.sqrt(self.vehicle.get_velocity().squared_length())
         self.logger = logger
         pass
+    
+    def change_idm_parameters(self, parameters_dict):
+        self.desired_velocity = parameters_dict["desired_velocity"]
+        self.safe_time_headway = parameters_dict["safe_time_headway"]
+        self.max_acceleration = parameters_dict["max_acceleration"]
+        self.comfort_deceleration = parameters_dict["comfort_deceleration"]
+        self.acceleration_exponent = parameters_dict["acceleration_exponent"]
+        self.minimum_distance = parameters_dict["minimum_distance"]
+        self.vehicle_length = parameters_dict["vehicle_length"]
+        pass
 
     def calc_acceleration(self):
         """
@@ -85,7 +95,7 @@ class IntelligentDriverModel():
 
 
     def calc_velocity(self, delta_time=-1):
-        new_velocity = self.calc_raw_velocity()
+        new_velocity = self.calc_raw_velocity(delta_time)
         ret = float(max(0, new_velocity))
         self.logger.info(f'calc_velocity: {round(ret,2)}, ')
         return ret

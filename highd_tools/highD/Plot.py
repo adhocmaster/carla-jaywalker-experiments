@@ -147,7 +147,7 @@ class Plot():
         # dhw_prec_norm = dhw_prec_clipped / np.linalg.norm(dhw_prec_clipped)
 
         # Create a single plot with six subplots
-        fig, axs = plt.subplots(3, 2, figsize=(15, 15), sharex='col')
+        fig, axs = plt.subplots(3, 2, figsize=(15, 15))
         fig.suptitle(title)
 
         # Plot each type of data in a separate subplot
@@ -177,7 +177,7 @@ class Plot():
         # Plotting TTC distribution
         ttc_ego_clipped = ttc_ego_clipped[ttc_ego_clipped != cMin]
         ttc_ego_clipped = ttc_ego_clipped[ttc_ego_clipped != cMax]
-        axs[2, 1].hist(ttc_ego_clipped, bins=20, edgecolor='black')
+        axs[2, 1].hist(ttc_ego_clipped, bins=20, edgecolor='black', density=True)
         axs[2, 1].set_xlabel('TTC Values')
         axs[2, 1].set_ylabel('Frequency')
         axs[2, 1].set_title('Distribution of TTC for Ego Vehicle')

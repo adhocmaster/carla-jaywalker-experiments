@@ -3,7 +3,7 @@ import logging
 from lib.exceptions import NotImplementedInterface
 from .BaseResearch import BaseResearch
 from agents.vehicles import VehicleFactory
-from agents.vehicles.CogMod.CogModAgent import CogModAgent
+from agents.vehicles.CogMod.CogModAgent import CogModAgent, IDMAgent
 from agents.vehicles.TrajectoryAgent import TrajectoryAgent
 from agents.vehicles.TrajectoryAgent import TrajectoryFollower
 
@@ -94,6 +94,37 @@ class BaseCogModResearch(BaseResearch):
             self.agent_list[vehicle.id] = cogmod_agent
             return cogmod_agent
         
+        
+    def createIDMAgent(self, agent_settings, loglevel=logging.INFO):
+        spawn_wp = self.LocationToWaypoint(agent_settings['source'])
+        print('IDM spawn wp ', spawn_wp)
+        destination_wp = self.LocationToWaypoint(agent_settings['destination'])
+        driver_profile = agent_settings['driver_profile']
+
+        #  get blueprint 
+        bpLib = self.world.get_blueprint_library()
+        vehicleBps = bpLib.filter('vehicle.audi.*')
+        # spawn the vehicle
+        # vehicle = self.vehicle_factory.spawn(spawn_transform)
+        response = self.client.apply_batch_sync([carla.command.SpawnActor(vehicleBps[0], spawn_wp)], True)[0]
+        print('IDM actor id ', response.actor_id)
+        print('IDM has error ', response.has_error())
+        vehicle = self.world.get_actor(response.actor_id)
+        
+        # vehicle = self.vehicle_factory.spawn(spawn_wp)
+        if vehicle is None:
+            self.logger.error(f"Cannot create vehicle - stopping simulation")
+            exit("cannot spawn IDM vehicle")
+        else:
+            self.logger.info(f"successfully spawned IDM actor {vehicle.id}")
+            # self.world.tick()
+            # self.logger.info(f"vehicle location {vehicle.get_location()}")
+            cogmod_agent = IDMAgent(vehicle=vehicle, 
+                                       destination_point=destination_wp, 
+                                       driver_profile=driver_profile)
+            self.agent_list[vehicle.id] = cogmod_agent
+            return cogmod_agent
+        
 
     def createTrajectoryAgent(self, agent_id, tracksDF, pivot, spawn_height=0.5):
         
@@ -131,7 +162,7 @@ class BaseCogModResearch(BaseResearch):
         
         #  get blueprint 
         bpLib = self.world.get_blueprint_library()
-        vehicleBps = bpLib.filter('vehicle.audi.*')
+        vehicleBps = bpLib.filter('vehicle.*')
         # spawn the vehicle
         # vehicle = self.vehicle_factory.spawn(spawn_transform)
         response = self.client.apply_batch_sync([carla.command.SpawnActor(vehicleBps[0], spawn_transform)], True)[0]

@@ -9,7 +9,7 @@ class ComplexCognition(BaseCognitiveServer):
     def __init__(self, queue_length=10, frequency=5, time_delta=1):
         super().__init__(queue_length, frequency)
         self.delta = time_delta
-        self.logLevel = logging.INFO
+        self.logLevel = logging.ERROR
         self.logger = LoggerFactory.create("ComplexCognition", {'LOG_LEVEL':self.logLevel})
         self.tick_counter = 0
         self.logger.info(f"Creating complex cognition {self.tick_counter}")
