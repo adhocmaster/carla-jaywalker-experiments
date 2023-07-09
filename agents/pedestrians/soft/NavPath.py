@@ -5,9 +5,23 @@ from agents.pedestrians.soft.NavPoint import NavPoint
 
 class NavPath:
 
-    def __init__(self, roadWidth: float, path: List[NavPoint]):
-        self._path = path
-        self._roadWidth = roadWidth
-        self._nEgoDirectionLanes = 0
-        self._nEgoOppositeDirectionLanes = 0
+    def __init__(
+            self, 
+            roadWidth: float, 
+            path: List[NavPoint], 
+            nEgoDirectionLanes: int, 
+            nEgoOppositeDirectionLanes: int,
+            avgSpeed: float,
+            maxSpeed: float,
+            minSpeed: float
+            ):
+        self.roadWidth = roadWidth
+        self.path = path
+        self.nEgoDirectionLanes = nEgoDirectionLanes
+        self.nEgoOppositeDirectionLanes = nEgoOppositeDirectionLanes
+        self.avgSpeed = avgSpeed
+        self.maxSpeed = maxSpeed
+        self.minSpeed = minSpeed
+        
+
     
