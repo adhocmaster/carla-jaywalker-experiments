@@ -18,7 +18,7 @@ class NavPoint:
         self.laneSection = laneSection
         self.distanceToEgo = distanceToEgo # on the lane cooordinate system # distance can be negative
         self.speed = speed 
-        self.behaviorTags: Set[BehaviorType] = []
+        self.behaviorTags: Set[BehaviorType] = set([])
         # self.ttc = None
     
     def addBehaviorTag(self, behaviorTag: BehaviorType):
