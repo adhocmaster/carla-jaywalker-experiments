@@ -1,5 +1,6 @@
 from agents.pedestrians.soft.BehaviorType import BehaviorType
 from agents.pedestrians.soft.NavPath import NavPath
+from agents.pedestrians.soft.Side import Side
 
 
 class BehaviorMatcher:
@@ -43,9 +44,15 @@ class BehaviorMatcher:
         if idx == len(navPath.path) - 1:
             return False
         nextNavPoint = navPath.path[idx + 1]
-        if navPoint.speed < nextNavPoint.speed:
-            return True
-        
+        if navPoint.speed < nextNavPoint.speed: # we need to consider the direction, too.
+            # if navPoint is on the left of the ego, the next point has to be on the right
+            if navPoint.laneId < 0:
+                if navPoint.getOtherSide(nextNavPoint) == Side.RIGHT:
+                    return True
+            # if navPoint is on the right of the ego, the next point has to be on the left
+            if navPoint.laneId > 0:
+                if navPoint.getOtherSide(nextNavPoint) == Side.LEFT:
+                    return True
         return False
 
     def showsEvasiveSlowdown(self, idx:int, navPath: NavPath):

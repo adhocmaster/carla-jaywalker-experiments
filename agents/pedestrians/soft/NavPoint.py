@@ -25,6 +25,14 @@ class NavPoint:
         self.behaviorTags.add(behaviorTag)
     
     def getOtherSide(self, other: 'NavPoint'):
+        """This is also in the ego's perspective
+
+        Args:
+            other (NavPoint): _description_
+
+        Returns:
+            _type_: _description_
+        """
 
         if self.laneId > other.laneId: 
             return Side.LEFT

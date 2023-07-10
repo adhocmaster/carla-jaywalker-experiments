@@ -15,4 +15,7 @@ def test_behavior_matcher_psi004(nav_path_psi004):
     point3 = nav_path_psi004.path[2]
     point4 = nav_path_psi004.path[3]
 
-    assert BehaviorType.EVASIVE_SPEEDUP in point1.behaviorTags
+    assert BehaviorType.EVASIVE_SLOWDOWN in point1.behaviorTags
+    assert len(point1.behaviorTags) == 1
+    assert BehaviorType.EVASIVE_FLINCH in point2.behaviorTags
+    assert len(point2.behaviorTags) == 1

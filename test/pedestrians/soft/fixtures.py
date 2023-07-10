@@ -17,14 +17,14 @@ def nav_path_psi004():
         laneId=0,
         laneSection=LaneSection.MIDDLE,
         distanceToEgo=15.0, 
-        speed=0.5
+        speed=0.2
     )
 
     point3 = NavPoint(
         laneId=0,
         laneSection=LaneSection.RIGHT,
         distanceToEgo=6.0, 
-        speed=0.1
+        speed=0.8
     )
     point4 = NavPoint(
         laneId=1,
