@@ -1,5 +1,6 @@
 from typing import List, Set
 from agents.pedestrians.soft.BehaviorType import BehaviorType
+from agents.pedestrians.soft.Direction import Direction
 from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.Side import Side
 
@@ -13,11 +14,14 @@ class NavPoint:
             laneSection: LaneSection, 
             distanceToEgo: float,
             speed: float,
+            direction: Direction
             ):
         self.laneId = laneId #lane id wrt the ego vehicle's direction. ego vehicle has left and right vehicles, where ego's lane has id 0. left is negative, right is positive. sidewalks are lanes
         self.laneSection = laneSection
         self.distanceToEgo = distanceToEgo # on the lane cooordinate system # distance can be negative
         self.speed = speed 
+        self.direction = direction
+
         self.behaviorTags: Set[BehaviorType] = set([])
         # self.ttc = None
     
@@ -25,10 +29,20 @@ class NavPoint:
         self.behaviorTags.add(behaviorTag)
 
     def isOnEgosLeft(self):
-        return self.laneId < 0
+        if self.laneId < 0:
+            return True
+        if self.laneId == 0:
+            if self.laneSection == LaneSection.LEFT:
+                return True
+        return False
     
     def isOnEgosRight(self):
-        return self.laneId > 0
+        if self.laneId > 0:
+            return True
+        if self.laneId == 0:
+            if self.laneSection == LaneSection.RIGHT:
+                return True
+        return False
     
     def hasEvasiveFlinch(self):
         return BehaviorType.EVASIVE_FLINCH in self.behaviorTags
