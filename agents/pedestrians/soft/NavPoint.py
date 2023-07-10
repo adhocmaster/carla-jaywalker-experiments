@@ -23,6 +23,21 @@ class NavPoint:
     
     def addBehaviorTag(self, behaviorTag: BehaviorType):
         self.behaviorTags.add(behaviorTag)
+
+    def isOnEgosLeft(self):
+        return self.laneId < 0
+    
+    def isOnEgosRight(self):
+        return self.laneId > 0
+    
+    def hasEvasiveFlinch(self):
+        return BehaviorType.EVASIVE_FLINCH in self.behaviorTags
+    def hasEvasiveSpeedup(self):
+        return BehaviorType.EVASIVE_FLINCH in self.behaviorTags
+    def hasEvasiveSlowdown(self):
+        return BehaviorType.EVASIVE_FLINCH in self.behaviorTags
+    def hasEvasiveStop(self):
+        return BehaviorType.EVASIVE_FLINCH in self.behaviorTags
     
     def getOtherSide(self, other: 'NavPoint'):
         """This is also in the ego's perspective
