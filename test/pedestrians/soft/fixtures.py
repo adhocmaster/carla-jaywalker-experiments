@@ -82,7 +82,7 @@ def nav_path_psi002():
         laneId=0,
         laneSection=LaneSection.LEFT,
         distanceToEgo=-1, 
-        speed=0.0,
+        speed=1,
         direction=Direction.RL
     )
 

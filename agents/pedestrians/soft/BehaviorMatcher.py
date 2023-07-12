@@ -1,4 +1,5 @@
 from agents.pedestrians.soft.BehaviorType import BehaviorType
+from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.NavPath import NavPath
 from agents.pedestrians.soft.Side import Side
 
@@ -11,12 +12,17 @@ class BehaviorMatcher:
     
     def tagNavPoint(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
+        # if navPoint.isBehindEgo():
+        #     return
+        
         if self.showsEvasiveRetreat(idx, navPath):
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_RETREAT)
         elif self.showsEvasiveFlinch(idx, navPath):
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_FLINCH)
         elif self.showsEvasiveStop(idx, navPath):
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_STOP)
+        elif self.showsEvasiveSlowdownAndStop(idx, navPath):
+            navPoint.addBehaviorTag(BehaviorType.EVASIVE_SLOWDOWN_STOP)
         elif self.showsEvasiveSpeedup(idx, navPath):
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SPEEDUP)
         elif self.showsEvasiveSlowdown(idx, navPath):
@@ -24,6 +30,8 @@ class BehaviorMatcher:
 
     def showsEvasiveRetreat(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
+        if navPoint.isBehindEgo():
+            return
         
         # means the next nav and the previous nav points are on the same side.
         if idx == 0 or idx == len(navPath.path) - 1: 
@@ -45,6 +53,8 @@ class BehaviorMatcher:
 
     def showsEvasiveFlinch(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
+        if navPoint.isBehindEgo():
+            return
         
         # means the next nav and the previous nav points are on the same side.
         if idx == 0 or idx == len(navPath.path) - 1: 
@@ -59,8 +69,71 @@ class BehaviorMatcher:
     
     def showsEvasiveStop(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
-        if navPoint.speed < 0.1 and navPoint.distanceToEgo >= 0: # need improvement
+        if navPoint.isBehindEgo():
+            return
+        if navPoint.speed < 0.1: # need improvement
             return True
+    
+        # if idx == len(navPath.path) - 1:
+        #     return False
+        # nextNavPoint = navPath.path[idx + 1]
+        # # if navPoint is on the left of the ego, the next point has to be on the right of the current
+        # if navPoint.isOnEgosLeft():
+        #     print(f"on ego's left")
+        #     if navPoint.getOtherSide(nextNavPoint) == Side.SAME:
+        #         return True
+        # # if navPoint is on the right of the ego, the next point has to be on the left  of the current
+        # if navPoint.isOnEgosRight():
+        #     print(f"on ego's right")
+        #     if navPoint.getOtherSide(nextNavPoint) == Side.SAME:
+        #         return True
+        
+
+    def showsEvasiveSlowdownAndStop(self, idx:int, navPath: NavPath):
+        """Pattern1: navPoint is on side of the vehicle, the pedestrian keeps moving and makes a stop on the same side of the vehicle and between the navpoint and the vehicle axis
+
+        Args:
+            idx (int): _description_
+            navPath (NavPath): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        navPoint = navPath.path[idx]
+        if navPoint.isBehindEgo() or navPoint.laneId == 0:
+            return
+    
+        if idx == len(navPath.path) - 1:
+            return False
+        
+        allowedSides = set([Side.SAME])
+        allowedLanes = []
+        if navPoint.laneId < 0:
+            allowedLanes = set(range(navPoint.laneId, 0))
+        else:
+            allowedLanes = set(range(1, navPoint.laneId + 1))
+
+        if navPoint.isOnEgosLeft():
+            allowedSides.add(Side.RIGHT)
+        elif navPoint.isOnEgosRight():
+            allowedSides.add(Side.LEFT)
+        
+        
+        pointsInPattern = []
+        for nextIdx in range(idx+1, len(navPath.path)):
+            nextNavPoint = navPath.path[nextIdx]
+            if nextNavPoint.laneId not in allowedLanes:
+                break
+            if navPoint.getOtherSide(nextNavPoint) not in allowedSides:
+                break
+            pointsInPattern.append(nextNavPoint)
+        
+        if len(pointsInPattern) > 1:
+            lastNavPoint = pointsInPattern[-1]
+            if lastNavPoint.speed <= 0.1:
+                return True
+
+        return False
         
 
     def showsEvasiveSpeedup(self, idx:int, navPath: NavPath):
@@ -95,13 +168,17 @@ class BehaviorMatcher:
             return False
         nextNavPoint = navPath.path[idx + 1]
         if navPoint.speed > nextNavPoint.speed:
+
+            print(f"{idx} slowing down. need to check orientation")
         
-            # if navPoint is on the left of the ego, the next point has to be on the right
+            # if navPoint is on the left of the ego, the next point has to be on the right of the current
             if navPoint.isOnEgosLeft():
+                print(f"on ego's left")
                 if navPoint.getOtherSide(nextNavPoint) == Side.RIGHT:
                     return True
-            # if navPoint is on the right of the ego, the next point has to be on the left
+            # if navPoint is on the right of the ego, the next point has to be on the left  of the current
             if navPoint.isOnEgosRight():
+                print(f"on ego's right")
                 if navPoint.getOtherSide(nextNavPoint) == Side.LEFT:
                     return True
         return False

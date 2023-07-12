@@ -5,3 +5,4 @@ from .LaneSection import LaneSection
 from .NavPoint import NavPoint
 from .NavPath import NavPath
 from .BehaviorMatcher import BehaviorMatcher
+from .SoftVisualizer import SoftVisualizer
