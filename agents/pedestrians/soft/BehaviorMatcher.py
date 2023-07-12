@@ -13,6 +13,8 @@ class BehaviorMatcher:
         navPoint = navPath.path[idx]
         if self.showsEvasiveStop(idx, navPath):
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_STOP)
+        elif self.showsEvasiveRetreat(idx, navPath):
+            navPoint.addBehaviorTag(BehaviorType.EVASIVE_RETREAT)
         elif self.showsEvasiveFlinch(idx, navPath):
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_FLINCH)
         elif self.showsEvasiveSpeedup(idx, navPath):
@@ -25,6 +27,27 @@ class BehaviorMatcher:
         if navPoint.speed < 0.1 and navPoint.distanceToEgo >= 0: # need improvement
             return True
         
+    def showsEvasiveRetreat(self, idx:int, navPath: NavPath):
+        navPoint = navPath.path[idx]
+        
+        if navPoint.hasEvasiveStop():
+            return False
+
+        # means the next nav and the previous nav points are on the same side.
+        if idx == 0 or idx == len(navPath.path) - 1: 
+            return False
+        
+        prevNavPoint = navPath.path[idx - 1]
+        nextNavPoint = navPath.path[idx + 1]
+        if navPoint.getOtherSide(prevNavPoint) == navPoint.getOtherSide(nextNavPoint):
+            # TODO, we consider retreat if next navpoints are at least half length wide
+            for i in range(1, len(navPath.path)):
+                pass
+            return True
+        
+        return False
+
+
     def showsEvasiveFlinch(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
         
@@ -41,7 +64,6 @@ class BehaviorMatcher:
             return True
         
         return False
-
 
     def showsEvasiveSpeedup(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
@@ -66,7 +88,7 @@ class BehaviorMatcher:
 
     def showsEvasiveSlowdown(self, idx:int, navPath: NavPath):
         navPoint = navPath.path[idx]
-        
+
         if navPoint.hasEvasiveFlinch():
             return False
         

@@ -14,7 +14,7 @@ class NavPoint:
             laneSection: LaneSection, 
             distanceToEgo: float,
             speed: float,
-            direction: Direction
+            direction: Direction = None
             ):
         self.laneId = laneId #lane id wrt the ego vehicle's direction. ego vehicle has left and right vehicles, where ego's lane has id 0. left is negative, right is positive. sidewalks are lanes
         self.laneSection = laneSection
@@ -53,7 +53,7 @@ class NavPoint:
     def hasEvasiveStop(self):
         return BehaviorType.EVASIVE_FLINCH in self.behaviorTags
     
-    def getOtherSide(self, other: 'NavPoint'):
+    def getOtherSide(self, other: 'NavPoint') -> LaneSection:
         """This is also in the ego's perspective
 
         Args:
@@ -86,6 +86,51 @@ class NavPoint:
                     return Side.SAME
                 else:
                     return Side.LEFT
+    
+    def stepsToRightLane(self) -> int:
+        if self.laneSection == LaneSection.MIDDLE:
+            return 2
+        if self.laneSection == LaneSection.LEFT:
+            return 3
+        return 1
+    
+    def stepsToLeftLane(self) -> int:
+        if self.laneSection == LaneSection.MIDDLE:
+            return 2
+        if self.laneSection == LaneSection.RIGHT:
+            return 3
+        return 1
+    
+    def getStepsToOther(self, other: 'NavPoint') -> int:
+
+        otherSide = self.getOtherSide(other)
+
+        if otherSide == Side.SAME:
+            return 0
+        
+        if self.laneId == other.laneId:
+            # not in the same side
+            if (self.laneSection == LaneSection.MIDDLE) or (other.laneSection == LaneSection.MIDDLE): # no matter where the other is, the steps will always be one
+                return 1
+            return 2 # on right or left
+            
+        
+        middleLaneSteps = (abs(self.laneId - other.laneId) - 1) * 3
+        # now we can assume the lanes are adjacent to each other
+        if otherSide == Side.LEFT:
+            myStepsToTheLeftLane = self.stepsToLeftLane()
+            otherStepsToTheRightLane = other.stepsToRightLane()
+            # print("myStepsToTheLeftLane", myStepsToTheLeftLane)
+            # print("otherStepsToTheRightLane", otherStepsToTheRightLane)
+            return myStepsToTheLeftLane + otherStepsToTheRightLane + middleLaneSteps - 1
+        else:
+            myStepsToTheRightLane = self.stepsToRightLane()
+            otherStepsToTheLeftLane = other.stepsToLeftLane()
+            # print("myStepsToTheRightLane", myStepsToTheRightLane)
+            # print("otherStepsToTheLeftLane", otherStepsToTheLeftLane)
+            return myStepsToTheRightLane + otherStepsToTheLeftLane + middleLaneSteps - 1
+        
+            
         
 
 
