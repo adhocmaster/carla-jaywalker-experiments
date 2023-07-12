@@ -17,6 +17,8 @@ def test_behavior_matcher_psi004(nav_path_psi004):
 
     assert BehaviorType.EVASIVE_SLOWDOWN in point1.behaviorTags
     assert len(point1.behaviorTags) == 1
-    assert BehaviorType.EVASIVE_FLINCH in point2.behaviorTags
+    assert BehaviorType.EVASIVE_RETREAT in point2.behaviorTags
     assert len(point2.behaviorTags) == 1
-    
+    assert len(point3.behaviorTags) == 0
+    assert len(point4.behaviorTags) == 0
+

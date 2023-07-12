@@ -13,7 +13,7 @@ class NavPoint:
             laneId: int, 
             laneSection: LaneSection, 
             distanceToEgo: float,
-            speed: float,
+            speed: float = None,
             direction: Direction = None
             ):
         self.laneId = laneId #lane id wrt the ego vehicle's direction. ego vehicle has left and right vehicles, where ego's lane has id 0. left is negative, right is positive. sidewalks are lanes
@@ -27,6 +27,12 @@ class NavPoint:
     
     def addBehaviorTag(self, behaviorTag: BehaviorType):
         self.behaviorTags.add(behaviorTag)
+
+    
+    def isInFrontOfEgo(self):
+        return self.distanceToEgo > 0
+    def isBehindEgo(self):
+        return self.distanceToEgo < 0
 
     def isOnEgosLeft(self):
         if self.laneId < 0:
