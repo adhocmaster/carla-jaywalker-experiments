@@ -13,7 +13,8 @@ class NavPath:
             nEgoOppositeDirectionLanes: int,
             avgSpeed: float,
             maxSpeed: float,
-            minSpeed: float
+            minSpeed: float,
+            egoLaneWrtCenter: int
             ):
         self.roadWidth = roadWidth
         self.path = path
@@ -22,6 +23,24 @@ class NavPath:
         self.avgSpeed = avgSpeed
         self.maxSpeed = maxSpeed
         self.minSpeed = minSpeed
-        
+        assert egoLaneWrtCenter > 0
+        self.egoLaneWrtCenter = egoLaneWrtCenter
+
+    @property
+    def nLanes(self):
+        return self.nEgoDirectionLanes + self.nEgoOppositeDirectionLanes
+
+    @property
+    def laneWidth(self):
+        return self.roadWidth / (self.nLanes)
+    
+    
+    @property
+    def roadLength(self):
+        maxDistanceToEgo = 0
+        for navPoint in self.path:
+            maxDistanceToEgo = max(maxDistanceToEgo, navPoint.distanceToEgo)
+        return maxDistanceToEgo * 1.5
+
 
     

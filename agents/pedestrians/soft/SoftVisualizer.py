@@ -3,6 +3,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from agents.pedestrians.soft.NavPath import NavPath
 from matplotlib.patches import Rectangle
+import matplotlib.patches as mpatches
 
 
 class SoftVisualizer:
@@ -14,31 +15,62 @@ class SoftVisualizer:
 
     def setFigureSize(self, navPath: NavPath) -> Figure:
         width = navPath.roadWidth * self.meterToPixel
-        maxDistanceToEgo = 0
-        for navPoint in navPath.path:
-            maxDistanceToEgo = max(maxDistanceToEgo, navPoint.distanceToEgo)
-        height = maxDistanceToEgo * 2 * self.meterToPixel
-        print(width / self.dpi, height / self.dpi)
-        # return plt.figure(figsize=(width / self.dpi, height / self.dpi), dpi=self.dpi)
-        return plt.figure()
+        height = navPath.roadLength * self.meterToPixel
+        
+        wIn = width / self.dpi
+        hIn = height / self.dpi
+        return plt.figure(figsize=(wIn, hIn), dpi=self.dpi)
+        # return plt.figure(), width, height
     
-    def addVehicle(self, ax: Axes):
-        vW = self.toFigUnit(2)
-        vH = self.toFigUnit(4)
-        print(vW, vH)
-        ax.add_patch(Rectangle((0, 0), vW, vH, color='blue'))
+    def addVehicle(self, ax: Axes, navPath: NavPath):
+        # vW = self.toFigUnit(2)
+        # vH = self.toFigUnit(4)
+        vW = 2
+        vH = 4
+        # print(vW, vH)
+        # ax.add_patch(Rectangle((0, 0), vW, vH, color='blue'))
+        egoLaneWrtCenter = navPath.egoLaneWrtCenter
+        assert egoLaneWrtCenter > 0
+        laneOffset = navPath.nEgoOppositeDirectionLanes + navPath.egoLaneWrtCenter - 1
+        x = laneOffset * navPath.laneWidth + (navPath.laneWidth - vW) / 2
+        ax.add_patch(Rectangle((x, 0), vW, vH, color='green'))
+        # arrow = mpatches.FancyArrowPatch((x + vW/2, vH), (x + vW/2, vH+2),
+        #                          mutation_scale=40)
+        # ax.add_patch(arrow)
 
-    def toFigUnit(self, meters: float) -> float:
-        px = 3 * self.meterToPixel
-        return px / self.dpi
+
+
+    # def toFigUnit(self, meters: float) -> float:
+    #     px = 3 * self.meterToPixel
+    #     return px / self.dpi
+
+    def addLaneMarkings(self, ax: Axes, navPath: NavPath):
+        # we put ego lanes on the right and opposite direction lanes on the left
+        for i in range(navPath.nLanes):
+            ax.vlines(i * navPath.laneWidth, 0, 100, color='black', linewidth=1)
+        
+        for i in range(navPath.nEgoOppositeDirectionLanes):
+            x = (i+1) * navPath.laneWidth - navPath.laneWidth / 2
+            arrow = mpatches.FancyArrowPatch((x , 2), (x, 0),
+                                    mutation_scale=40, color="C1")
+            ax.add_patch(arrow)
+
+        for i in range(navPath.nEgoDirectionLanes):
+            x = (i + 1 + navPath.nEgoOppositeDirectionLanes) * navPath.laneWidth - navPath.laneWidth / 2
+            arrow = mpatches.FancyArrowPatch((x , 0), (x, 2),
+                                    mutation_scale=40, color="C2")
+            ax.add_patch(arrow)
+
 
 
     def visualizeNavPath(self, navPath: NavPath):
         figure = self.setFigureSize(navPath)
+
         ax = figure.add_subplot(111)
-        ax.set_xlim(left=0, right=5)
-        ax.set_ylim(bottom=0, top=5)
-        self.addVehicle(ax)
+        ax.set_xlim(left=0, right=navPath.roadWidth)
+        ax.set_ylim(bottom=0, top=navPath.roadLength)
+        self.addVehicle(ax, navPath)
+        self.addLaneMarkings(ax, navPath)
 
         # put the vehicle at the bottom
 
