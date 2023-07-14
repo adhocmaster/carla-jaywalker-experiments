@@ -78,7 +78,7 @@ class CrosswalkModel:
     def createPolygon(self):
         
         centerScanLine = Geometry.makeCenterScanLine(self.source, self.idealDestination)
-        # visualizer.drawShapelyLine(centerScanLine)
+        # self.visualizer.drawShapelyLine(centerScanLine)
         scanLines, sideWalkPoints = Geometry.getScanLinesAndSidewalkPoints(self.agent.world, centerScanLine)
 
         if len(sideWalkPoints) < 2:
@@ -94,7 +94,7 @@ class CrosswalkModel:
         self.areaPolygon = Polygon([Geometry.locationToPoint(self.source), sideWalkPoints[0], sideWalkPoints[-1]])
        
         if self.debug:
-            # self.visualizeScanLines(scanLines)
+            self.visualizeScanLines(scanLines)
             self.visualizeSideWalkPoints(sideWalkPoints)
             self.visualizeArea()
 
@@ -104,7 +104,7 @@ class CrosswalkModel:
         for scanLine in scanLines: 
             count += 1
             # self.visualizer.drawShapelyLine(scanLine, color=(count * 2, count * 2, count * 2), life_time=2.0)
-            self.visualizer.drawShapelyLine(scanLine, color=(0, 0, 0, 255), life_time=1.0)
+            self.visualizer.drawShapelyLine(scanLine, color=(0, 0, 0, 255), life_time=10.0)
 
         pass
 
