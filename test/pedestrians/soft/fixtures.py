@@ -11,6 +11,7 @@ def nav_path_psi004():
         laneId=1,
         laneSection=LaneSection.LEFT,
         distanceToEgo=20.0, 
+        distanctToInitialEgo=20.0, 
         speed=1,
         direction=Direction.LR
     )
@@ -19,6 +20,7 @@ def nav_path_psi004():
         laneId=0,
         laneSection=LaneSection.MIDDLE,
         distanceToEgo=15.0, 
+        distanctToInitialEgo=20.0, 
         speed=0.2,
         direction=Direction.LR
     )
@@ -27,6 +29,7 @@ def nav_path_psi004():
         laneId=0,
         laneSection=LaneSection.RIGHT,
         distanceToEgo=6.0, 
+        distanctToInitialEgo=20.0, 
         speed=0.8,
         direction=Direction.LR
     )
@@ -34,6 +37,7 @@ def nav_path_psi004():
         laneId=1,
         laneSection=LaneSection.LEFT,
         distanceToEgo=2.0, 
+        distanctToInitialEgo=20.0, 
         speed=0.1,
         direction=Direction.LR
     )
@@ -58,6 +62,7 @@ def nav_path_psi002():
         laneId=-1,
         laneSection=LaneSection.LEFT,
         distanceToEgo=24.0, 
+        distanctToInitialEgo=24.0, 
         speed=1,
         direction=Direction.RL
     )
@@ -65,6 +70,7 @@ def nav_path_psi002():
         laneId=-1,
         laneSection=LaneSection.MIDDLE,
         distanceToEgo=7.0, 
+        distanctToInitialEgo=25.0, 
         speed=0.5,
         direction=Direction.RL
     )
@@ -73,6 +79,7 @@ def nav_path_psi002():
         laneId=-1,
         laneSection=LaneSection.MIDDLE,
         distanceToEgo=1.0, 
+        distanctToInitialEgo=25.0, 
         speed=0.1,
         direction=Direction.RL
     )
@@ -82,6 +89,7 @@ def nav_path_psi002():
         laneId=0,
         laneSection=LaneSection.LEFT,
         distanceToEgo=-1, 
+        distanctToInitialEgo=25.0, 
         speed=1,
         direction=Direction.RL
     )

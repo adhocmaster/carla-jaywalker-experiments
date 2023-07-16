@@ -41,6 +41,8 @@ class NavPath:
         for navPoint in self.path:
             maxDistanceToEgo = max(maxDistanceToEgo, navPoint.distanceToEgo)
         return maxDistanceToEgo * 1.5
-
+    
+    def getPointLaneIdWrtCenter(self, point: NavPoint) -> int:
+        return self.egoLaneWrtCenter + point.laneId
 
     

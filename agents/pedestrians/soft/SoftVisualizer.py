@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.NavPath import NavPath
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Circle
 import matplotlib.patches as mpatches
 
 
@@ -62,6 +63,19 @@ class SoftVisualizer:
             ax.add_patch(arrow)
 
 
+    def addNavPoints(self, ax: Axes, navPath: NavPath):
+        for i, navPoint in enumerate(navPath.path):
+            if navPoint.isInFrontOfEgo():
+                laneOffset = navPath.nEgoOppositeDirectionLanes + navPath.getPointLaneIdWrtCenter(navPoint) - 1
+                x = laneOffset * navPath.laneWidth + (navPath.laneWidth) / 2
+                if navPoint.laneSection == LaneSection.LEFT:
+                    x -= navPath.laneWidth / 2
+                if navPoint.laneSection == LaneSection.RIGHT:
+                    x += navPath.laneWidth / 2
+
+                circle = Circle((x, navPoint.distanceToInitialEgo), 0.5)
+                ax.add_patch(circle)
+                ax.text(x, navPoint.distanceToInitialEgo, f"{i+1}", horizontalalignment='center', verticalalignment='center')
 
     def visualizeNavPath(self, navPath: NavPath):
         figure = self.setFigureSize(navPath)
@@ -71,6 +85,7 @@ class SoftVisualizer:
         ax.set_ylim(bottom=0, top=navPath.roadLength)
         self.addVehicle(ax, navPath)
         self.addLaneMarkings(ax, navPath)
+        self.addNavPoints(ax, navPath)
 
         # put the vehicle at the bottom
 

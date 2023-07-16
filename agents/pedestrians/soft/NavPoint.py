@@ -13,12 +13,14 @@ class NavPoint:
             laneId: int, 
             laneSection: LaneSection, 
             distanceToEgo: float,
+            distanctToInitialEgo: float,
             speed: float = None,
             direction: Direction = None
             ):
         self.laneId = laneId #lane id wrt the ego vehicle's direction. ego vehicle has left and right vehicles, where ego's lane has id 0. left is negative, right is positive. sidewalks are lanes
         self.laneSection = laneSection
         self.distanceToEgo = distanceToEgo # on the lane cooordinate system # distance can be negative
+        self.distanceToInitialEgo = distanctToInitialEgo # on the lane cooordinate system # distance can be negative
         self.speed = speed 
         self.direction = direction
 
