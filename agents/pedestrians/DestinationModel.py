@@ -206,6 +206,8 @@ class DestinationModel(ForceModel):
         
         if self.navPathModel is not None:
             self.navPathModel.initNavigation()
+            if not self.navPathModel.initialized:
+                return None
 
 
         # self.agent.logger.warn(f"Collecting state from {self.name}")

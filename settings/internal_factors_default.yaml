@@ -1,8 +1,8 @@
 risk_level: "risky"
 
 # Destination related factors
-relaxation_time: 0.5
-desired_speed: 2
+relaxation_time: 0.2
+desired_speed: 3
 desired_distance_gap: 2
 use_crosswalk_area_model: False
 use_random_destination_without_intermediates: True
