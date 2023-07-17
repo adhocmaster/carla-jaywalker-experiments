@@ -6,6 +6,8 @@ from agents.pedestrians.soft.NavPath import NavPath
 from matplotlib.patches import Rectangle, Circle
 import matplotlib.patches as mpatches
 
+from agents.pedestrians.soft.NavPoint import NavPoint
+
 
 class SoftVisualizer:
 
@@ -15,7 +17,8 @@ class SoftVisualizer:
         pass
 
     def setFigureSize(self, navPath: NavPath) -> Figure:
-        width = navPath.roadWidth * self.meterToPixel
+        nPoints = len(navPath.path)
+        width = navPath.roadWidth * self.meterToPixel * nPoints
         height = navPath.roadLength * self.meterToPixel
         
         wIn = width / self.dpi
@@ -23,27 +26,25 @@ class SoftVisualizer:
         return plt.figure(figsize=(wIn, hIn), dpi=self.dpi)
         # return plt.figure(), width, height
     
-    def addVehicle(self, ax: Axes, navPath: NavPath):
+    def addVehicle(self, ax: Axes, navPath: NavPath, yOffset: float = 0):
         # vW = self.toFigUnit(2)
         # vH = self.toFigUnit(4)
         vW = 2
         vH = 4
         # print(vW, vH)
         # ax.add_patch(Rectangle((0, 0), vW, vH, color='blue'))
+
+        color = '#aaffaa'
+        if yOffset > 0:
+            color = '#55aa55'
+
         egoLaneWrtCenter = navPath.egoLaneWrtCenter
         assert egoLaneWrtCenter > 0
         laneOffset = navPath.nEgoOppositeDirectionLanes + navPath.egoLaneWrtCenter - 1
         x = laneOffset * navPath.laneWidth + (navPath.laneWidth - vW) / 2
-        ax.add_patch(Rectangle((x, 0), vW, vH, color='green'))
-        # arrow = mpatches.FancyArrowPatch((x + vW/2, vH), (x + vW/2, vH+2),
-        #                          mutation_scale=40)
-        # ax.add_patch(arrow)
+        ax.add_patch(Rectangle((x, yOffset), vW, vH, color=color))
 
 
-
-    # def toFigUnit(self, meters: float) -> float:
-    #     px = 3 * self.meterToPixel
-    #     return px / self.dpi
 
     def addLaneMarkings(self, ax: Axes, navPath: NavPath):
         # we put ego lanes on the right and opposite direction lanes on the left
@@ -65,27 +66,39 @@ class SoftVisualizer:
 
     def addNavPoints(self, ax: Axes, navPath: NavPath):
         for i, navPoint in enumerate(navPath.path):
-            if navPoint.isInFrontOfEgo():
-                laneOffset = navPath.nEgoOppositeDirectionLanes + navPath.getPointLaneIdWrtCenter(navPoint) - 1
-                x = laneOffset * navPath.laneWidth + (navPath.laneWidth) / 2
-                if navPoint.laneSection == LaneSection.LEFT:
-                    x -= navPath.laneWidth / 2
-                if navPoint.laneSection == LaneSection.RIGHT:
-                    x += navPath.laneWidth / 2
+            self.addNavPoint(ax, navPath, i)
 
-                circle = Circle((x, navPoint.distanceToInitialEgo), 0.5)
-                ax.add_patch(circle)
-                ax.text(x, navPoint.distanceToInitialEgo, f"{i+1}", horizontalalignment='center', verticalalignment='center')
+    def addNavPoint(self, ax: Axes, navPath: NavPath, idx: int, addVehicle=False):
+        navPoint = navPath.path[idx]
+        # if navPoint.isInFrontOfEgo():
+        laneOffset = navPath.nEgoOppositeDirectionLanes + navPath.getPointLaneIdWrtCenter(navPoint) - 1
+        x = laneOffset * navPath.laneWidth + (navPath.laneWidth) / 2
+        if navPoint.laneSection == LaneSection.LEFT:
+            x -= navPath.laneWidth / 2
+        if navPoint.laneSection == LaneSection.RIGHT:
+            x += navPath.laneWidth / 2
+
+        circle = Circle((x, navPoint.distanceToInitialEgo), 0.5)
+        ax.add_patch(circle)
+        ax.text(x, navPoint.distanceToInitialEgo, f"{idx+1}", horizontalalignment='center', verticalalignment='center')
+
+        
+        if addVehicle:
+            yOffset = navPoint.distanceToInitialEgo - navPoint.distanceToEgo
+            self.addVehicle(ax, navPath, yOffset)
 
     def visualizeNavPath(self, navPath: NavPath):
         figure = self.setFigureSize(navPath)
 
-        ax = figure.add_subplot(111)
-        ax.set_xlim(left=0, right=navPath.roadWidth)
-        ax.set_ylim(bottom=0, top=navPath.roadLength)
-        self.addVehicle(ax, navPath)
-        self.addLaneMarkings(ax, navPath)
-        self.addNavPoints(ax, navPath)
+        nPoints = len(navPath.path)
+
+        for i, navPoint in enumerate(navPath.path):
+            ax = figure.add_subplot(1, nPoints, i+1)
+            ax.set_xlim(left=0, right=navPath.roadWidth)
+            ax.set_ylim(bottom=0, top=navPath.roadLength)
+            self.addVehicle(ax, navPath)
+            self.addLaneMarkings(ax, navPath)
+            self.addNavPoint(ax, navPath, i, addVehicle=True)
 
         # put the vehicle at the bottom
 
