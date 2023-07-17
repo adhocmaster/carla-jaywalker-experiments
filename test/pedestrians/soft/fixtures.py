@@ -64,7 +64,7 @@ def nav_path_psi002():
         distanceToEgo=24.0, 
         distanctToInitialEgo=24.0, 
         speed=1,
-        direction=Direction.RL
+        direction=Direction.LR
     )
     point2 = NavPoint(
         laneId=-1,
@@ -72,7 +72,7 @@ def nav_path_psi002():
         distanceToEgo=7.0, 
         distanctToInitialEgo=25.0, 
         speed=0.5,
-        direction=Direction.RL
+        direction=Direction.LR
     )
     
     point3 = NavPoint(
@@ -81,7 +81,7 @@ def nav_path_psi002():
         distanceToEgo=1.0, 
         distanctToInitialEgo=25.0, 
         speed=0.1,
-        direction=Direction.RL
+        direction=Direction.LR
     )
 
     
@@ -91,7 +91,7 @@ def nav_path_psi002():
         distanceToEgo=-1, 
         distanctToInitialEgo=25.0, 
         speed=1,
-        direction=Direction.RL
+        direction=Direction.LR
     )
 
     navPath = NavPath(

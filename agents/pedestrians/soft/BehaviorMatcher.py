@@ -14,18 +14,25 @@ class BehaviorMatcher:
         navPoint = navPath.path[idx]
         # if navPoint.isBehindEgo():
         #     return
+        print(f"{idx} checking")
         
         if self.showsEvasiveRetreat(idx, navPath):
+            print(f"{idx} showsEvasiveRetreat")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_RETREAT)
         elif self.showsEvasiveFlinch(idx, navPath):
+            print(f"{idx} showsEvasiveFlinch")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_FLINCH)
         elif self.showsEvasiveStop(idx, navPath):
+            print(f"{idx} showsEvasiveStop")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_STOP)
         elif self.showsEvasiveSlowdownAndStop(idx, navPath):
+            print(f"{idx} showsEvasiveSlowdownAndStop")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SLOWDOWN_STOP)
         elif self.showsEvasiveSpeedup(idx, navPath):
+            print(f"{idx} showsEvasiveSpeedup")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SPEEDUP)
         elif self.showsEvasiveSlowdown(idx, navPath):
+            print(f"{idx} showsEvasiveSlowdown")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SLOWDOWN)
 
     def showsEvasiveRetreat(self, idx:int, navPath: NavPath):
@@ -71,7 +78,7 @@ class BehaviorMatcher:
         navPoint = navPath.path[idx]
         if navPoint.isBehindEgo():
             return
-        if navPoint.speed < 0.1: # need improvement
+        if navPoint.speed <= 0.1: # need improvement
             return True
     
         # if idx == len(navPath.path) - 1:
@@ -137,6 +144,15 @@ class BehaviorMatcher:
         
 
     def showsEvasiveSpeedup(self, idx:int, navPath: NavPath):
+        """Next nav point has to be in front of ego and on the other side of the current
+
+        Args:
+            idx (int): _description_
+            navPath (NavPath): _description_
+
+        Returns:
+            _type_: _description_
+        """
         navPoint = navPath.path[idx]
 
         if navPoint.hasEvasiveFlinch() or navPoint.isBehindEgo() or  navPoint.speed is None:
@@ -145,6 +161,8 @@ class BehaviorMatcher:
         if idx == len(navPath.path) - 1:
             return False
         nextNavPoint = navPath.path[idx + 1]
+        if nextNavPoint.isBehindEgo():
+            return False
         if navPoint.speed < nextNavPoint.speed: # we need to consider the direction, too.
             # if navPoint is on the left of the ego, the next point has to be on the right
             if navPoint.isOnEgosLeft():
@@ -169,16 +187,17 @@ class BehaviorMatcher:
         nextNavPoint = navPath.path[idx + 1]
         if navPoint.speed > nextNavPoint.speed:
 
-            print(f"{idx} slowing down. need to check orientation")
+            # print(f"{idx} slowing down. has to be on the same side")
+            return (navPoint.isOnEgosLeft() and nextNavPoint.isOnEgosLeft()) or (navPoint.isOnEgosRight() and nextNavPoint.isOnEgosRight())
         
-            # if navPoint is on the left of the ego, the next point has to be on the right of the current
-            if navPoint.isOnEgosLeft():
-                print(f"on ego's left")
-                if navPoint.getOtherSide(nextNavPoint) == Side.RIGHT:
-                    return True
-            # if navPoint is on the right of the ego, the next point has to be on the left  of the current
-            if navPoint.isOnEgosRight():
-                print(f"on ego's right")
-                if navPoint.getOtherSide(nextNavPoint) == Side.LEFT:
-                    return True
+            # # if navPoint is on the left of the ego, the next point has to be on the right of the current
+            # if navPoint.isOnEgosLeft():
+            #     # print(f"on ego's left")
+            #     if navPoint.getOtherSide(nextNavPoint) == Side.RIGHT:
+            #         return True
+            # # if navPoint is on the right of the ego, the next point has to be on the left  of the current
+            # if navPoint.isOnEgosRight():
+            #     # print(f"on ego's right")
+            #     if navPoint.getOtherSide(nextNavPoint) == Side.LEFT:
+            #         return True
         return False

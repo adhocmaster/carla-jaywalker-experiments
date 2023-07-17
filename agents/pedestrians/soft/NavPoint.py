@@ -26,6 +26,14 @@ class NavPoint:
 
         self.behaviorTags: Set[BehaviorType] = set([])
         # self.ttc = None
+
+    def __str__(self) -> str:
+        return (
+            f"{self.laneId}: {self.laneSection}"
+            f"\n{self.distanceToEgo}: {self.distanceToInitialEgo}"
+            f"\nspeed: {self.speed}, direction: {self.direction}"
+            f"\ntags: {self.behaviorTags}"
+        )
     
     def addBehaviorTag(self, behaviorTag: BehaviorType):
         self.behaviorTags.add(behaviorTag)

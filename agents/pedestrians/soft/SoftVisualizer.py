@@ -38,6 +38,8 @@ class SoftVisualizer:
         if yOffset > 0:
             color = '#55aa55'
 
+        yOffset -= vH
+
         egoLaneWrtCenter = navPath.egoLaneWrtCenter
         assert egoLaneWrtCenter > 0
         laneOffset = navPath.nEgoOppositeDirectionLanes + navPath.egoLaneWrtCenter - 1
@@ -95,7 +97,7 @@ class SoftVisualizer:
         for i, navPoint in enumerate(navPath.path):
             ax = figure.add_subplot(1, nPoints, i+1)
             ax.set_xlim(left=0, right=navPath.roadWidth)
-            ax.set_ylim(bottom=0, top=navPath.roadLength)
+            ax.set_ylim(bottom=-4, top=navPath.roadLength)
             self.addVehicle(ax, navPath)
             self.addLaneMarkings(ax, navPath)
             self.addNavPoint(ax, navPath, i, addVehicle=True)

@@ -3,6 +3,8 @@ import numpy as np
 import time
 import carla
 import logging
+
+from agents.pedestrians.soft.NavPath import NavPath
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
 from .planner.PedestrianPlanner import PedestrianPlanner
@@ -54,6 +56,7 @@ class PedestrianAgent(InfoAgent):
                 self.visualizationInfoLocation = config["visualizationInfoLocation"]
                 
         # config parameters
+        self.navPath: NavPath = None
 
     @property
     def world(self):
