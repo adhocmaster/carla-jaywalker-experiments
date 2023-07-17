@@ -50,7 +50,6 @@ def nav_path_psi004():
         avgSpeed=0.5,
         maxSpeed=1,
         minSpeed=0.1,
-        
         egoLaneWrtCenter = 2
     )
 

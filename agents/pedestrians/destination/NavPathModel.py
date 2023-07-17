@@ -44,6 +44,8 @@ class NavPathModel():
         self.initialized = False
         self.initNavigation()
 
+    def getFinalDestination(self):
+        return self.finalDestination
     
     def initNavigation(self):
 
@@ -63,6 +65,11 @@ class NavPathModel():
         vehicleLeftVector = -1 * vehicleRightVector
         
         distanceToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle()
+
+        # TODO, this is not correct as the first nav point might be inside a road.
+        firstNavPoint = self.navPath.path[0]
+        if distanceToVehicle > firstNavPoint.distanceToInitialEgo:
+            return
 
         self.intermediatePoints = []
         
@@ -115,3 +122,27 @@ class NavPathModel():
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
             self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=1.0, color=(0, 255, 255), coords=False, life_time=60.0)
+
+    def getNextDestinationPoint(self):
+
+        if len(self.intermediatePoints) == 0:
+            return self.finalDestination
+        # TODO
+        # find if the pedestrian reached the local y coordinate with a threshold around 100 cm
+        # change next destination point to the next intermediate point return 
+        if self.hasReachedNextDestinationPoint(self.agent.location):
+            if self.nextIntermediatePointIdx == len(self.intermediatePoints) - 1:
+                self.agent.logger.info(f"going to the final destination")
+                d =  self.agent.location.distance_2d(self.finalDestination)
+                self.agent.logger.info(f"distance to next destination {d} meters")
+                return self.finalDestination
+            self.nextIntermediatePointIdx += 1 # this might overflow if we have reached the final 
+        
+        return self.intermediatePoints[self.nextIntermediatePointIdx]
+
+    
+    def hasReachedNextDestinationPoint(self, agentLocation: carla.Location):
+        # TODO: fill it out
+        nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
+
+        return self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)

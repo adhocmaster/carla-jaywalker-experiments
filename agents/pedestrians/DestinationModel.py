@@ -69,8 +69,11 @@ class DestinationModel(ForceModel):
         if self._nextDestination.distance_2d(self.agent.location) < 0.1:
             self._nextDestination = self._finalDestination
 
-        if self.crosswalkModel is not None:
+        elif self.crosswalkModel is not None:
             self._nextDestination = self.crosswalkModel.getNextDestinationPoint()
+
+        elif self.navPathModel is not None:
+            self._nextDestination = self.navPathModel.getNextDestinationPoint()
 
         return self._nextDestination
     
@@ -148,13 +151,19 @@ class DestinationModel(ForceModel):
         if self.internalFactors["use_crosswalk_area_model"]:
             if self.crosswalkModel is None:
                 self.addCrossWalkAreaModel()
+        elif self.navPathModel is not None:
+            self.navPathModel.setFinalDestination(destination)
         
         
             
     def getFinalDestination(self):
-        if self.crosswalkModel is None:
-            return self._finalDestination
-        return self.crosswalkModel.getFinalDestination()
+        if self.crosswalkModel is not None:
+            return self.crosswalkModel.getFinalDestination()
+        elif self.navPathModel is not None:
+            return self.navPathModel.getFinalDestination()
+        
+        return self._finalDestination
+    
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:

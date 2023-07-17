@@ -9,6 +9,7 @@ _out/
 
 
 logs/*.csv
+logs/*.json
 _out/
 
 # Distribution / packaging
