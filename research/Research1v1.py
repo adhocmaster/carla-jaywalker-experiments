@@ -8,6 +8,8 @@ import numpy as np
 import json
 from datetime import date
 
+from agents.pedestrians.soft import Direction, LaneSection, NavPath, NavPoint
+
 from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings.town02_settings import town02_settings
@@ -111,6 +113,8 @@ class Research1v1(BaseResearch):
 
 
     def setup(self):
+
+        
         # self.settingsManager.load("setting3")
         # return 
         self.settingsManager.load(self.settingsId)
@@ -120,6 +124,8 @@ class Research1v1(BaseResearch):
         self.walkerSetting = self.getWalkerSetting()
         self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source)
         self.walkerDestination = self.walkerSetting.destination
+
+    
 
         self.vehicle = None
         self.vehicleAgent = None
@@ -193,6 +199,9 @@ class Research1v1(BaseResearch):
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination, life_time=15.0)
+
+
+        self.setWalkerNavPath()
         # self.walkerAgent.debug = False
 
         # self.walkerAgent.updateLogLevel(logging.INFO)
@@ -200,6 +209,56 @@ class Research1v1(BaseResearch):
         # attach actor manager
 
         pass
+
+    def setWalkerNavPath(self):
+
+        point1 = NavPoint(
+            laneId=-1,
+            laneSection=LaneSection.LEFT,
+            distanceToEgo=24.0, 
+            distanctToInitialEgo=24.0, 
+            speed=1,
+            direction=Direction.LR
+        )
+        point2 = NavPoint(
+            laneId=-1,
+            laneSection=LaneSection.MIDDLE,
+            distanceToEgo=7.0, 
+            distanctToInitialEgo=25.0, 
+            speed=0.5,
+            direction=Direction.LR
+        )
+
+        point3 = NavPoint(
+            laneId=-1,
+            laneSection=LaneSection.MIDDLE,
+            distanceToEgo=1.0, 
+            distanctToInitialEgo=25.0, 
+            speed=0.1,
+            direction=Direction.LR
+        )
+
+
+        point4 = NavPoint(
+            laneId=0,
+            laneSection=LaneSection.LEFT,
+            distanceToEgo=-1, 
+            distanctToInitialEgo=25.0, 
+            speed=1,
+            direction=Direction.LR
+        )
+
+        navPath = NavPath(
+            roadWidth=2 * 3.5,
+            path=[point1, point2, point3, point4],
+            nEgoDirectionLanes=1,
+            nEgoOppositeDirectionLanes=1,
+            avgSpeed=0.5,
+            maxSpeed=1.5,
+            minSpeed=0.0,
+            egoLaneWrtCenter = 1
+        )
+        self.walkerAgent.setNavPath(navPath)
 
     def getWalkerCrossingAxisRotation(self):
         
@@ -209,7 +268,7 @@ class Research1v1(BaseResearch):
         return wpTransform.rotation.yaw
 
     
-    def createVehicle(self, randomizeSpawnPoint=True):
+    def createVehicle(self, randomizeSpawnPoint=False):
         vehicleSpawnPoint = self.vehicleSpawnPoint
         # vehicleSpawnPoint = random.choice(self.mapManager.spawn_points)
         # randomize spawn point

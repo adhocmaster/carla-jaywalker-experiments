@@ -1,3 +1,4 @@
+import logging
 import click
 from research import ResearchFactory
 from lib import MapNames
@@ -11,7 +12,7 @@ from lib import MapNames
     help='Number of ticks the simulator will run'
     )
 def r1v1m2Default(max_ticks):
-    research = ResearchFactory.createResearch1v1(map=MapNames.Town02_Opt)
+    research = ResearchFactory.createResearch1v1(map=MapNames.Town02_Opt, defaultLogLevel=logging.WARN)
     research.run(maxTicks=max_ticks)
 
 

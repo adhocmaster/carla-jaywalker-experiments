@@ -1,5 +1,7 @@
 import carla
 import numpy as np
+from agents.pedestrians.destination.NavPathModel import NavPathModel
+from agents.pedestrians.soft.NavPath import NavPath
 from lib import ActorManager, ObstacleManager, Utils
 from .ForceModel import ForceModel
 from .PedestrianAgent import PedestrianAgent
@@ -40,6 +42,7 @@ class DestinationModel(ForceModel):
 
         self.speedModel: SpeedModel = None
         self.crosswalkModel: CrosswalkModel = None
+        self.navPathModel: NavPathModel = None
 
         pass
 
@@ -71,6 +74,19 @@ class DestinationModel(ForceModel):
 
         return self._nextDestination
     
+    def addNavPathModel(self, navPath: NavPath):
+        self.navPathModel = NavPathModel(
+            agent = self.agent,
+            internalFactors=self.internalFactors,
+            source = self.agent.location,
+            idealDestination = self._finalDestination,
+            navPath=navPath,
+            areaPolygon = None,
+            goalLine = None,
+            debug=self.debug
+        )
+
+        self.crosswalkModel = None
 
     def addCrossWalkAreaModel(self):
         self.crosswalkModel = CrosswalkModel(
@@ -133,6 +149,7 @@ class DestinationModel(ForceModel):
             if self.crosswalkModel is None:
                 self.addCrossWalkAreaModel()
         
+        
             
     def getFinalDestination(self):
         if self.crosswalkModel is None:
@@ -177,6 +194,9 @@ class DestinationModel(ForceModel):
         # return None
         if self.agent.isCrossing() == False:
             return None
+        
+        if self.navPathModel is not None:
+            self.navPathModel.initNavigation()
 
 
         # self.agent.logger.warn(f"Collecting state from {self.name}")

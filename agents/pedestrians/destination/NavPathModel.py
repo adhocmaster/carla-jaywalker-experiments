@@ -12,7 +12,7 @@ import numpy as np
 from agents.pedestrians.destination.CrosswalkModel import CrosswalkModel
 
 
-class NavPathModel(CrosswalkModel):
+class NavPathModel():
     
     def __init__(
             self, 
@@ -25,32 +25,40 @@ class NavPathModel(CrosswalkModel):
             goalLine: LineString=None,
             debug=True
         ):
+        self.internalFactors = internalFactors
 
-        super().__init__(
-            agent=agent, 
-            internalFactors=internalFactors, 
-            source=source, 
-            idealDestination=idealDestination, 
-            areaPolygon=areaPolygon, 
-            goalLine=goalLine,
-            debug=debug
-        )
+        self.debug = debug
+        self.visualizer = agent.visualizer
+        self.agent = agent
+        self.source = source
+        self.idealDestination = idealDestination
+        self.areaPolygon = areaPolygon
+        self.goalLine = goalLine
 
+        self.crosswalkGeometry = None
+        self.intermediatePoints = []
+        self.finalDestination = None
+        self.nextIntermediatePointIdx = None
         self.navPath = navPath
         self.finalDestination = idealDestination
-        self.__initNavigation()
+        self.initialized = False
+        self.initNavigation()
 
     
-        
-    def __initNavigation(self):
+    def initNavigation(self):
 
         # Assume the vehicle is at the right initial position and ped is at the sidewalk.
 
-        vehicle = self.agent.actorManager.nearestOncomingVehicle()
+        if self.initialized:
+            return
+
+        vehicle = self.agent.actorManager.nearestOncomingVehicle
         if vehicle is None:
+            self.agent.logger.warning("No oncoming vehicle found")
+            # exit(0)
             return
         
-        vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.location)
+        vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
         vehicleRightVector = vehicleWp.transform.get_right_vector()
         vehicleLeftVector = -1 * vehicleRightVector
         
@@ -62,19 +70,31 @@ class NavPathModel(CrosswalkModel):
         for i, navPoint in enumerate(self.navPath.path):
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            if navPoint.isInFrontOfEgo():
-                wpOnVehicleLane = vehicleWp.next(navPoint.distanceToEgo)
-            else:
-                wpOnVehicleLane = vehicleWp.previous(navPoint.distanceToEgo)
+            wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo)[0]
+            # if navPoint.isInFrontOfEgo():
+            #     wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo)[0]
+            # else:
+            #     wpOnVehicleLane = vehicleWp.previous(navPoint.distanceToInitialEgo)[0]
+            vehicleRightVector = wpOnVehicleLane.transform.get_right_vector()
+            vehicleLeftVector = -1 * vehicleRightVector
+            print("vehicleRightVector", vehicleRightVector)
+            print("vehicleLeftVector", vehicleLeftVector)
 
+            print(f"navpoint {i} wpOnVehicleLane: {wpOnVehicleLane} with road id = {wpOnVehicleLane.road_id}, lane id = {wpOnVehicleLane.lane_id}")
             # how many lanes away
             # just assume 2-lane for now
-            if navPoint.isOnEgosLeft():
-                nearestWP = wpOnVehicleLane.get_left_lane()
-            elif navPoint.isOnEgosRight():
-                nearestWP = wpOnVehicleLane.get_right_lane()
-            else:
+            if navPoint.laneId == 0:
                 nearestWP = wpOnVehicleLane
+            elif navPoint.isOnEgosLeft():
+                nearestWP = wpOnVehicleLane.get_left_lane()
+                print(f"navpoint {i} on the left")
+            elif navPoint.isOnEgosRight():
+                print(f"navpoint {i} on the right")
+                nearestWP = wpOnVehicleLane.get_right_lane()
+                
+            print(f"nearestWP: {nearestWP}")
+
+            self.visualizer.drawPoint(nearestWP.transform.location, size=0.1, color=(255,0,0,100), life_time = 15.5)
             
             # this is also broken
             midLoc = nearestWP.transform.location
@@ -88,8 +108,10 @@ class NavPathModel(CrosswalkModel):
             self.intermediatePoints.append(navLoc)
                 
         self.nextIntermediatePointIdx = 0
-        self.finalDestination = self.intermediatePoints[-1]
+        self.intermediatePoints.append(self.finalDestination)
+
+        self.initialized = True
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=1.0, color=(0, 255, 255), coords=False, life_time=15.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=1.0, color=(0, 255, 255), coords=False, life_time=60.0)

@@ -72,6 +72,10 @@ class PedestrianAgent(InfoAgent):
     @property
     def obstacleManager(self):
         return self._localPlanner.obstacleManager
+    
+    def setNavPath(self, navPath: NavPath):
+        self.navPath = navPath
+        self._localPlanner.getDestinationModel().addNavPathModel(self.navPath)
   
     def getAvailableTimeGapWithClosestVehicle(self):
         # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.

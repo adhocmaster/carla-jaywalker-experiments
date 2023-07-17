@@ -31,7 +31,7 @@ class BaseResearch(ClientUser):
 
     def configureMap(self):
         self.mapManager = MapManager(self.client)
-        self.mapManager.load(self.mapName)
+        self.mapManager.load(self.mapName, forceReload=True)
 
     def reset(self):
         # self.client.reload_world(False)
