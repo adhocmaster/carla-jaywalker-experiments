@@ -49,7 +49,9 @@ def nav_path_psi004():
         nEgoOppositeDirectionLanes=2,
         avgSpeed=0.5,
         maxSpeed=1,
-        minSpeed=0.1
+        minSpeed=0.1,
+        
+        egoLaneWrtCenter = 2
     )
 
     return navPath
@@ -101,7 +103,8 @@ def nav_path_psi002():
         nEgoOppositeDirectionLanes=1,
         avgSpeed=0.5,
         maxSpeed=1.5,
-        minSpeed=0.0
+        minSpeed=0.0,
+        egoLaneWrtCenter = 1
     )
 
     return navPath
