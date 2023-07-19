@@ -3,6 +3,24 @@ from agents.pedestrians.soft.BehaviorType import BehaviorType
 from agents.pedestrians.soft.Direction import Direction
 from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.Side import Side
+from dataclasses import dataclass, field
+
+
+@dataclass
+class NavPointLocation:
+    laneId: int  #lane id wrt the ego vehicle's direction. ego vehicle has left and right vehicles, where ego's lane has id 0. left is negative, right is positive. sidewalks are lanes
+    laneSection: LaneSection
+    distanceToEgo: float # on the lane cooordinate system # distance can be negative
+    distanceToInitialEgo: float # on the lane cooordinate system # distance can be negative
+
+    pass
+
+@dataclass
+class NavPointBehavior:
+    speed: float = None
+    direction: Direction = None
+    behaviorTags: Set[BehaviorType] = field(default_factory=set)
+
 
 
 class NavPoint:
@@ -10,22 +28,14 @@ class NavPoint:
     """
     def __init__(
             self, 
-            laneId: int, 
-            laneSection: LaneSection, 
-            distanceToEgo: float,
-            distanctToInitialEgo: float,
-            speed: float = None,
-            direction: Direction = None
+            location: NavPointLocation,
+            behavior: NavPointBehavior
             ):
-        self.laneId = laneId #lane id wrt the ego vehicle's direction. ego vehicle has left and right vehicles, where ego's lane has id 0. left is negative, right is positive. sidewalks are lanes
-        self.laneSection = laneSection
-        self.distanceToEgo = distanceToEgo # on the lane cooordinate system # distance can be negative
-        self.distanceToInitialEgo = distanctToInitialEgo # on the lane cooordinate system # distance can be negative
-        self.speed = speed 
-        self.direction = direction
-
-        self.behaviorTags: Set[BehaviorType] = set([])
+        
         # self.ttc = None
+
+        self.location = location
+        self.behavior = behavior
 
     def __str__(self) -> str:
         return (
@@ -34,6 +44,34 @@ class NavPoint:
             f"\nspeed: {self.speed}, direction: {self.direction}"
             f"\ntags: {self.behaviorTags}"
         )
+    
+    @property
+    def laneId(self) -> int:
+        return self.location.laneId
+    
+    @property
+    def laneSection(self) -> LaneSection:
+        return self.location.laneSection
+    
+    @property
+    def distanceToEgo(self) -> float:
+        return self.location.distanceToEgo
+    
+    @property
+    def distanceToInitialEgo(self) -> float:
+        return self.location.distanceToInitialEgo
+    
+    @property
+    def speed(self) -> float:
+        return self.behavior.speed
+    
+    @property
+    def direction(self) -> Direction:
+        return self.behavior.direction
+
+    @property
+    def behaviorTags(self) -> Set[BehaviorType]:
+        return self.behavior.behaviorTags
     
     def addBehaviorTag(self, behaviorTag: BehaviorType):
         self.behaviorTags.add(behaviorTag)
