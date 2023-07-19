@@ -47,29 +47,43 @@ class NavPathModel():
     def getFinalDestination(self):
         return self.finalDestination
     
+
+    def __canStart(self) -> bool:
+        """Conditions
+        1. There must be an oncoming vehicle
+        2. The oncoming vehicle must be within a certain distance
+
+
+        Returns:
+            bool: _description_
+        """
+        vehicle = self.agent.actorManager.nearestOncomingVehicle
+        if vehicle is None:
+            return False
+        
+        distanceToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle()
+        # TODO, this is not correct as the first nav point might be inside a road.
+        firstNavPoint = self.navPath.path[0]
+        if distanceToVehicle > firstNavPoint.distanceToInitialEgo:
+            return
+    
     def initNavigation(self):
 
         # Assume the vehicle is at the right initial position and ped is at the sidewalk.
 
         if self.initialized:
             return
+        
+        if not self.__canStart():
+            return
 
         vehicle = self.agent.actorManager.nearestOncomingVehicle
-        if vehicle is None:
-            self.agent.logger.warning("No oncoming vehicle found")
-            # exit(0)
-            return
         
         vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
         vehicleRightVector = vehicleWp.transform.get_right_vector()
         vehicleLeftVector = -1 * vehicleRightVector
         
-        distanceToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle()
 
-        # TODO, this is not correct as the first nav point might be inside a road.
-        firstNavPoint = self.navPath.path[0]
-        if distanceToVehicle > firstNavPoint.distanceToInitialEgo:
-            return
 
         self.intermediatePoints = []
         
@@ -84,24 +98,25 @@ class NavPathModel():
             #     wpOnVehicleLane = vehicleWp.previous(navPoint.distanceToInitialEgo)[0]
             vehicleRightVector = wpOnVehicleLane.transform.get_right_vector()
             vehicleLeftVector = -1 * vehicleRightVector
-            print("vehicleRightVector", vehicleRightVector)
-            print("vehicleLeftVector", vehicleLeftVector)
+            # print("vehicleRightVector", vehicleRightVector)
+            # print("vehicleLeftVector", vehicleLeftVector)
 
-            print(f"navpoint {i} wpOnVehicleLane: {wpOnVehicleLane} with road id = {wpOnVehicleLane.road_id}, lane id = {wpOnVehicleLane.lane_id}")
+            # print(f"navpoint {i} wpOnVehicleLane: {wpOnVehicleLane} with road id = {wpOnVehicleLane.road_id}, lane id = {wpOnVehicleLane.lane_id}")
             # how many lanes away
             # just assume 2-lane for now
             if navPoint.laneId == 0:
                 nearestWP = wpOnVehicleLane
             elif navPoint.isOnEgosLeft():
                 nearestWP = wpOnVehicleLane.get_left_lane()
-                print(f"navpoint {i} on the left")
+                # print(f"navpoint {i} on the left")
             elif navPoint.isOnEgosRight():
-                print(f"navpoint {i} on the right")
+                # print(f"navpoint {i} on the right")
                 nearestWP = wpOnVehicleLane.get_right_lane()
                 
             print(f"nearestWP: {nearestWP}")
 
-            self.visualizer.drawPoint(nearestWP.transform.location, size=0.1, color=(255,0,0,100), life_time = 15.5)
+            if nearestWP is None:
+                raise Exception(f"nearestWP is None for navPoint idx {i}")
             
             # this is also broken
             midLoc = nearestWP.transform.location
