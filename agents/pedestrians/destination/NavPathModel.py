@@ -72,27 +72,26 @@ class NavPathModel():
         # return True
         
     
-    def getAverageVelocityRequiredToReachNext(self):
+    def getAverageVelocityRequiredToReachNext(self) -> carla.Vector3D:
         """Returns the average velocity required to reach the next intermediate point
 
         Returns:
             float: average velocity required to reach the next intermediate point
         """
         vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
-        print("vehicle", vehicle)
         print(f"next location id {self.nextIntermediatePointIdx}")
         nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
         nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
 
         currentDToVehicle = Utils.distanceToVehicle(nextLoc, vehicle)
 
-        print("vehicle", vehicle)
         assert currentDToVehicle is not None
 
         requiredDToVehicle = nextNavPoint.distanceToEgo
         vehicleTravelD = currentDToVehicle - requiredDToVehicle
         if vehicleTravelD < 0:
-            raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
+            return carla.Vector3D(0, 0, 0)
+            # raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
         
         timeToReachNextNavPoint = vehicleTravelD / vehicle.get_velocity().length()
         dToNext = self.agent.location.distance_2d(nextLoc)
@@ -211,7 +210,14 @@ class NavPathModel():
         requiredChangeInSpeed = requiredChangeInVelocity.length()
 
         # relaxationTime = (requiredChangeInSpeed / maxChangeInSpeed) * self.internalFactors["relaxation_time"]
+
+        self.visualizer.visualizeForces(
+            "velocities", 
+            {"desiredVelocity": desiredVelocity, "oldVelocity": oldVelocity}, 
+            self.agent.visualizationForceLocation, 
+            self.agent.visualizationInfoLocation
+        )
         
-        return requiredChangeInVelocity / 0.1 #instant change
+        return requiredChangeInVelocity / 100 #instant change
         
     

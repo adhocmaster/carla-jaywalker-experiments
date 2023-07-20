@@ -247,7 +247,7 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
             self.visualiseForces()
         
-        self.visualiseForces()
+        # self.visualiseForces()
 
         return control
 
@@ -270,6 +270,9 @@ class PedestrianAgent(InfoAgent):
             return False
 
         if self.timeSinceLastJumpMS() < 1000:
+            return False
+        
+        if self.onSideWalk():
             return False
 
         distance = self.distanceToNextSideWalk() 
@@ -304,6 +307,7 @@ class PedestrianAgent(InfoAgent):
 
         if self.canClimbSideWalk():
             self.updateJumped()
+            print((f"{self.name} climbing up a sidewalk."))
             self.logger.info(f"{self.name} climbing up a sidewalk.")
             # self._walker.add_force(carla.Vector3D(0, 0, 10))
             # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
@@ -332,6 +336,21 @@ class PedestrianAgent(InfoAgent):
             ))
             return True
         return False
+    
+
+    def onSideWalk(self) -> bool:
+        # cast a vertical direction ray
+        actorLocation = self._walker.get_location()
+        destinationXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=-1)
+        labeledObjects = self._world.cast_ray(actorLocation, destinationXYLocation)
+        # for lb in labeledObjects:
+        #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
+        
+        for lb in labeledObjects:
+            if lb.label == carla.CityObjectLabel.Sidewalks:
+                return True
+        return False
+
 
     def getObstaclesToDistance(self):
         actorLocation = self._walker.get_location()
