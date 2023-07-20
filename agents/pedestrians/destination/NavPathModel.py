@@ -212,6 +212,6 @@ class NavPathModel():
 
         # relaxationTime = (requiredChangeInSpeed / maxChangeInSpeed) * self.internalFactors["relaxation_time"]
         
-        return requiredChangeInVelocity / 0.01 #instant change
+        return requiredChangeInVelocity / 0.1 #instant change
         
     

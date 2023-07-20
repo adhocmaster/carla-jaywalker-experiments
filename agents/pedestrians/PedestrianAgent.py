@@ -247,6 +247,7 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
             self.visualiseForces()
         
+        self.visualiseForces()
 
         return control
 

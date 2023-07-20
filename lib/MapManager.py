@@ -99,7 +99,7 @@ class MapManager(ClientUser):
         if self.currentMapName == MapNames.Town01_Opt:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
         if self.currentMapName == MapNames.Town02_Opt:
-            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.1), carla.Rotation(pitch=-90)) 
+            transform = carla.Transform(carla.Location(x=x-15, y=y-8, z=z * 0.07), carla.Rotation(pitch=-88, yaw=2)) 
             # transform = carla.Transform(carla.Location(x=x-20, y=y-10, z=10), carla.Rotation(pitch=-30, yaw=190)) 
         if self.currentMapName == MapNames.Town03_Opt:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
