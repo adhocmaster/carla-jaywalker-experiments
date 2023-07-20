@@ -200,6 +200,7 @@ class Research1v1(BaseResearch):
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination, life_time=15.0)
+        self.walkerAgent.setEgoVehicle(self.vehicle)
 
 
         self.setWalkerNavPath()
@@ -278,7 +279,6 @@ class Research1v1(BaseResearch):
             egoSpeedEnd=10
         )
         self.walkerAgent.setNavPath(navPath)
-        self.walkerAgent.setEgoVehicle(self.vehicle)
 
         # setting force location to center for map 2
         self.walkerAgent.visualizationForceLocation = carla.Location(x=93.0, y=206, z=1.5)
@@ -316,7 +316,8 @@ class Research1v1(BaseResearch):
         self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
 
         # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
-        self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
+        # self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='cautious', logLevel=logging.DEBUG)
+        self.vehicleAgent = self.vehicleFactory.createSpeedControlledBehaviorAgent(self.vehicle, max_speed=10, behavior='normal', logLevel=logging.INFO)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
 
@@ -383,6 +384,7 @@ class Research1v1(BaseResearch):
 
         # 2. reset walker
         self.resetWalker(sameOrigin=True)
+        self.walkerAgent.setEgoVehicle(self.vehicle)
 
         pass
     

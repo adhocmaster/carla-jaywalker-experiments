@@ -4,7 +4,8 @@ import logging
 
 
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
-from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
+from agents.navigation.basic_agent import BasicAgent
+from agents.vehicles.SpeedControlledBehaviorAgent import SpeedControlledBehaviorAgent  # pylint: disable=import-error
 from lib import LoggerFactory, ClientUser
 
 from agents.vehicles.qnactr.CogMod import CogModAgent  # cogmod agent 
@@ -62,8 +63,12 @@ class VehicleFactory(ClientUser):
         agent = BasicAgent(vehicle, target_speed=20, opt_dict={"debug": True})
         return agent
 
-    def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="cautious", logLevel=logging.INFO) -> BehaviorAgent:
+    def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
         agent = BehaviorAgent(vehicle, behavior=behavior)
+        return agent
+    
+    def createSpeedControlledBehaviorAgent(self, vehicle: carla.Vehicle, max_speed: float, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
+        agent = SpeedControlledBehaviorAgent(vehicle, behavior=behavior, max_speed=max_speed)
         return agent
 
 

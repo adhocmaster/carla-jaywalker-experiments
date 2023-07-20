@@ -47,6 +47,9 @@ class NavPathModel():
     def getFinalDestination(self):
         return self.finalDestination
     
+    def setFinalDestination(self, destination):
+        self.finalDestination = destination
+    
 
     def __canStart(self) -> bool:
         """Conditions
@@ -90,13 +93,16 @@ class NavPathModel():
         requiredDToVehicle = nextNavPoint.distanceToEgo
         vehicleTravelD = currentDToVehicle - requiredDToVehicle
         if vehicleTravelD < 0:
-            return carla.Vector3D(0, 0, 0)
+            return self.agent.getOldVelocity()
             # raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
         
         timeToReachNextNavPoint = vehicleTravelD / vehicle.get_velocity().length()
+        print("timeToReachNextNavPoint", timeToReachNextNavPoint)
         dToNext = self.agent.location.distance_2d(nextLoc)
+        print("dToNext", dToNext)
         speed = dToNext / timeToReachNextNavPoint
-        direction = (self.agent.location - nextLoc).make_unit_vector()
+        print("speed", speed)
+        direction = (nextLoc - self.agent.location).make_unit_vector()
         return speed * direction 
 
 
@@ -206,11 +212,6 @@ class NavPathModel():
 
         requiredChangeInVelocity = (desiredVelocity - oldVelocity)
 
-        maxChangeInSpeed = desiredVelocity.length()
-        requiredChangeInSpeed = requiredChangeInVelocity.length()
-
-        # relaxationTime = (requiredChangeInSpeed / maxChangeInSpeed) * self.internalFactors["relaxation_time"]
-
         self.visualizer.visualizeForces(
             "velocities", 
             {"desiredVelocity": desiredVelocity, "oldVelocity": oldVelocity}, 
@@ -218,6 +219,6 @@ class NavPathModel():
             self.agent.visualizationInfoLocation
         )
         
-        return requiredChangeInVelocity / 100 #instant change
+        return requiredChangeInVelocity / 0.01 #instant change
         
     
