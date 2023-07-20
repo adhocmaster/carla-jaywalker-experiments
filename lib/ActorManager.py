@@ -25,6 +25,8 @@ class ActorManager:
         self._currentActorDistances = {} # for vehicles, the distance is calculated from the nearest waypoint for an actor.
         self._previousActorDistances = {}
 
+        self._egoVehicle = None
+
 
     @property
     def actor(self):
@@ -46,6 +48,13 @@ class ActorManager:
     @property
     def actorList(self):
         return self.world.get_actors()
+    
+    @property
+    def egoVehicle(self) -> carla.Vehicle:
+        return self._egoVehicle
+    
+    def setEgoVehicle(self, vehicle: carla.Vehicle):
+        self._egoVehicle = vehicle
         
     def isSidewalk(self, actor):
         if 8 in actor.semantic_tags:
@@ -94,14 +103,18 @@ class ActorManager:
     # region Oncoming
     def isOncoming(self, otherActor):
 
+        # print(f"isOncoming: {otherActor.id}")
         if otherActor.id not in self._previousActorDistances:
             self.logger.debug(f"actor not oncoming as previous distance is unknown")
             return False # in the first tick there will not be any previous distance
         self.logger.debug(f"actor previous distance {self._previousActorDistances[otherActor.id]} and current distance {self._currentActorDistances[otherActor.id]}")
+        # print(f"_previousActorDistances: {self._previousActorDistances[otherActor.id]}")
+        # print(f"_currentActorDistances: {self._currentActorDistances[otherActor.id]}")
         if (self._previousActorDistances[otherActor.id] > self._currentActorDistances[otherActor.id]) or (self._currentActorDistances[otherActor.id] < 3): # TODO improve this algorithm
             # self.logger.info(f"actor oncoming")
             return True
 
+        # print(f"isOncoming: not oncoming")
         # self.logger.info(f"actor not oncoming")
         return False
     
@@ -124,6 +137,7 @@ class ActorManager:
             return self._tickCache["nearestOnComingVehicle"]
 
         oncomingVs = self.getOncomingVehicles()
+        # print("oncomingVs", oncomingVs)
         minD = 999999
         minVehicle = None
         for vehicle in oncomingVs:

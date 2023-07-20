@@ -78,21 +78,23 @@ class NavPathModel():
         Returns:
             float: average velocity required to reach the next intermediate point
         """
-
+        vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
+        print("vehicle", vehicle)
+        print(f"next location id {self.nextIntermediatePointIdx}")
         nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
         nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
 
-        currentDToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle() # this is not the manhattan distance
+        currentDToVehicle = Utils.distanceToVehicle(nextLoc, vehicle)
 
-        print("vehicle", self.agent.actorManager.nearestOncomingVehicle)
+        print("vehicle", vehicle)
         assert currentDToVehicle is not None
 
         requiredDToVehicle = nextNavPoint.distanceToEgo
         vehicleTravelD = currentDToVehicle - requiredDToVehicle
         if vehicleTravelD < 0:
-            raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}")
+            raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
         
-        timeToReachNextNavPoint = vehicleTravelD / self.agent.actorManager.nearestOncomingVehicle.get_velocity().length()
+        timeToReachNextNavPoint = vehicleTravelD / vehicle.get_velocity().length()
         dToNext = self.agent.location.distance_2d(nextLoc)
         speed = dToNext / timeToReachNextNavPoint
         direction = (self.agent.location - nextLoc).make_unit_vector()
@@ -111,7 +113,7 @@ class NavPathModel():
         if not self.__canStart():
             return
 
-        vehicle = self.agent.actorManager.nearestOncomingVehicle
+        vehicle = self.agent.actorManager.egoVehicle
         
         vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
         vehicleRightVector = vehicleWp.transform.get_right_vector()
@@ -125,7 +127,7 @@ class NavPathModel():
         for i, navPoint in enumerate(self.navPath.path):
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo * 1.1)[0]
+            wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo * 1.5)[0] # add extent
             # we need to translate wpOnVehicleLane wrt the initial start point on the sidewalk
 
             # if navPoint.isInFrontOfEgo():

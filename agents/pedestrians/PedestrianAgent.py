@@ -73,6 +73,9 @@ class PedestrianAgent(InfoAgent):
     def obstacleManager(self):
         return self._localPlanner.obstacleManager
     
+    def setEgoVehicle(self, vehicle: carla.Vehicle):
+        self.actorManager.setEgoVehicle(vehicle)
+    
     def setNavPath(self, navPath: NavPath):
         self.navPath = navPath
         self._localPlanner.getDestinationModel().addNavPathModel(self.navPath)

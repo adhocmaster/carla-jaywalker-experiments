@@ -278,6 +278,7 @@ class Research1v1(BaseResearch):
             egoSpeedEnd=10
         )
         self.walkerAgent.setNavPath(navPath)
+        self.walkerAgent.setEgoVehicle(self.vehicle)
 
     def getWalkerCrossingAxisRotation(self):
         

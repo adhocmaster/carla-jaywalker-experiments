@@ -63,6 +63,10 @@ class Utils:
             diff.z = 0
         
         return Utils.getMagnitude(diff)
+    
+    @staticmethod 
+    def distanceToVehicle(fromLocation: carla.Location, vehicle: carla.Vehicle):
+        return fromLocation.distance_2d(vehicle.get_location()) - vehicle.bounding_box.extent.x
 
         
     @staticmethod
