@@ -205,11 +205,17 @@ class DestinationModel(ForceModel):
             return None
         
         if self.navPathModel is not None:
-            self.navPathModel.initNavigation()
-            if not self.navPathModel.initialized:
-                return None
-            
-            return self.navPathModel.calculateForce()
+            if self.navPathModel.isDone():
+                print("NavPath model is done")
+                self.navPathModel = None
+            else:
+                self.navPathModel.initNavigation()
+                if not self.navPathModel.initialized:
+                    return None
+                
+                force = self.navPathModel.calculateForce()
+                if force is not None:
+                    return force
 
 
         # self.agent.logger.warn(f"Collecting state from {self.name}")

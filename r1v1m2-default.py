@@ -13,6 +13,7 @@ from lib import MapNames
     )
 def r1v1m2Default(max_ticks):
     research = ResearchFactory.createResearch1v1(map=MapNames.Town02_Opt, defaultLogLevel=logging.WARN)
+    research.maxStepsPerCrossing = max_ticks
     research.run(maxTicks=max_ticks)
 
 

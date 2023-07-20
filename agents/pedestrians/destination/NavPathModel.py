@@ -1,4 +1,5 @@
 
+from typing import Optional
 import carla
 from shapely.geometry import Polygon, LineString
 from agents.pedestrians.soft.LaneSection import LaneSection
@@ -75,7 +76,7 @@ class NavPathModel():
         # return True
         
     
-    def getAverageVelocityRequiredToReachNext(self) -> carla.Vector3D:
+    def getAverageVelocityRequiredToReachNext(self) -> Optional[carla.Vector3D]:
         """Returns the average velocity required to reach the next intermediate point
 
         Returns:
@@ -84,6 +85,10 @@ class NavPathModel():
         vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
         print(f"next location id {self.nextIntermediatePointIdx}")
         nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
+
+        if nextLoc == self.finalDestination:
+            return None
+
         nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
 
         currentDToVehicle = Utils.distanceToVehicle(nextLoc, vehicle)
@@ -93,8 +98,8 @@ class NavPathModel():
         requiredDToVehicle = nextNavPoint.distanceToEgo
         vehicleTravelD = currentDToVehicle - requiredDToVehicle
         if vehicleTravelD < 0:
-            return self.agent.getOldVelocity()
-            # raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
+            # return self.agent.getOldVelocity()
+            raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
         
         timeToReachNextNavPoint = vehicleTravelD / vehicle.get_velocity().length()
         print("timeToReachNextNavPoint", timeToReachNextNavPoint)
@@ -105,6 +110,12 @@ class NavPathModel():
         direction = (nextLoc - self.agent.location).make_unit_vector()
         return speed * direction 
 
+
+    def isDone(self):
+        return ((self.initialized)
+            and (len(self.intermediatePoints) > len(self.navPath.path))
+            and (self.intermediatePoints[self.nextIntermediatePointIdx] == self.finalDestination)
+            )
 
     
     def initNavigation(self):
@@ -206,8 +217,15 @@ class NavPathModel():
         return self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)
     
     
-    def calculateForce(self):
+    def calculateForce(self) -> Optional[carla.Vector3D]:
+        """May not return force if not needed.
+
+        Returns:
+            _type_: _description_
+        """
         desiredVelocity = self.getAverageVelocityRequiredToReachNext()
+        if desiredVelocity is None: # let the destination model handle it
+            return None
         oldVelocity = self.agent.getOldVelocity()
 
         requiredChangeInVelocity = (desiredVelocity - oldVelocity)

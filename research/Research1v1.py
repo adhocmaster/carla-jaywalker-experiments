@@ -31,7 +31,8 @@ class Research1v1(BaseResearch):
                  outputDir:str = "logs", 
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
-                 stats=False):
+                 stats=False,
+                 maxStepsPerCrossing=200):
 
         self.name = "Research1v1"
 
@@ -56,6 +57,7 @@ class Research1v1(BaseResearch):
         self.episodeNumber = 0
         self.episodeTimeStep = 0
         self.stats = stats
+        self.maxStepsPerCrossing = maxStepsPerCrossing
         self.settingsId = settingsId
 
         # self.optionalFactors = [Factors.DRUNKEN_WALKER]
@@ -317,7 +319,8 @@ class Research1v1(BaseResearch):
 
         # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
         # self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='cautious', logLevel=logging.DEBUG)
-        self.vehicleAgent = self.vehicleFactory.createSpeedControlledBehaviorAgent(self.vehicle, max_speed=10, behavior='normal', logLevel=logging.INFO)
+        max_speed = random.choice([10, 20, 40])
+        self.vehicleAgent = self.vehicleFactory.createSpeedControlledBehaviorAgent(self.vehicle, max_speed=max_speed, behavior='normal', logLevel=logging.INFO)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
 
@@ -362,14 +365,16 @@ class Research1v1(BaseResearch):
             
             self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
             self.walkerAgent.setDestination(self.walkerSetting.destination)
-            return 
 
-        if self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
+        elif self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
             self.walkerAgent.reset()
             self.walkerAgent.setDestination(self.walkerSetting.destination)
         else:
             self.walkerAgent.reset()
             self.walkerAgent.setDestination(self.walkerSetting.source)
+
+        
+        self.setWalkerNavPath()
 
     
     def createDynamicAgents(self):
