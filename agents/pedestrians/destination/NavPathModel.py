@@ -83,7 +83,7 @@ class NavPathModel():
             float: average velocity required to reach the next intermediate point
         """
         vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
-        print(f"next location id {self.nextIntermediatePointIdx}")
+        # print(f"next location id {self.nextIntermediatePointIdx}")
         nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
 
         if nextLoc == self.finalDestination:
@@ -102,11 +102,11 @@ class NavPathModel():
             raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
         
         timeToReachNextNavPoint = vehicleTravelD / vehicle.get_velocity().length()
-        print("timeToReachNextNavPoint", timeToReachNextNavPoint)
+        # print("timeToReachNextNavPoint", timeToReachNextNavPoint)
         dToNext = self.agent.location.distance_2d(nextLoc)
-        print("dToNext", dToNext)
+        # print("dToNext", dToNext)
         speed = dToNext / timeToReachNextNavPoint
-        print("speed", speed)
+        # print("speed", speed)
         direction = (nextLoc - self.agent.location).make_unit_vector()
         return speed * direction 
 
@@ -167,7 +167,7 @@ class NavPathModel():
                 # print(f"navpoint {i} on the right")
                 nearestWP = wpOnVehicleLane.get_right_lane()
                 
-            print(f"nearestWP: {nearestWP}")
+            # print(f"nearestWP: {nearestWP}")
 
             if nearestWP is None:
                 raise Exception(f"nearestWP is None for navPoint idx {i}")
