@@ -62,7 +62,7 @@ class VehicleFactory(ClientUser):
         agent = BasicAgent(vehicle, target_speed=20, opt_dict={"debug": True})
         return agent
 
-    def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
+    def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="cautious", logLevel=logging.INFO) -> BehaviorAgent:
         agent = BehaviorAgent(vehicle, behavior=behavior)
         return agent
 

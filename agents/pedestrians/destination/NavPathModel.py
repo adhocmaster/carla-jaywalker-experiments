@@ -61,15 +61,49 @@ class NavPathModel():
         if vehicle is None:
             return False
         
-        distanceToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle()
-        # TODO, this is not correct as the first nav point might be inside a road.
-        firstNavPoint = self.navPath.path[0]
-        if distanceToVehicle > firstNavPoint.distanceToInitialEgo:
-            return
+        return True
+        
+        # distanceToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle()
+        # # TODO, this is not correct as the first nav point might be inside a road.
+        # firstNavPoint = self.navPath.path[0]
+        # if distanceToVehicle > firstNavPoint.distanceToInitialEgo:
+        #     return False
+        
+        # return True
+        
+    
+    def getAverageVelocityRequiredToReachNext(self):
+        """Returns the average velocity required to reach the next intermediate point
+
+        Returns:
+            float: average velocity required to reach the next intermediate point
+        """
+
+        nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
+        nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
+
+        currentDToVehicle = self.agent.actorManager.distanceFromNearestOncomingVehicle() # this is not the manhattan distance
+
+        print("vehicle", self.agent.actorManager.nearestOncomingVehicle)
+        assert currentDToVehicle is not None
+
+        requiredDToVehicle = nextNavPoint.distanceToEgo
+        vehicleTravelD = currentDToVehicle - requiredDToVehicle
+        if vehicleTravelD < 0:
+            raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}")
+        
+        timeToReachNextNavPoint = vehicleTravelD / self.agent.actorManager.nearestOncomingVehicle.get_velocity().length()
+        dToNext = self.agent.location.distance_2d(nextLoc)
+        speed = dToNext / timeToReachNextNavPoint
+        direction = (self.agent.location - nextLoc).make_unit_vector()
+        return speed * direction 
+
+
     
     def initNavigation(self):
 
         # Assume the vehicle is at the right initial position and ped is at the sidewalk.
+        # print("initalizing navigation path")
 
         if self.initialized:
             return
@@ -91,7 +125,9 @@ class NavPathModel():
         for i, navPoint in enumerate(self.navPath.path):
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo)[0]
+            wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo * 1.1)[0]
+            # we need to translate wpOnVehicleLane wrt the initial start point on the sidewalk
+
             # if navPoint.isInFrontOfEgo():
             #     wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo)[0]
             # else:
@@ -161,3 +197,19 @@ class NavPathModel():
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
 
         return self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)
+    
+    
+    def calculateForce(self):
+        desiredVelocity = self.getAverageVelocityRequiredToReachNext()
+        oldVelocity = self.agent.getOldVelocity()
+
+        requiredChangeInVelocity = (desiredVelocity - oldVelocity)
+
+        maxChangeInSpeed = desiredVelocity.length()
+        requiredChangeInSpeed = requiredChangeInVelocity.length()
+
+        # relaxationTime = (requiredChangeInSpeed / maxChangeInSpeed) * self.internalFactors["relaxation_time"]
+        
+        return requiredChangeInVelocity / 0.01 #instant change
+        
+    

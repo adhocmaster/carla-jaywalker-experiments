@@ -14,7 +14,9 @@ class NavPath:
             avgSpeed: float,
             maxSpeed: float,
             minSpeed: float,
-            egoLaneWrtCenter: int
+            egoLaneWrtCenter: int,
+            egoSpeedStart: float,
+            egoSpeedEnd: float,
             ):
         self.roadWidth = roadWidth
         self.path = path
@@ -23,8 +25,11 @@ class NavPath:
         self.avgSpeed = avgSpeed
         self.maxSpeed = maxSpeed
         self.minSpeed = minSpeed
+
         assert egoLaneWrtCenter > 0
         self.egoLaneWrtCenter = egoLaneWrtCenter
+        self.egoSpeedStart = egoSpeedStart
+        self.egoSpeedEnd = egoSpeedEnd
 
     @property
     def nLanes(self):

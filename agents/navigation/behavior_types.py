@@ -6,7 +6,7 @@
 
 class Cautious(object):
     """Class for Cautious agent."""
-    max_speed = 40
+    max_speed = 20
     speed_lim_dist = 6
     speed_decrease = 12
     safety_time = 3

@@ -21,6 +21,7 @@ from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRe
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
+from agents.pedestrians.soft import NavPointLocation, NavPointBehavior, LaneSection, Direction, NavPath
 
 class Research1v1(BaseResearch):
     
@@ -211,41 +212,57 @@ class Research1v1(BaseResearch):
         pass
 
     def setWalkerNavPath(self):
-
         point1 = NavPoint(
-            laneId=-1,
-            laneSection=LaneSection.LEFT,
-            distanceToEgo=24.0, 
-            distanctToInitialEgo=24.0, 
-            speed=1,
-            direction=Direction.LR
+            NavPointLocation(
+                laneId=-1,
+                laneSection=LaneSection.LEFT,
+                distanceToEgo=24.0, 
+                distanceToInitialEgo=24.0, 
+            ),
+            NavPointBehavior(
+                speed=1,
+                direction=Direction.LR
+            )
         )
+
         point2 = NavPoint(
-            laneId=-1,
-            laneSection=LaneSection.MIDDLE,
-            distanceToEgo=7.0, 
-            distanctToInitialEgo=25.0, 
-            speed=0.5,
-            direction=Direction.LR
+            NavPointLocation(
+                laneId=-1,
+                laneSection=LaneSection.MIDDLE,
+                distanceToEgo=7.0, 
+                distanceToInitialEgo=25.0, 
+            ),
+            NavPointBehavior(
+                speed=0.5,
+                direction=Direction.LR
+            )
         )
 
         point3 = NavPoint(
-            laneId=-1,
-            laneSection=LaneSection.MIDDLE,
-            distanceToEgo=1.0, 
-            distanctToInitialEgo=25.0, 
-            speed=0.1,
-            direction=Direction.LR
+            NavPointLocation(
+                laneId=-1,
+                laneSection=LaneSection.MIDDLE,
+                distanceToEgo=1.0, 
+                distanceToInitialEgo=25.0, 
+            ),
+            NavPointBehavior(
+                speed=0.1,
+                direction=Direction.LR
+            )
         )
 
 
         point4 = NavPoint(
-            laneId=0,
-            laneSection=LaneSection.LEFT,
-            distanceToEgo=-1, 
-            distanctToInitialEgo=25.0, 
-            speed=1,
-            direction=Direction.LR
+            NavPointLocation(
+                laneId=0,
+                laneSection=LaneSection.LEFT,
+                distanceToEgo=-1, 
+                distanceToInitialEgo=25.0, 
+            ),
+            NavPointBehavior(
+                speed=1,
+                direction=Direction.LR
+            )
         )
 
         navPath = NavPath(
@@ -256,7 +273,9 @@ class Research1v1(BaseResearch):
             avgSpeed=0.5,
             maxSpeed=1.5,
             minSpeed=0.0,
-            egoLaneWrtCenter = 1
+            egoLaneWrtCenter = 1,
+            egoSpeedStart=20,
+            egoSpeedEnd=10
         )
         self.walkerAgent.setNavPath(navPath)
 

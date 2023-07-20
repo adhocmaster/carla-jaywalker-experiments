@@ -1,7 +1,7 @@
 town02_settings = {
     "setting1": {
         "ego_settings": [
-            (65.0, 192.0, 105.0, 192.0), # nearws
+            (60.0, 192.0, 105.0, 192.0), # nearws
         ],
         "walker_settings": [
             (90.0, 183.0, 93.0, 196.0),

@@ -270,7 +270,7 @@ class PedestrianAgent(InfoAgent):
 
         distance = self.distanceToNextSideWalk() 
         if distance is None:
-            self.logger.warn(f"Distance to sidewalk is none!")
+            self.logger.info(f"Distance to sidewalk is none!")
 
             return False
 
