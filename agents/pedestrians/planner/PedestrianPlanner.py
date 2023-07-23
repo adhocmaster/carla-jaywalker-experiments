@@ -28,8 +28,8 @@ class PedestrianPlanner:
         self.internalFactors = internalFactors
 
         self.models: List[ForceModel] = []
-        self.stateTransitionModels: List[StateTransitionModel] = []
-        self.crossingFactorModels: List[CrossingFactorModel] = []
+        self.stateTransitionModels: List[StateTransitionModel] = [] # state transition models are allowed to change the state of the agent
+        self.crossingFactorModels: List[CrossingFactorModel] = [] # crossing factor models get destination state
         self.survivalModels: List[SurvivalModel] = []
         self.freezingModels: List[SurvivalModel] = []
 
@@ -288,6 +288,13 @@ class PedestrianPlanner:
         
         velocity = self.getDestinationModel().getDesiredVelocity()
         return self.actorManager.getPredictedConflictPoint(self.actorManager.nearestOncomingVehicle, velocity)
+    
+
+    # region dynamic behavior activation 
+
+    
+
+    # endregion
 
 
     @abstractmethod

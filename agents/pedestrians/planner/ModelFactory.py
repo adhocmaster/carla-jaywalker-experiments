@@ -134,23 +134,10 @@ class ModelFactory:
         self.planner.crossingFactorModels.append(self.planner.crossingOncomingVehicleModel)
         self.planner.stateTransitionModels.append(self.planner.crossingOncomingVehicleModel)
 
-    
-    # def attachCrossWalkModelToDestinationModel(self):
-    #     crosswalkModel = CrosswalkModel(
-    #         source = self.agent.location,
-    #         idealDestination = None,
-    #         areaPolygon = None,
-    #         goalLine = None
-    #     )
-    #     self.planner.destinationModel.addModel(crosswalkModel)
 
-    #endregion
-
-    #region survival models
-    
 
     def createSurvivalModels(self, optionalFactors: List[Factors]):
-        if Factors.SURVIVAL_DESTINATION in optionalFactors:
+        if Factors.EVASIVE_RETREAT in optionalFactors:
             self.createSurvivalDestinationModel(optionalFactors)
 
     def createSurvivalDestinationModel(self, optionalFactors: List[Factors]):
