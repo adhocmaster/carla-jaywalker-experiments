@@ -60,19 +60,19 @@ class Research1v1(BaseResearch):
         self.maxStepsPerCrossing = maxStepsPerCrossing
         self.settingsId = settingsId
 
-        self.optionalFactors = []
-        # self.optionalFactors = [Factors.SURVIVAL_DESTINATION]
+        # self.optionalFactors = []
+        # self.optionalFactors = [Factors.EVASIVE_RETREAT]
         # self.optionalFactors = [Factors.DRUNKEN_WALKER]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
+        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.EVASIVE_RETREAT]
         # self.optionalFactors = [Factors.ANTISURVIVAL]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
-        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER]
+        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.EVASIVE_RETREAT]
+        # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.EVASIVE_RETREAT, Factors.DRUNKEN_WALKER]
         # self.optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.DRUNKEN_WALKER]
 
-        # self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]
+        self.optionalFactors = [Factors.EVASIVE_RETREAT, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]
 
-#        self.optionalFactors = [Factors.SURVIVAL_DESTINATION, Factors.FREEZING_FACTOR]
+#        self.optionalFactors = [Factors.EVASIVE_RETREAT, Factors.FREEZING_FACTOR]
 
 
         self.setup()

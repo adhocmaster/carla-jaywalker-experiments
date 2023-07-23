@@ -72,11 +72,11 @@ class ModelFactory:
         # factor models
 
 
-        self.planner.models = [
+        self.planner.models.extend([
                         self.planner.destinationModel, 
                         self.planner.stopGoModel
-                      ]
-        self.planner.stateTransitionModels = [self.planner.stopGoModel]
+                      ])
+        self.planner.stateTransitionModels.append(self.planner.stopGoModel)
 
 
     def createOptionalModels(self, optionalFactors: List[Factors]):
@@ -105,11 +105,11 @@ class ModelFactory:
                                     internalFactors=self.internalFactors
                                     )
 
-            self.planner.models = [
-                            self.planner.destinationModel, 
-                            self.planner.stopGoModel
-                        ]
-            self.planner.stateTransitionModels = [self.planner.stopGoModel]
+            # self.planner.models = [
+            #                 self.planner.destinationModel, 
+            #                 self.planner.stopGoModel
+            #             ]
+            # self.planner.stateTransitionModels = [self.planner.stopGoModel]
 
     #region crossing models
     def createCrossingModels(self, optionalFactors: List[Factors]):

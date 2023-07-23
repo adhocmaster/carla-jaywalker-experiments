@@ -3,6 +3,7 @@ from collections import deque
 from abc import abstractmethod
 from agents.pedestrians.ForceModel import ForceModel
 from agents.pedestrians.StateTransitionModel import StateTransitionModel
+from agents.pedestrians.planner.ConfiguredModels import ConfiguredModels
 from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
 from agents.pedestrians.factors import InternalFactors
 from agents.pedestrians.factors.CrossingFactorModel import CrossingFactorModel
@@ -27,11 +28,14 @@ class PedestrianPlanner:
         # self._destination = None
         self.internalFactors = internalFactors
 
-        self.models: List[ForceModel] = []
-        self.stateTransitionModels: List[StateTransitionModel] = [] # state transition models are allowed to change the state of the agent
-        self.crossingFactorModels: List[CrossingFactorModel] = [] # crossing factor models get destination state
-        self.survivalModels: List[SurvivalModel] = []
-        self.freezingModels: List[SurvivalModel] = []
+
+        self.configuredModels: ConfiguredModels = ConfiguredModels()
+
+        # self.models: List[ForceModel] = []
+        # self.stateTransitionModels: List[StateTransitionModel] = [] # state transition models are allowed to change the state of the agent
+        # self.crossingFactorModels: List[CrossingFactorModel] = [] # crossing factor models get destination state
+        # self.survivalModels: List[SurvivalModel] = []
+        # self.freezingModels: List[SurvivalModel] = []
 
         self.modelCoeff: Dict[str, float] = {}
 
@@ -45,6 +49,26 @@ class PedestrianPlanner:
 
 
         pass
+
+    @property
+    def models(self):
+        return self.configuredModels.models
+    
+    @property
+    def stateTransitionModels(self):
+        return self.configuredModels.stateTransitionModels
+    
+    @property
+    def crossingFactorModels(self):
+        return self.configuredModels.crossingFactorModels
+    
+    @property
+    def survivalModels(self):
+        return self.configuredModels.survivalModels
+    
+    @property
+    def freezingModels(self):
+        return self.configuredModels.freezingModels
 
     @property
     def agent(self):
