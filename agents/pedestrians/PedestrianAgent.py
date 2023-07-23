@@ -3,6 +3,7 @@ import numpy as np
 import time
 import carla
 import logging
+from agents.pedestrians.BehaviorType import BehaviorType
 
 from agents.pedestrians.soft.NavPath import NavPath
 from .InfoAgent import InfoAgent
@@ -10,7 +11,7 @@ from lib import SimulationVisualization
 from .planner.PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
-from typing import Dict
+from typing import Dict, List, Set
 from .PedUtils import PedUtils
 from lib import Geometry, Utils
 
@@ -57,6 +58,8 @@ class PedestrianAgent(InfoAgent):
                 
         # config parameters
         self.navPath: NavPath = None
+        self.currentBehaviors: Set[BehaviorType] = set([])
+        # self.dynamicBehaviorModelFactory = None
 
     @property
     def world(self):

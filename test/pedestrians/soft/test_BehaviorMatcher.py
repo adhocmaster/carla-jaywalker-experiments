@@ -1,7 +1,7 @@
 import pytest
 from agents.pedestrians.soft import  NavPath, NavPoint
 from agents.pedestrians.soft.BehaviorMatcher import BehaviorMatcher
-from agents.pedestrians.soft.BehaviorType import BehaviorType
+from agents.pedestrians.BehaviorType import BehaviorType
 from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.Side import Side
 from .fixtures import *

@@ -1,7 +1,9 @@
 
-from typing import Optional
+from typing import Dict, Optional
 import carla
 from shapely.geometry import Polygon, LineString
+from agents.pedestrians.planner.DynamicBehaviorModelFactory import DynamicBehaviorModelFactory
+from agents.pedestrians.soft import BehaviorMatcher, NavPoint
 from agents.pedestrians.soft.LaneSection import LaneSection
 
 from agents.pedestrians.soft.NavPath import NavPath
@@ -40,9 +42,15 @@ class NavPathModel():
         self.intermediatePoints = []
         self.finalDestination = None
         self.nextIntermediatePointIdx = None
-        self.navPath = navPath
         self.finalDestination = idealDestination
+
+
+        self.intermediatePointsToNavPointMap: Dict[carla.Location, NavPoint] = {}
+        self.navPath = navPath
         self.initialized = False
+        self.dynamicBehaviorModelFactory = DynamicBehaviorModelFactory()
+        matcher = BehaviorMatcher()
+        matcher.tagNavPoints(self.navPath)
         self.initNavigation()
 
     def getFinalDestination(self):
@@ -182,6 +190,7 @@ class NavPathModel():
             
 
             self.intermediatePoints.append(navLoc)
+            self.intermediatePointsToNavPointMap[navLoc] = navPoint
                 
         self.nextIntermediatePointIdx = 0
         self.intermediatePoints.append(self.finalDestination)
@@ -214,7 +223,16 @@ class NavPathModel():
         # TODO: fill it out
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
 
-        return self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)
+        hasReached = self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)
+
+        if hasReached and nextDest in self.intermediatePointsToNavPointMap:
+            # activate the models required for the nav point
+            navPoint = self.intermediatePointsToNavPointMap[nextDest]
+            self.agent.logger.warn(f"has reached nav point {navPoint}")
+            for behaviorType in navPoint.behaviorTags:
+                self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
+
+        return hasReached
     
     
     def calculateForce(self) -> Optional[carla.Vector3D]:
@@ -223,6 +241,9 @@ class NavPathModel():
         Returns:
             _type_: _description_
         """
+
+        # first we do a sideeffect of updating the behavior models based on the current nav point.
+
         desiredVelocity = self.getAverageVelocityRequiredToReachNext()
         if desiredVelocity is None: # let the destination model handle it
             return None

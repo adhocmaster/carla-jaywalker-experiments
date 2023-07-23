@@ -14,25 +14,25 @@ class BehaviorMatcher:
         navPoint = navPath.path[idx]
         # if navPoint.isBehindEgo():
         #     return
-        print(f"{idx} checking")
+        # print(f"{idx} checking")
         
         if self.showsEvasiveRetreat(idx, navPath):
-            print(f"{idx} showsEvasiveRetreat")
+            # print(f"{idx} showsEvasiveRetreat")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_RETREAT)
         elif self.showsEvasiveFlinch(idx, navPath):
-            print(f"{idx} showsEvasiveFlinch")
+            # print(f"{idx} showsEvasiveFlinch")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_FLINCH)
         elif self.showsEvasiveStop(idx, navPath):
-            print(f"{idx} showsEvasiveStop")
+            # print(f"{idx} showsEvasiveStop")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_STOP)
         elif self.showsEvasiveSlowdownAndStop(idx, navPath):
-            print(f"{idx} showsEvasiveSlowdownAndStop")
+            # print(f"{idx} showsEvasiveSlowdownAndStop")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SLOWDOWN_STOP)
         elif self.showsEvasiveSpeedup(idx, navPath):
-            print(f"{idx} showsEvasiveSpeedup")
+            # print(f"{idx} showsEvasiveSpeedup")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SPEEDUP)
         elif self.showsEvasiveSlowdown(idx, navPath):
-            print(f"{idx} showsEvasiveSlowdown")
+            # print(f"{idx} showsEvasiveSlowdown")
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SLOWDOWN)
 
     def showsEvasiveRetreat(self, idx:int, navPath: NavPath):
