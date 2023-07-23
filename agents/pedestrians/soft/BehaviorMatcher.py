@@ -1,4 +1,4 @@
-from agents.pedestrians.soft.BehaviorType import BehaviorType
+from agents.pedestrians.BehaviorType import BehaviorType
 from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.NavPath import NavPath
 from agents.pedestrians.soft.Side import Side

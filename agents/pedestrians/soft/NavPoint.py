@@ -1,5 +1,5 @@
 from typing import List, Set
-from agents.pedestrians.soft.BehaviorType import BehaviorType
+from agents.pedestrians.BehaviorType import BehaviorType
 from agents.pedestrians.soft.Direction import Direction
 from agents.pedestrians.soft.LaneSection import LaneSection
 from agents.pedestrians.soft.Side import Side
