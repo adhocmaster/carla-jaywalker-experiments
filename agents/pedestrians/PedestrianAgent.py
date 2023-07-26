@@ -252,7 +252,7 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
 
         
-        if  self.isInitializing() or self.isFrozen():
+        if  self.isInitializing():
             if self.debug:
                 self.logger.info(f"Pedestrian is {self.state}.")
                 self.visualiseState()

@@ -28,11 +28,12 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         return f"EvasiveStopModel #{self.agent.id}"
 
     def getNewState(self):
+        # print(f"{self.name} getNewState the pedestrian")
         if self.agent.isFrozen() and self.canUnfreeze():
-            print(f"unfreezing the pedestrian")
+            # print(f"{self.name} unfreezing the pedestrian")
             return PedState.CROSSING
         elif self.agent.isCrossing() and self.canfreeze():
-            print(f"freezing the pedestrian")
+            # print(f"{self.name} freezing the pedestrian")
             return PedState.FROZEN
 
     def calculateForce(self):
@@ -52,7 +53,7 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
 
         TG = self.agent.getAvailableTimeGapWithEgo()
         print(f"canfreeze TG: {TG}")
-        if TG is not None and TG < 1.5:
+        if TG is not None and TG < 1:
             return True
         
         return False

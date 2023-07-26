@@ -108,6 +108,10 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         #     StateTransitionManager.changeAgentState(self.name, self.agent, PedState.CROSSING)
         #     control = self.getNewControl()
 
+        if self.agent.isFrozen():
+            self.logger.info(f"Pedestrian is frozen.")
+            return self.getStopControl()
+
         if self.agent.isFinished():
             self.logger.warn(f"Finished. no new control")
             return self.getStopControl()
