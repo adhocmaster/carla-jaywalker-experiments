@@ -8,7 +8,7 @@ from lib.ObstacleManager import ObstacleManager
 from .SurvivalModel import SurvivalModel
 
 
-class EvasiveStopModel(ForceModel, SurvivalModel, StateTransitionModel):
+class EvasiveStopModel(SurvivalModel, StateTransitionModel):
     def __init__(
         self,
         agent: PedestrianAgent,
@@ -21,8 +21,6 @@ class EvasiveStopModel(ForceModel, SurvivalModel, StateTransitionModel):
             agent, actorManager, obstacleManager, internalFactors=internalFactors
         )
 
-
-
         pass
 
     @property
@@ -31,8 +29,10 @@ class EvasiveStopModel(ForceModel, SurvivalModel, StateTransitionModel):
 
     def getNewState(self):
         if self.agent.isFrozen() and self.canUnfreeze():
+            print(f"unfreezing the pedestrian")
             return PedState.CROSSING
         elif self.agent.isCrossing() and self.canfreeze():
+            print(f"freezing the pedestrian")
             return PedState.FROZEN
 
     def calculateForce(self):
@@ -40,8 +40,28 @@ class EvasiveStopModel(ForceModel, SurvivalModel, StateTransitionModel):
 
     
     def canfreeze(self):
+        """Can freeze only works if the TTC is less than 1.5 seconds
+
+        Returns:
+            _type_: _description_
+        """
+        # TTC = self.agent.ttcWithEgo() 
+        # print(f"getting new state from evasive stop model, TTC: {TTC}")
+        # if TTC is not None and TTC < 1.5:
+        #     return True
+
+        TG = self.agent.getAvailableTimeGapWithEgo()
+        print(f"canfreeze TG: {TG}")
+        if TG is not None and TG < 1.5:
+            return True
+        
         return False
 
 
     def canUnfreeze(self):
-        return False
+        distance = self.agent.distanceFromEgo()
+        if distance < 1:
+            return False
+        if self.canfreeze():
+            return False
+        return True

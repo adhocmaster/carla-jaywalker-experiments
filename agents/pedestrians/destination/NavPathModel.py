@@ -1,6 +1,7 @@
 
 from typing import Dict, Optional
 import carla
+from lib.LoggerFactory import LoggerFactory
 from shapely.geometry import Polygon, LineString
 from agents.pedestrians.planner.DynamicBehaviorModelFactory import DynamicBehaviorModelFactory
 from agents.pedestrians.soft import BehaviorMatcher, NavPoint
@@ -233,7 +234,7 @@ class NavPathModel():
         if hasReached and nextDest in self.intermediatePointsToNavPointMap:
             # activate the models required for the nav point
             navPoint = self.intermediatePointsToNavPointMap[nextDest]
-            self.logger.warn(f"has reached nav point {navPoint}")
+            self.logger.debug(f"has reached nav point {navPoint}")
             for behaviorType in navPoint.behaviorTags:
                 self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
@@ -256,12 +257,12 @@ class NavPathModel():
 
         requiredChangeInVelocity = (desiredVelocity - oldVelocity)
 
-        self.visualizer.visualizeForces(
-            "velocities", 
-            {"desiredVelocity": desiredVelocity, "oldVelocity": oldVelocity}, 
-            self.agent.visualizationForceLocation, 
-            self.agent.visualizationInfoLocation
-        )
+        # self.visualizer.visualizeForces(
+        #     "velocities", 
+        #     {"desiredVelocity": desiredVelocity, "oldVelocity": oldVelocity}, 
+        #     self.agent.visualizationForceLocation, 
+        #     self.agent.visualizationInfoLocation
+        # )
         
         return requiredChangeInVelocity / 0.01 #instant change
         

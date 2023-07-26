@@ -201,8 +201,9 @@ class DestinationModel(ForceModel):
     def calculateForce(self):
 
         # return None
-        if self.agent.isCrossing() == False:
+        if not self.agent.isCrossing():
             return None
+        
         
         if self.navPathModel is not None:
             if self.navPathModel.isDone():

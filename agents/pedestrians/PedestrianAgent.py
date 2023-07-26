@@ -103,6 +103,35 @@ class PedestrianAgent(InfoAgent):
         self.logger.info(f"Perceived TG (Time gap) = {TG} seconds")
 
         return TG
+    
+    def getAvailableTimeGapWithEgo(self):
+        # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
+        # TODO assuming vehicle driving in agent's nearest lane 
+        # TODO Assuming pedestrian will cross at desired speed.
+        TTC = self.actorManager.pedPredictedTTCNearestEgo()
+        TG = self.actorManager.pedTGNearestEgo()
+        
+        self.logger.info(f"Ego predicted TTC = {TTC} seconds")
+        self.logger.info(f"Ego absolute TG (ignoring conflict point) = {TG} seconds")
+
+        if TG is None: # Vehicle already crossed
+            return None
+
+
+
+        TG = self._addErrorToTimeEstimtion(TG)
+
+        self.logger.info(f"EGO Perceived TG (Time gap) = {TG} seconds")
+
+        return TG
+    
+
+    def ttcWithEgo(self):
+        return self.actorManager.pedPredictedTTCNearestEgo()
+    
+    def distanceFromEgo(self):
+        return self.actorManager.distanceFromEgo()
+
 
     def _addErrorToTimeEstimtion(self, T):
         # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
@@ -222,9 +251,10 @@ class PedestrianAgent(InfoAgent):
         if self.debug:
             self.visualiseState()
 
-        if self.isInitializing():
+        
+        if  self.isInitializing() or self.isFrozen():
             if self.debug:
-                self.logger.info(f"Pedestrian is initializing.")
+                self.logger.info(f"Pedestrian is {self.state}.")
                 self.visualiseState()
             return self._localPlanner.getStopControl()
 
@@ -250,7 +280,8 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
             self.visualiseForces()
         
-        # self.visualiseForces()
+        self.visualiseForces()
+        self.visualiseState()
 
         return control
 

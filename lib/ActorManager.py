@@ -161,8 +161,26 @@ class ActorManager:
         if vehicle is None:
             self.logger.info(f"No oncoming vehicle")
             return None
+        
+        return self.distanceFromVehicle(vehicle)
+    
+    def distanceFromEgo(self):
+        """Can be negative when the front crosses the conflict point
+
+        Returns:
+            [type]: [description]
+        """
+        # TODO we are now just measuring distance from all actors
+        vehicle = self.egoVehicle
+        if vehicle is None:
+            self.logger.info(f"No ego vehicle")
+            return None
+        
+        return self.distanceFromVehicle(vehicle)
+    
+    def distanceFromVehicle(self, vehicle):
         distance = self.getCurrentDistance(vehicle)
-        self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
+        self.logger.debug(f"Distance from vehicle = {distance}")
         distance = distance - vehicle.bounding_box.extent.x # meter offset for front of the oncoming vehicle.
         if distance < 0:
             distance = 0
@@ -178,7 +196,20 @@ class ActorManager:
         if self.nearestOncomingVehicle is None:
             return None
 
-        _, TTC = self.getPredictedCollisionPointAndTTC(self.nearestOncomingVehicle)
+        _, TTC = self.getPredictedCollisionPointAndTTC(self.nearestOncomingVehicle, isNearestOther=True)
+
+        return TTC
+    
+    def pedPredictedTTCNearestEgo(self):
+        """Fix this method. When there is no collision, TTC must be None. Put it in cache.
+
+        Returns:
+            [type]: [description]
+        """
+        if self.egoVehicle is None:
+            return None
+
+        _, TTC = self.getPredictedCollisionPointAndTTC(self.egoVehicle)
 
         return TTC
 
@@ -244,18 +275,19 @@ class ActorManager:
 
 
     
-    def getPredictedCollisionPointAndTTC(self, otherActor, actorVelocity=None):
+    def getPredictedCollisionPointAndTTC(self, otherActor, selfVelocity=None, isNearestOther=False):
         """[summary]
 
         Args:
             otherActor ([type]): [description]
             actorVelocity : Sometimes pedestrian can be very slow or waiting. This parameter is useful to find conflict point with their desired Velocity
+            isNearestOther: True of the otherActor is the nearest vehicle. Used for caching only
 
         Returns:
             [type]: [description]
         """
 
-        if "predictedCollisionPoint" in self._tickCache:
+        if isNearestOther and "predictedCollisionPoint" in self._tickCache:
             return self._tickCache["predictedCollisionPoint"], self._tickCache["predictedTTCNearestOncomingVehicle"]
 
         lastWp = self.getNearestWaypointOnOthersPath(otherActor)
@@ -269,8 +301,8 @@ class ActorManager:
             start1 = Utils.getBBVertexInTravelDirection(otherActor)
 
             vel2 = self.actor.get_velocity()
-            if actorVelocity is not None:
-                vel2 = actorVelocity
+            if selfVelocity is not None:
+                vel2 = selfVelocity
 
             start2 = self.actor.get_location()
             self.logger.debug(f"vel1: {vel1}")
@@ -281,15 +313,19 @@ class ActorManager:
 
             collisionPoint, TTC = Utils.getCollisionPointAndTTC(vel1, start1, vel2, start2)
 
-            self._tickCache["predictedTTCNearestOncomingVehicle"] = TTC
-            self._tickCache["predictedCollisionPoint"] = collisionPoint
+            if isNearestOther:
+                self._tickCache["predictedTTCNearestOncomingVehicle"] = TTC
+                self._tickCache["predictedCollisionPoint"] = collisionPoint
+
+            return collisionPoint, TTC
 
         else:
             self.logger.info("no waypoints towards ped location")
-            self._tickCache["predictedTTCNearestOncomingVehicle"] = None
-            self._tickCache["predictedCollisionPoint"] = None
+            if isNearestOther:
+                self._tickCache["predictedTTCNearestOncomingVehicle"] = None
+                self._tickCache["predictedCollisionPoint"] = None
 
-        return self._tickCache["predictedCollisionPoint"], self._tickCache["predictedTTCNearestOncomingVehicle"]
+        return None, None
 
         
 
@@ -366,6 +402,30 @@ class ActorManager:
         self._tickCache["TGNearestOncomingVehicle"] = TG
 
         return self._tickCache["TGNearestOncomingVehicle"]
+       
+    def pedTGNearestEgo(self):
+        """Time gap is different than TTC. It's just distance / speed without considering the direction.
+
+        Returns:
+            [type]: [description]
+        """
+        if "pedTGNearestEgo" in self._tickCache:
+            return self._tickCache["pedTGNearestEgo"]
+
+        vehicle = self.egoVehicle
+        if vehicle is None:
+            return None
+            
+        wp_distance = self.distanceFromEgo()
+        velocity = vehicle.get_velocity()
+        speed = velocity.length()
+        if speed < 0.001:
+            return None
+
+        TG = wp_distance / speed
+        self._tickCache["pedTGNearestEgo"] = TG
+
+        return self._tickCache["pedTGNearestEgo"]
     
 
        

@@ -129,7 +129,7 @@ class Utils:
             start1 (carla.Location): head location of actor 1
             vel2 (carla.Vector3D): [description]
             start2 (carla.Location): head location of actor 2
-            seconds (int, optional): [description]. Defaults to 10.
+            seconds (int, optional): [description]. calculation horizon. Beyond this horizon, we assume they will not collide. Defaults to 15.
 
         Returns:
             [type]: [description]
@@ -175,6 +175,8 @@ class Utils:
 
 
         # Find conflict point. In some rare cases it will give us no conflict, but there will still be a conflict.
+
+        # print(f"Utils->getCollisionPointAndTTC: vel1 {vel1} vel2 {vel2} start1 {start1} start2 {start2} seconds {seconds}")
 
         if vel1.length() == 0 or vel2.length() == 0:
             return None, None

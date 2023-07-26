@@ -1,5 +1,6 @@
 from agents.pedestrians.BehaviorType import BehaviorType
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
+from agents.pedestrians.survival_models.EvasiveStopModel import EvasiveStopModel
 from agents.pedestrians.survival_models.SurvivalDestinationModel import SurvivalDestinationModel
 from lib.LoggerFactory import LoggerFactory
 
@@ -50,9 +51,9 @@ class DynamicBehaviorModelFactory:
         self._logger.warning(f"Adding Evasive Retreat Model to {agent.id}")
         
         survivalDestModel = SurvivalDestinationModel(
-                                    agent, 
-                                    actorManager=agent.actorManager, obstacleManager=agent.obstacleManager, 
-                                    internalFactors=agent._localPlanner.internalFactors
+                                agent, 
+                                actorManager=agent.actorManager, obstacleManager=agent.obstacleManager, 
+                                internalFactors=agent._localPlanner.internalFactors
                             )
         agent._localPlanner.models.append(survivalDestModel)
         agent._localPlanner.survivalModels.append(survivalDestModel)
@@ -68,6 +69,20 @@ class DynamicBehaviorModelFactory:
         pass
     def _addEvasiveSlowdownStop(self, agent: PedestrianAgent):
         self._logger.warning(f"Adding Evasive slowdownstop Model to {agent.id}")
+        
+        # add slowdown model
+        # add stop model
+
+        evasiveStopModel = EvasiveStopModel(
+                                agent, 
+                                actorManager=agent.actorManager, obstacleManager=agent.obstacleManager, 
+                                internalFactors=agent._localPlanner.internalFactors
+                            )
+        
+        agent._localPlanner.models.append(evasiveStopModel)
+        agent._localPlanner.survivalModels.append(evasiveStopModel)
+        agent._localPlanner.stateTransitionModels.append(evasiveStopModel)
+
         pass
     def _addEvasiveCrossBehind(self, agent: PedestrianAgent):
         self._logger.warning(f"Adding Evasive crossbehind Model to {agent.id}")
@@ -77,6 +92,18 @@ class DynamicBehaviorModelFactory:
         pass
     def _addEvasiveStop(self, agent: PedestrianAgent):
         self._logger.warning(f"Adding Evasive stop Model to {agent.id}")
+        # add stop model
+
+        evasiveStopModel = EvasiveStopModel(
+                                agent, 
+                                actorManager=agent.actorManager, obstacleManager=agent.obstacleManager, 
+                                internalFactors=agent._localPlanner.internalFactors
+                            )
+        
+        agent._localPlanner.models.append(evasiveStopModel)
+        agent._localPlanner.survivalModels.append(evasiveStopModel)
+        agent._localPlanner.stateTransitionModels.append(evasiveStopModel)
+        
         pass
     def _addIgnoreOncoming(self, agent: PedestrianAgent):
         self._logger.warning(f"Adding ignore oncoming Model to {agent.id}")
