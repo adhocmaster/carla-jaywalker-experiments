@@ -61,7 +61,7 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
 
     def canUnfreeze(self):
         distance = self.agent.distanceFromEgo()
-        if distance < 1:
+        if distance < 0.5:
             return False
         if self.canfreeze():
             return False
