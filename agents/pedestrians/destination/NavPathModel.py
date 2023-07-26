@@ -44,6 +44,8 @@ class NavPathModel():
         self.nextIntermediatePointIdx = None
         self.finalDestination = idealDestination
 
+        self.logger = LoggerFactory.create(f"NavPathModel #{self.agent.id}")
+
 
         self.intermediatePointsToNavPointMap: Dict[carla.Location, NavPoint] = {}
         self.navPath = navPath
@@ -220,6 +222,9 @@ class NavPathModel():
 
     
     def hasReachedNextDestinationPoint(self, agentLocation: carla.Location):
+        """
+        Has a side effect of activating and deactivating forces.
+        """
         # TODO: fill it out
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
 
@@ -228,7 +233,7 @@ class NavPathModel():
         if hasReached and nextDest in self.intermediatePointsToNavPointMap:
             # activate the models required for the nav point
             navPoint = self.intermediatePointsToNavPointMap[nextDest]
-            self.agent.logger.warn(f"has reached nav point {navPoint}")
+            self.logger.warn(f"has reached nav point {navPoint}")
             for behaviorType in navPoint.behaviorTags:
                 self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
