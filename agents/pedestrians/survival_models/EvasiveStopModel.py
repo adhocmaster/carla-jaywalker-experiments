@@ -52,7 +52,7 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         #     return True
 
         TG = self.agent.getAvailableTimeGapWithEgo()
-        print(f"canfreeze TG: {TG}")
+        # print(f"canfreeze TG: {TG}")
         if TG is not None and TG < 1:
             return True
         
