@@ -93,7 +93,13 @@ class NavPathModel():
         Returns:
             float: average velocity required to reach the next intermediate point
         """
+        ## TODO fist check if the vehicle is oncoming or not. Because if the vehicle passed, we don't need to follow the nav path anymore.
+
         vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
+
+        if not self.agent.actorManager.isOncoming(vehicle):
+            return None
+        
         # print(f"next location id {self.nextIntermediatePointIdx}")
         nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
 
