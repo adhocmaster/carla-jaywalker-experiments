@@ -1,3 +1,48 @@
+# Adversarial Jaywalker for Autonomous Vehicle Systems
+
+This reseach focuses on realistic adversarial pedestrian behavior modeling for simulation and testing of autonomous vehicles in simulated environment. The methods are implemented in Carla. The project includes the following tasks:
+
+1. Analyzing a diverse set of datasets, including images, videos, and trajectories, and identifying behavioral patterns by exploratory data analysis, clustering, machine learning, and constraints-based systems. 
+2. Prototyping generative behavior models using procedural generation, variational autoencoders, GANs, and transformers.
+3. Augmenting trajectory datasets.
+4. Identifying behaviorally interesting events by analyzing annotations in natural language. 
+5. Utilizing adversarial techniques to identify failed cases efficiently.
+6. Creating a rich set of behaviors with compositional abilities, including accidental factors not covered by current models.
+7. Discovering both high-level decision behaviors and low-level microscopic motions and maneuvers.
+8. OpenAi Gymnasium environments for RL-based research
+
+Currently writing a paper a novel hybrid modeling approach to generatively model pedestrian behavior which can make use of both social-force-based models and machine learning-based models to compensate for each other’s limitations. Social-force-based models are highly interactive and adaptive to unseen situations, and ML-based models can capture high variance. Together, they can effectively produce rich generative behavioral models robust to unseen situations. Please cite our papers which is relevant to your research:
+
+```
+@article{Muktadir2022AdversarialJM,
+  title={Adversarial jaywalker modeling for simulation-based testing of Autonomous Vehicle Systems},
+  author={Golam Md Muktadir and E. James Whitehead},
+  journal={2022 IEEE Intelligent Vehicles Symposium (IV)},
+  year={2022},
+  pages={1697-1702},
+  url={https://api.semanticscholar.org/CorpusID:250705702}
+}
+```
+
+# Motivation
+Our motivation for this work is we have usable data that can be used to train machine learning models, we also have un-usable data that cannot directly be used. So, we innovate new methods to create hybrid models that can benefit from different types of data.
+
+![PCG](./docs/images/pcg.PNG)
+
+# Howtos
+The pedestrian agent is a highly modular system facilitating both machine learning and rule-based methods to be applied in the simulation. Here is the architecture of the simplest planner:
+
+
+![Simulation architecture](./docs/images/single-oncoming-vehicle-planner.JPG)
+
+Please refer to our documentation folder for details:
+
+1. [How to use](./docs/How-to-use.md)
+2. [Pedestrian Configuration](./docs/pedestrian-configuration.md)
+3. [OpenAI Gynasium based Environment](./docs/gym-env.md)
+4. [Custom Map with RoadRunner](./docs/create-map.md)
+5. [CrossWalk Area Modeling](./docs/cross-walk-area-model.md)
+
 # Installation -
 
 
