@@ -320,7 +320,7 @@ class Research1v1(BaseResearch):
 
         # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
         # self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='cautious', logLevel=logging.DEBUG)
-        max_speed = random.choice([10, 15, 20])
+        max_speed = random.choice([7, 12, 17, 22])
         self.vehicleAgent = self.vehicleFactory.createSpeedControlledBehaviorAgent(self.vehicle, max_speed=max_speed, behavior='normal', logLevel=logging.INFO)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
