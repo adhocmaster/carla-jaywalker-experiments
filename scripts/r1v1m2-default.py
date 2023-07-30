@@ -1,7 +1,11 @@
+exec(open("sys_path_hack.py").read())
+
 import logging
 import click
+
 from research import ResearchFactory
 from lib import MapNames
+
 
 @click.command()
 @click.option(

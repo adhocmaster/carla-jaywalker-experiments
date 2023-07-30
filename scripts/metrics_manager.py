@@ -1,3 +1,5 @@
+exec(open("sys_path_hack.py").read())
+
 #!/usr/bin/env python
 
 # Copyright (c) 2020 Computer Vision Center (CVC) at the Universitat Autonoma de

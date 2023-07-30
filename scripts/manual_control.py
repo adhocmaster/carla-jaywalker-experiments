@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env python
 
 # Copyright (c) 2019 Computer Vision Center (CVC) at the Universitat Autonoma de
@@ -43,6 +45,7 @@ Use ARROWS or WASD keys for control.
 """
 
 from __future__ import print_function
+exec(open("sys_path_hack.py").read())
 
 # ==============================================================================
 # -- imports -------------------------------------------------------------------

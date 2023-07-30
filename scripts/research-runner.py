@@ -1,4 +1,5 @@
 
+exec(open("sys_path_hack.py").read())
 from pydoc import cli
 import click
 import os

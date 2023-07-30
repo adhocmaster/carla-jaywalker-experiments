@@ -1,3 +1,5 @@
+exec(open("sys_path_hack.py").read())
+
 import click
 from research import ResearchFactory, SimulationMode
 

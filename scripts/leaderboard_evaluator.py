@@ -11,6 +11,7 @@ CARLA Challenge Evaluator Routes
 Provisional code to evaluate Autonomous Agents for the CARLA Autonomous Driving challenge
 """
 from __future__ import print_function
+exec(open("sys_path_hack.py").read())
 
 import traceback
 import argparse
@@ -23,7 +24,6 @@ import pkg_resources
 import sys
 import carla
 import signal
-from lib.MapManager import MapManager, MapNames
 
 from srunner.scenariomanager.carla_data_provider import *
 from srunner.scenariomanager.timer import GameTime
@@ -35,7 +35,6 @@ from leaderboard.envs.sensor_interface import SensorConfigurationInvalid
 from leaderboard.autoagents.agent_wrapper import  AgentWrapper, AgentError
 from leaderboard.utils.statistics_manager import StatisticsManager
 from leaderboard.utils.route_indexer import RouteIndexer
-from research.ScenarioRouteSrunner import ScenarioRouteSrunner
 
 
 sensors_to_icons = {
@@ -199,12 +198,7 @@ class LeaderboardEvaluator(object):
         Load a new CARLA world and provide data to CarlaDataProvider
         """
 
-        self.mapManager = MapManager(self.client)
-
-        self.mapManager.load(MapNames[town], forceReload=True)
-        self.world = self.mapManager.world
-
-        # self.world = self.client.load_world(town)
+        self.world = self.client.load_world(town)
         settings = self.world.get_settings()
         settings.fixed_delta_seconds = 1.0 / self.frame_rate
         settings.synchronous_mode = True
@@ -314,7 +308,7 @@ class LeaderboardEvaluator(object):
         try:
             self._load_and_wait_for_world(args, config.town, config.ego_vehicles)
             self._prepare_ego_vehicles(config.ego_vehicles, False)
-            scenario = ScenarioRouteSrunner(world=self.world, config=config, debug_mode=args.debug)
+            scenario = RouteScenario(world=self.world, config=config, debug_mode=args.debug)
             config.route = scenario.route
             # exit(0)
             self.statistics_manager.set_scenario(scenario.scenario)

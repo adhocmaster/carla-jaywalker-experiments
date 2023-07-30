@@ -1,3 +1,5 @@
+exec(open("sys_path_hack.py").read())
+
 import carla
 import argparse
 import logging

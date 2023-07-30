@@ -1,18 +1,17 @@
+exec(open("sys_path_hack.py").read())
+
+import carla
 import argparse
 import logging
 import random
 import time
-
-import carla
 import eventlet
-
 eventlet.monkey_patch()
 
-from agents.navigation.basic_agent import \
-    BasicAgent  # pylint: disable=import-error
-from agents.navigation.behavior_agent import \
-    BehaviorAgent  # pylint: disable=import-error
-from lib import MapManager, MapNames, SimulationVisualization, Simulator
+from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
+from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
+
+from lib import SimulationVisualization, MapNames, MapManager, Simulator
 from lib.state import StateManager
 
 SpawnActor = carla.command.SpawnActor
@@ -55,11 +54,15 @@ if client.get_client_version() != client.get_server_version():
 
 mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
-# mapManager.load(MapNames.circle_t_junctions)
+# mapManager.load(MapNames.circle_t_junctions, forceReload=True)
 
-mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town05_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town06_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town07_Opt, carla.MapLayer.NONE)
+mapManager.load(MapNames.Town10HD_Opt, carla.MapLayer.NONE)
 
 # world = mapManager.world
 
@@ -69,6 +72,8 @@ mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
 # settings.fixed_delta_seconds = time_delta
 # world.apply_settings(settings)
 
+mapManager.generateWaypoints(distance=10.0)
+
 visualizer = SimulationVisualization(client, mapManager)
 # visualizer.draw00()
 
@@ -77,10 +82,6 @@ map = mapManager.map
 
 visualizer.drawSpawnPoints(dropout=0.8)
 visualizer.drawSpectatorPoint()
-visualizer.drawAllWaypoints(life_time=0.0)
-
-world = client.get_world()
-controllers = world.get_blueprint_library().filter('controller.*')
-print(controllers)
+visualizer.drawAllWaypoints(life_time=0.0, position=True)
 
 # exit(0)

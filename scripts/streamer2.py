@@ -1,3 +1,5 @@
+exec(open("sys_path_hack.py").read())
+
 from http import client
 import tkinter
 import carla
@@ -21,6 +23,7 @@ import click
 #defaul config
 ghost = '127.0.0.1'
 gport = 2000
+gTimeout = 15.0
 
 #Create a window
 window=Tk()
@@ -129,34 +132,48 @@ def simulation(q, resetCameraQ, host, port):
 
     while True:
         try:
-            simulatorWait(world, camera, q, resetCameraQ)
+            world, camera = simulatorWait(world, camera, q, resetCameraQ)
         except KeyboardInterrupt:
-            camera.stop()
-            camera.destroy()
+            safeDeleteCamera(world)
             q.close()
             resetCameraQ.close()
             return
-        except RuntimeError:
+        except RuntimeError as e:
             print(f"runtime error, recreating world and camera")
-            camera.stop()
-            camera.destroy()
+            print(e)
+            safeDeleteCamera(world)
             world, camera = initCamera(q, resetCameraQ)
 
-def initCamera(q, resetCameraQ):
 
-    global ghost, gport
+def safeDeleteCamera(world, camera):
+    # delete only if the camera exists
+    if world.get_snapshot().find(camera.id) is not None:
+        camera.stop()
+        camera.destroy()
 
-    print(f"creating camera")
+    pass
+
+def getExistingSepectatorCamera(world):
+    spectator = world.get_actors().filter('spectator')[0]
+    cameras = world.get_actors().filter('camera')
+    for camera in cameras:
+        if camera.parent.id == spectator.id:
+            print("found existing camera with the spectator")
+            return camera
+    return None
+
+
+def getSepectatorCamera(world):
+    spectator = world.get_actors().filter('spectator')[0]
+
+    # check if a camera already exists.
+
+    existingCamera = getExistingSepectatorCamera(world)
+
+    if existingCamera is not None:
+        return existingCamera
     
-    # client = carla.Client('127.0.0.1', 2000)
 
-    print(f"connecting to remote: {ghost}:{gport}")
-    client = carla.Client(ghost, gport)
-    client.set_timeout(15.0)
-    print(f"connected to remote: {ghost}:{gport}")
-
-    print(f"fetching world and spectator")
-    world = client.get_world()
     spectator = world.get_actors().filter('spectator')[0]
 
     print(f"fetching blueprint_library")
@@ -164,11 +181,49 @@ def initCamera(q, resetCameraQ):
     camera_bp = bp_library.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', f'{imW}')
     camera_bp.set_attribute('image_size_y', f'{imH}')
-    camera_bp.set_attribute('sensor_tick', '0.5')
+    camera_bp.set_attribute('sensor_tick', '0.2')
 
     print(f"spawning camera")
 
-    camera = world.spawn_actor(camera_bp, spectator.get_transform())
+    transform = carla.Transform() # 0,0,0
+
+    camera = world.spawn_actor(camera_bp, transform, attach_to=spectator)
+
+    return camera
+
+
+
+def initCamera(q, resetCameraQ):
+
+    global ghost, gport, gTimeout
+
+    print(f"creating camera")
+    
+    # client = carla.Client('127.0.0.1', 2000)
+
+    print(f"connecting to remote: {ghost}:{gport}")
+    client = carla.Client(ghost, gport)
+    client.set_timeout(gTimeout)
+    print(f"connected to remote: {ghost}:{gport}")
+
+    print(f"fetching world and spectator")
+    world = client.get_world()
+
+    # spectator = world.get_actors().filter('spectator')[0]
+
+    # print(f"fetching blueprint_library")
+    # bp_library = world.get_blueprint_library()
+    # camera_bp = bp_library.find('sensor.camera.rgb')
+    # camera_bp.set_attribute('image_size_x', f'{imW}')
+    # camera_bp.set_attribute('image_size_y', f'{imH}')
+    # camera_bp.set_attribute('sensor_tick', '0.5')
+
+    # print(f"spawning camera")
+
+    # camera = world.spawn_actor(camera_bp, spectator.get_transform())
+
+    camera = getSepectatorCamera(world)
+
     process_img = process_img_wrapper(q, resetCameraQ)
 
     print(f"attaching camera listener")
@@ -181,15 +236,28 @@ def initCamera(q, resetCameraQ):
 def simulatorWait(world, camera, q, resetCameraQ):
     # print(f"simulatorWait")
     world.wait_for_tick()
-    try:
-        result=resetCameraQ.get_nowait()
-        # means camera no longder exists
-        camera.stop()
-        camera.destroy()
+
+    # existingCamera = world.get_snapshot().find(camera.id)
+    existingCamera = world.get_actors().find(camera.id)
+    if existingCamera is None or existingCamera.type_id != camera.type_id:
         world, camera = initCamera(q, resetCameraQ)
-    except queue.Empty:
-        simulatorWait(world, camera, q, resetCameraQ)
-        pass
+        # return world
+    
+    return world, camera
+
+
+    # result=resetCameraQ.get_nowait() 
+    # # means camera no longder exists
+    # safeDeleteCamera(world)
+    # world, camera = initCamera(q, resetCameraQ)
+    # try:
+    #     result=resetCameraQ.get_nowait()
+    #     # means camera no longder exists
+    #     safeDeleteCamera(world)
+    #     world, camera = initCamera(q, resetCameraQ)
+    # except queue.Empty:
+    #     simulatorWait(world, camera, q, resetCameraQ)
+    #     pass
 
 @click.command()
 
@@ -208,13 +276,22 @@ def simulatorWait(world, camera, q, resetCameraQ):
     help='TCP port to listen to (default: 2000)', 
     prompt=True
     )
+@click.option(
+    '-t', '--timeout',
+    metavar='number',
+    default=5.0,
+    type=int,
+    help='Client timeout(default: 5.0)', 
+    prompt=True
+    )
 
-def main(host, port):
+def main(host, port, timeout):
     #Create a queue to share data between process
-    global q, ghost, gport
+    global q, ghost, gport, gTimeout
 
     ghost = host
     gport = port
+    gTimeout = timeout
     q = multiprocessing.Queue()
     resetCameraQ = multiprocessing.Queue()
 

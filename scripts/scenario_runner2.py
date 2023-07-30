@@ -14,6 +14,7 @@ and finally triggers the scenario execution.
 """
 
 from __future__ import print_function
+exec(open("sys_path_hack.py").read())
 
 import glob
 import traceback
