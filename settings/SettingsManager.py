@@ -4,7 +4,7 @@ import logging
 from matplotlib import transforms
 from lib.ClientUser import ClientUser
 from .SourceDestinationPair import SourceDestinationPair
-from typing import List
+from typing import List, Optional
 
 class SettingsManager(ClientUser):
 
@@ -20,6 +20,8 @@ class SettingsManager(ClientUser):
         self._vehicleSettings: List[SourceDestinationPair] = None
         self._vehicleTransforms = None
 
+
+
         pass
 
 
@@ -31,6 +33,7 @@ class SettingsManager(ClientUser):
 
         self._vehicleSettings = None
         self._vehicleTransforms = None
+        
 
     def _assertCurrentSetting(self):
         if self.currentSetting is None:
@@ -189,5 +192,36 @@ class SettingsManager(ClientUser):
             pass
 
         return (numberOfAgents, actor_trajectory_list)
+    
+    def getSpectatorSettings(self) -> Optional[carla.Transform]:
+        if "spectator_settings" not in self.currentSetting:
+            return None
+        
+        location = carla.Location(
+            x = self.currentSetting["spectator_settings"]["x"],
+            y = self.currentSetting["spectator_settings"]["y"],
+            z = self.currentSetting["spectator_settings"]["z"]
+        )
+        rotation = carla.Rotation(
+            pitch = self.currentSetting["spectator_settings"]["pitch"],
+            yaw = self.currentSetting["spectator_settings"]["yaw"],
+            roll = 0.0
+        )
+
+        return carla.Transform(location, rotation)
+    
+    def getVisualizationForceLocation(self) -> Optional[carla.Location]:
+        if "visualization_force_location" not in self.currentSetting:
+            return None
+        
+        return carla.Location(
+            x = self.currentSetting["visualization_force_location"]["x"],
+            y = self.currentSetting["visualization_force_location"]["y"],
+            z = self.currentSetting["visualization_force_location"]["z"]
+        )
+    
+    
+        
+
 
 

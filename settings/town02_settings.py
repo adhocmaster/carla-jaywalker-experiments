@@ -5,7 +5,13 @@ town02_settings = {
         ],
         "walker_settings": [
             (90.0, 183.0, 93.0, 196.0),
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": 93.0,
+            "y": 206,
+            "z": 1.5,
+        }
     },
     "setting2": {
         "ego_settings": [
@@ -15,6 +21,12 @@ town02_settings = {
         ],
         "walker_settings": [
             (63.0, 196.0, 63.0, 186.0),
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": 93.0,
+            "y": 206,
+            "z": 1.5,
+        }
     }
 }

@@ -112,10 +112,12 @@ class MapManager(ClientUser):
         if self.currentMapName == MapNames.Town10HD_Opt:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
             
-        
+        self.setSpectator(transform)
+
+    
+    def setSpectator(self, transform: carla.Transform):
         spectator = self.world.get_spectator()
         spectator.set_transform(transform)
-        # spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
 
     
     def getSpectatorPos(self):

@@ -55,6 +55,8 @@ class PedestrianAgent(InfoAgent):
         if config is not None:
             if "visualizationInfoLocation" in config:
                 self.visualizationInfoLocation = config["visualizationInfoLocation"]
+
+        
                 
         # config parameters
         self.navPath: NavPath = None
@@ -201,7 +203,7 @@ class PedestrianAgent(InfoAgent):
         visualizationInfoLocation = self.location + carla.Location(x=10)
         if self.visualizationInfoLocation is not None:
             visualizationInfoLocation = self.visualizationInfoLocation
-
+            
         self.visualizer.visualizeForces(
             self.name, 
             forces = forces, 

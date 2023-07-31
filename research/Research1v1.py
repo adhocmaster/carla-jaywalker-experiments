@@ -13,6 +13,7 @@ from agents.pedestrians.soft import Direction, LaneSection, NavPath, NavPoint
 from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings.town02_settings import town02_settings
+from settings.town03_settings import town03_settings
 from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
@@ -48,6 +49,8 @@ class Research1v1(BaseResearch):
             settings = circular_t_junction_settings
         elif mapName == MapNames.Town02_Opt:
             settings = town02_settings
+        elif mapName == MapNames.Town03_Opt:
+            settings = town03_settings
         self.settingsManager = SettingsManager(self.client, settings)
 
 
@@ -142,6 +145,11 @@ class Research1v1(BaseResearch):
         self.statDataframe = pd.DataFrame()
         self.initStatDict()
 
+        # change spectator if in setting
+        spectatorSettings = self.settingsManager.getSpectatorSettings()
+        if spectatorSettings is not None:
+            self.mapManager.setSpectator(spectatorSettings)
+
     
     def reset(self):
         """Only used for episodic simulator
@@ -194,12 +202,7 @@ class Research1v1(BaseResearch):
         self.tickOrWaitBeforeSimulation()
 
 
-        config = {
-            "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
-            "visualizationInfoLocation": carla.Location(x=-155.0, y=0.0, z=1.5)
-        }
-
-        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=self.logLevel, optionalFactors=self.optionalFactors, config=config)
+        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=self.logLevel, optionalFactors=self.optionalFactors, config=None)
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination, life_time=15.0)
@@ -207,6 +210,7 @@ class Research1v1(BaseResearch):
 
 
         self.setWalkerNavPath()
+        self.setWalkerDebugSettings()
         # self.walkerAgent.debug = False
 
         # self.walkerAgent.updateLogLevel(logging.INFO)
@@ -214,6 +218,21 @@ class Research1v1(BaseResearch):
         # attach actor manager
 
         pass
+
+    def setWalkerDebugSettings(self):
+        self.walkerAgent.debug = False
+        self.walkerAgent.updateLogLevel(logging.WARN)
+
+        visualizationForceLocation = self.settingsManager.getVisualizationForceLocation()
+        if visualizationForceLocation is None:
+            visualizationForceLocation = self.walkerSpawnPoint.location
+        
+        visualizationInfoLocation = carla.Location(x=visualizationForceLocation.x + 2, y=visualizationForceLocation.y + 2, z=visualizationForceLocation.z)
+
+        
+        self.walkerAgent.visualizationForceLocation = visualizationForceLocation
+        self.walkerAgent.visualizationInfoLocation = visualizationInfoLocation
+
 
     def setWalkerNavPath(self):
         point1 = NavPoint(

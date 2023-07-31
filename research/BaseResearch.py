@@ -21,6 +21,7 @@ class BaseResearch(ClientUser):
         self.time_delta = None
         self.mapManager = None
         self.visualizer = None
+        self.mapManager: MapManager = None
 
 
         self.initWorldSettings()

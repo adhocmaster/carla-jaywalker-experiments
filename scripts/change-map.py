@@ -56,17 +56,18 @@ mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
 # mapManager.load(MapNames.circle_t_junctions, forceReload=True)
 
+# mapManager.load(MapNames.Town01_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
-# mapManager.load(MapNames.Town03_Opt, carla.MapLayer.NONE)
+mapManager.load(MapNames.Town03_Opt, carla.MapLayer.Ground, forceReload=True)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town05_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town06_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town07_Opt, carla.MapLayer.NONE)
-mapManager.load(MapNames.Town10HD_Opt, carla.MapLayer.NONE)
+# mapManager.load(MapNames.Town10HD_Opt, carla.MapLayer.NONE)
 
 # world = mapManager.world
 
-# time_delta = 0.01
+# time_delta = 0.01d
 # settings = world.get_settings()
 # settings.substepping = False
 # settings.fixed_delta_seconds = time_delta
@@ -80,7 +81,7 @@ visualizer = SimulationVisualization(client, mapManager)
 map = mapManager.map
 
 
-visualizer.drawSpawnPoints(dropout=0.8)
+visualizer.drawSpawnPoints(dropout=0.1)
 visualizer.drawSpectatorPoint()
 visualizer.drawAllWaypoints(life_time=0.0, position=True)
 
