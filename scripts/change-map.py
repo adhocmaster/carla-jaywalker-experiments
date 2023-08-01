@@ -53,12 +53,13 @@ if client.get_client_version() != client.get_server_version():
 
 
 mapManager = MapManager(client)
+mapManager.load(MapNames.varied_width_lanes)
 # mapManager.load(MapNames.t_junction)
 # mapManager.load(MapNames.circle_t_junctions, forceReload=True)
 
 # mapManager.load(MapNames.Town01_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
-mapManager.load(MapNames.Town03_Opt, carla.MapLayer.Ground, forceReload=True)
+# mapManager.load(MapNames.Town03_Opt, carla.MapLayer.Ground, forceReload=True)
 # mapManager.load(MapNames.Town04_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town05_Opt, carla.MapLayer.NONE)
 # mapManager.load(MapNames.Town06_Opt, carla.MapLayer.NONE)
