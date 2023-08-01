@@ -1,5 +1,7 @@
+import math
 import carla
 from lib import LoggerFactory
+from lib.utils import Utils
 from .PedState import PedState
 from shapely.geometry import Point
 from shapely.affinity import rotate
@@ -90,12 +92,47 @@ class InfoAgent:
     
     @property
     def localYDirection(self) -> carla.Vector3D:
+        """This needs to be invalidated when actor is reset.
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            carla.Vector3D: _description_
+        """
         if self._localYDirection is None:
-            degreeAngle = self.localAxisYaw
-            globalY = Point(0,1)
-            localY = rotate(globalY, degreeAngle, use_radians=False)
-            self._localYDirection = carla.Vector3D(x=localY.x, y=localY.y, z=0.0)
+            # degreeAngle = self.localAxisYaw
+            # globalY = Point(0,1)
+            # localY = rotate(globalY, degreeAngle, use_radians=False)
+            # self._localYDirection = carla.Vector3D(x=localY.x, y=localY.y, z=0.0)
+            wp = self.map.get_waypoint(self.location)
+            crosswalkVector = wp.transform.get_right_vector() # this might actually be in the opposite direction
+            desVector = self.destination - self.location
+
+            # it's a component of the destVecotr on crosswalkVector
+
+            # if crosswalkVector.x * desVector.x < 0 and crosswalkVector.y * desVector.y < 0:
+            #     crosswalkVector = -crosswalkVector
+
+            angleWithDest = Utils.angleBetweenVectors(crosswalkVector, desVector)
+
+            if abs(angleWithDest) > math.pi/2:
+                crosswalkVector = -1 * crosswalkVector
+            
+            self._localYDirection = crosswalkVector
+
+            # self.visualizer.drawForce(self.location + carla.Location(x=-2.0), crosswalkVector, color=(20,0,20), life_time=20.0)
+            # self.visualizer.drawForce(self.location + carla.Location(x=2.0), self._localYDirection, color=(0,0,20), life_time=20.0)
+            # self.visualizer.drawForce(self.location + carla.Location(x=4.0), desVector.make_unit_vector(), color=(0,20,0), life_time=20.0)
+            # raise ValueError(f"angleWithDest {angleWithDest}")
+
+
         return self._localYDirection
+    
+
+    def reset(self):
+        self._localAxisYaw = None
+        self._localYDirection = None
 
 
 

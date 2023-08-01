@@ -113,6 +113,8 @@ class Utils:
     def angleBetweenVectors(v1: carla.Vector3D, v2: carla.Vector3D):
         d1 = v1.make_unit_vector()
         d2 = v2.make_unit_vector()
+        d1 = (d1.x, d1.y, d1.z)
+        d2 = (d2.x, d2.y, d2.z)
         return np.arccos(np.clip(np.dot(d1, d2), -1.0, 1.0))
 
     @staticmethod

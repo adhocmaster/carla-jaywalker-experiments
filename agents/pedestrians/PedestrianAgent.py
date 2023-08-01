@@ -1,3 +1,4 @@
+import math
 from random import random
 import numpy as np
 import time
@@ -230,6 +231,7 @@ class PedestrianAgent(InfoAgent):
 
     def reset(self, newStartPoint:carla.Location=None):
         self.logger.info(f"Resetting")
+        super().reset()
         
         self._localPlanner.reset()
 
@@ -415,10 +417,25 @@ class PedestrianAgent(InfoAgent):
     
     def hasReachedDestinationAlongLocalY(self, destination: carla.Location, tolerance: float):
         
+        desVector = destination - self.location
+
+        if desVector.length() < tolerance:
+            return True
+        
+        # overshoot check
+        if abs(Utils.angleBetweenVectors(desVector, self.localYDirection)) > math.pi / 2:
+            return True
+        return False
+
         localYToDest = abs(Utils.projectAonB2D(destination, self.localYDirection))
         localYToCurrentLoc = abs(Utils.projectAonB2D(self.location, self.localYDirection))
+        self.logger.warn(f"localYDirection {self.localYDirection}")
         self.logger.warn(f"destination {destination} and current location {self.location}")
         self.logger.warn(f"localYToDest {localYToDest} and localYToCurrentLoc {localYToCurrentLoc}")
+
+        
+        self.visualizer.drawForce(self.location + carla.Location(x=2.0), self._localYDirection, color=(0,0,20), life_time=20.0)
+        self.visualizer.drawForce(self.location + carla.Location(x=4.0), desVector.make_unit_vector(), color=(0,20,0), life_time=20.0)
 
         if localYToDest < localYToCurrentLoc: # overshooting
             return True
