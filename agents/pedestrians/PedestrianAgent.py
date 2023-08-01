@@ -417,7 +417,8 @@ class PedestrianAgent(InfoAgent):
         
         localYToDest = abs(Utils.projectAonB2D(destination, self.localYDirection))
         localYToCurrentLoc = abs(Utils.projectAonB2D(self.location, self.localYDirection))
-        # self.logger.warn(f"localYToDest {localYToDest} and localYToCurrentLoc {localYToCurrentLoc}")
+        self.logger.warn(f"destination {destination} and current location {self.location}")
+        self.logger.warn(f"localYToDest {localYToDest} and localYToCurrentLoc {localYToCurrentLoc}")
 
         if localYToDest < localYToCurrentLoc: # overshooting
             return True

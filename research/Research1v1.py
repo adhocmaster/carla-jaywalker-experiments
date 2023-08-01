@@ -14,6 +14,7 @@ from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings.town02_settings import town02_settings
 from settings.town03_settings import town03_settings
+from settings.varied_width_lanes_settings import varied_width_lanes_settings
 from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
@@ -51,6 +52,10 @@ class Research1v1(BaseResearch):
             settings = town02_settings
         elif mapName == MapNames.Town03_Opt:
             settings = town03_settings
+        elif mapName == MapNames.varied_width_lanes:
+            settings = varied_width_lanes_settings
+        else:
+            raise Exception(f"Map {mapName} is missing settings")
         self.settingsManager = SettingsManager(self.client, settings)
 
 
@@ -344,10 +349,11 @@ class Research1v1(BaseResearch):
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
 
-        # destination = self.getNextDestination(spawnXYLocation)
         destination = self.vehicleSetting.destination
 
+
         self.vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
+        # raise Exception("stop")
         plan = self.vehicleAgent.get_local_planner().get_plan()
         # Utils.draw_trace_route(self._vehicle.get_world().debug, plan)
         self.visualizer.drawTraceRoute(plan, color=(10, 10, 0, 0), life_time=15.0)
@@ -356,19 +362,6 @@ class Research1v1(BaseResearch):
         pass
 
 
-    def getNextDestination(self, currentLocation):
-
-        return carla.Location(x=-132.862671, y=3, z=0.0)
-
-        destination = random.choice(self.mapManager.spawn_points).location
-        count = 1
-        while destination.distance(currentLocation) < 5:
-            destination = random.choice(self.mapManager.spawn_points).location
-            count += 1
-            if count > 5:
-                self.logger.error(f"Cannot find a destination from {currentLocation}")
-                raise Exception("Cannot find a destination")
-        return destination
 
     def recreateVehicle(self):
         # destroy current one
@@ -380,6 +373,8 @@ class Research1v1(BaseResearch):
         self.createVehicle()
 
     def resetWalker(self, sameOrigin=True):
+        self.logger.warn(f"Resetting Walker")
+        self.walkerAgent.setEgoVehicle(self.vehicle)
 
         if sameOrigin == True:
             
@@ -400,12 +395,15 @@ class Research1v1(BaseResearch):
     def createDynamicAgents(self):
         
         self.createVehicle()
+        
+        self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
         self.createWalker()
         pass
 
     def recreateDynamicAgents(self):
         # 1. recreated vehicle
         self.recreateVehicle()
+        self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
 
         # 2. reset walker
         self.resetWalker(sameOrigin=True)

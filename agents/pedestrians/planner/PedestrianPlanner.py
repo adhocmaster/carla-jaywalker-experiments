@@ -168,8 +168,10 @@ class PedestrianPlanner:
     
     def done(self):
         if self.agent.isFinished():
+            # print("returing done as pedestrian is finished")
             return True
 
+        # print(f"returing done if pedestrian is at destination {self.destination}")
         return self.agent.hasReachedDestinationAlongLocalY(self.destination, 0.2)
 
         # if self.getDistanceToDestination() < 0.2:

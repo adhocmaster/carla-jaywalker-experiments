@@ -86,7 +86,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
     def transitionStateIfNeeded(self):
         self.logger.debug(f"transitionStateIfNeeded")
         if self.done():
-            self.logger.info(f"Planner is done. changing agent state to finished")
+            self.logger.warn(f"Planner is done. changing agent state to finished")
             StateTransitionManager.changeAgentState(self.name, self.agent, PedState.FINISHED)
             return
 
