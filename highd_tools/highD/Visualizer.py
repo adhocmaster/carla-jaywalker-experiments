@@ -386,3 +386,31 @@ class GIF():
         images[0].save(gif_path, save_all=True, append_images=images[1:],
                        optimize=False, duration=int(1000/fps), loop=0)
         return gif_path
+
+    @staticmethod
+    def create_gif_for_agent_wheel_angle(image, df, agent_id, start_frame, end_frame, 
+                             fps=25, output_dir=None):
+
+        df_ego = df[(df['id'] == agent_id) & 
+                    (df['frame'] >= start_frame) & 
+                    (df['frame'] <= end_frame)]
+
+        print(f"agent id {agent_id} start: {start_frame}, end: {end_frame} total frames: {end_frame - start_frame} ")
+        gif_name = f'agent_{agent_id}_fr_{start_frame}_to_{end_frame}.gif'
+        images = []
+
+        for i in range(start_frame, end_frame + 1):
+            img = GIF.draw_frame(image=image, tracks=df, frame_id=i,
+                                        ego_id=agent_id,
+                                        ego_color=(0, 255, 0))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            pil_img = Image.fromarray(img)
+            images.append(pil_img)
+
+        if output_dir is None:
+            output_dir = os.getcwd()
+
+        gif_path = os.path.join(output_dir, gif_name)
+        images[0].save(gif_path, save_all=True, append_images=images[1:],
+                       optimize=False, duration=int(1000/fps), loop=0)
+        return gif_path

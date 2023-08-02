@@ -130,4 +130,37 @@ class Filter():
         
         print(f'total scenario {len(copy_df)}, filtered scenario {len(df)}, ratio {len(df) / len(copy_df)}')
         return df
+    
+    @staticmethod
+    def filter_lane_change_scenario(dataframe, buffer_frames):
+        print('Filtering lane change scenario')
+
+        lane_change_meta = {'id': [], 'start_frame': [], 'end_frame': [], 
+                            'start_lane': [], 'end_lane': []}
+
+        fps = 25
+
+        actors = dataframe['id'].unique()
+
+        for actor in actors:
+            actor_df = dataframe[dataframe['id'] == actor]
+            lanes = actor_df['laneId'].values
+            # Identify frames where lane change happens
+            change_frames = np.where(lanes[:-1] != lanes[1:])[0]
+            for frame in change_frames:
+                start_frame = actor_df['frame'].iloc[max(0, frame - buffer_frames)]
+                end_frame = actor_df['frame'].iloc[min(frame + buffer_frames, len(actor_df) - 1)]
+                start_lane = actor_df['laneId'].iloc[frame]
+                end_lane = actor_df['laneId'].iloc[frame + 1]
+
+                lane_change_meta['id'].append(actor)
+                lane_change_meta['start_frame'].append(start_frame)
+                lane_change_meta['end_frame'].append(end_frame)
+                lane_change_meta['start_lane'].append(start_lane)
+                lane_change_meta['end_lane'].append(end_lane)
+
+        df = pd.DataFrame(lane_change_meta)
+        print(f'total scenarios: {len(df)}')
+        return df
+
 
