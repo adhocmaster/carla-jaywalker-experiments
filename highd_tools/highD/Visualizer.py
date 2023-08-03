@@ -244,6 +244,51 @@ class Video():
 class GIF():
 
     @staticmethod
+    def draw_frame_with_angle(image, tracks, frame_id,
+                ego_id=None, target_id=None,
+                ego_color=(255, 0, 0), target_color=(0, 255, 0), other_color=(0, 0, 255)):
+        # Filter the frame data
+        tracks = tracks[tracks['frame'] == frame_id]
+
+        if len(tracks) == 0:
+            print('invalid frame id')
+            return
+
+        # Deep copy of the image
+        image = copy.deepcopy(image)
+
+        agent_ids = tracks['id'].unique()
+
+        def draw_vehicle(image, vehicle_data, color):
+            df_bbox = vehicle_data[['x', 'y', 'width', 'height']]
+            df_bbox = df_bbox / SCALE_FACTOR
+            x = int(df_bbox['x'])
+            y = int(df_bbox['y'])
+            width = int(df_bbox['width'])
+            height = int(df_bbox['height'])
+            cv2.rectangle(image, (x, y), (x + width, y + height), color, 2)
+
+        # Draw the frame number on the image
+        cv2.putText(image, f"F: {frame_id}", (10, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
+        for id in agent_ids:
+            vehicle_data = tracks[tracks['id'] == id]
+            angle = vehicle_data['angle'].iloc[0] # Assuming 'angle' is the name of the column
+            if ego_id is not None and id == ego_id:
+                draw_vehicle(image, vehicle_data, ego_color)
+                # Draw the angle of the ego vehicle next to the frame counter
+                cv2.putText(image, f"Angle: {angle.round(4)}", (10, 40),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            elif target_id is not None and id == target_id:
+                draw_vehicle(image, vehicle_data, target_color)
+            else:
+                draw_vehicle(image, vehicle_data, other_color)
+
+        return image
+
+
+    @staticmethod
     def draw_frame(image, tracks, frame_id,
                    ego_id=None, target_id=None,
                    ego_color=(255, 0, 0), target_color=(0, 255, 0), other_color=(0, 0, 255)):
@@ -400,7 +445,7 @@ class GIF():
         images = []
 
         for i in range(start_frame, end_frame + 1):
-            img = GIF.draw_frame(image=image, tracks=df, frame_id=i,
+            img = GIF.draw_frame_with_angle(image=image, tracks=df, frame_id=i,
                                         ego_id=agent_id,
                                         ego_color=(0, 255, 0))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

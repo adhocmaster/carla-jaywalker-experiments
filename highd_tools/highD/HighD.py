@@ -42,7 +42,7 @@ class HighD:
                 'x', 'y', 'width', 'height', 'xVelocity', 'yVelocity', 'xAcceleration', 'yAcceleration',
                 'frontSightDistance', 'backSightDistance', 'dhw', 'thw', 'ttc', 'precedingXVelocity',
                 'precedingId', 'followingId', 'leftPrecedingId', 'leftAlongsideId', 'leftFollowingId',
-                'rightPrecedingId', 'rightAlongsideId', 'rightFollowingId'
+                'rightPrecedingId', 'rightAlongsideId', 'rightFollowingId', 'angle'
             ]]
             combined_dfs.append(combined_df)
 
