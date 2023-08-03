@@ -5,7 +5,14 @@ from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisua
 # from lib.SimulationMode import SimulationMode
 
 class BaseResearch(ClientUser):
-    def __init__(self, name, client: carla.Client, mapName, logLevel, outputDir:str = "logs", simulationMode = SimulationMode.ASYNCHRONOUS) -> None:
+    def __init__(
+            self, 
+            name, 
+            client: carla.Client, 
+            mapName, logLevel, 
+            outputDir:str = "logs", 
+            simulationMode = SimulationMode.ASYNCHRONOUS
+        ) -> None:
         super().__init__(client)
 
         self.name = name

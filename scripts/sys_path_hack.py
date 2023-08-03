@@ -4,6 +4,9 @@ if __name__ == "__main__" and __package__ is None:
     import os
     from os.path import dirname as dir
 
-    path.append(dir(path[0]))
-    os.chdir(dir(path[0]))
+    parentdir = dir(path[0])
+    # path.append(parentdir)
+    
+    path.insert(0, parentdir)
+    os.chdir(parentdir)
     __package__ = "scripts"

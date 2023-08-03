@@ -1,5 +1,6 @@
 import math
 from random import random
+from agents.pedestrians.factors.InternalFactors import InternalFactors
 import numpy as np
 import time
 import carla
@@ -78,6 +79,10 @@ class PedestrianAgent(InfoAgent):
     @property
     def obstacleManager(self):
         return self._localPlanner.obstacleManager
+    
+    @property
+    def internalFactors(self) -> InternalFactors:
+        return self._localPlanner.internalFactors
     
     def setEgoVehicle(self, vehicle: carla.Vehicle):
         self.actorManager.setEgoVehicle(vehicle)

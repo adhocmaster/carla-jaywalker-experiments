@@ -16,7 +16,7 @@ from lib import MapNames
     help='Number of ticks the simulator will run'
     )
 def r1v1m2Default(max_ticks):
-    research = ResearchFactory.createResearch1v1NavPathModel(map=MapNames.varied_width_lanes, defaultLogLevel=logging.WARN, settingsId="setting1")
+    research = ResearchFactory.createResearch4v4(map=MapNames.varied_width_lanes, defaultLogLevel=logging.WARN, settingsId="setting1")
     research.maxStepsPerCrossing = max_ticks
     research.run(maxTicks=max_ticks)
 

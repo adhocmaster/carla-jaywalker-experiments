@@ -37,7 +37,7 @@ class CrosswalkModel:
         if self.areaPolygon == None:
             self.createPolygon()
 
-        if ("use_random_destination_without_intermediates" in self.internalFactors) and (not self.internalFactors["use_random_destination_without_intermediates"]):
+        if ("crosswalk_area_model_intermediates" in self.internalFactors) and (self.internalFactors["crosswalk_area_model_intermediates"]):
             self.__initGeomery()
         else:
             self.__setRandomDestination()
