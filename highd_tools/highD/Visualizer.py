@@ -269,6 +269,7 @@ class GIF():
             width = int(df_bbox['width'])
             height = int(df_bbox['height'])
             angle = vehicle_data['angle'].iloc[0]
+            driving_direction = vehicle_data['drivingDirection'].iloc[0]
 
             # Create a separate image to draw the car
             car_img = np.zeros_like(image)
@@ -289,12 +290,18 @@ class GIF():
             # Draw the angle of the vehicle in a slightly larger font
             cv2.putText(image, f"Angle: {angle.round(2)}", (x, y - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)
-            
+
             # Draw line representing the angle of movement
             start_point = (x + width // 2, y + height // 2)
-            end_point = (int(start_point[0] + 30 * math.cos(math.radians(-angle))), 
-                        int(start_point[1] + 30 * math.sin(math.radians(-angle))))
-            cv2.arrowedLine(image, start_point, end_point, color, 2, tipLength = 0.1)
+            # Use driving direction and sign of the angle to set end_point
+            angle_rad = math.radians(angle)
+            angle_direction = 1 if angle < 0 else -1
+            driving_direction = 1 if driving_direction == 2 else -1
+
+            end_point = (int(start_point[0] + 40 * math.cos(angle_rad) * driving_direction), 
+            int(start_point[1] - 40 * math.sin(angle_rad) * angle_direction * driving_direction))
+
+            cv2.arrowedLine(image, start_point, end_point, color, 1, tipLength = 0.2)
 
             return image
 
@@ -312,7 +319,6 @@ class GIF():
                 image = draw_vehicle(image, vehicle_data, other_color)
 
         return image
-
 
     @staticmethod
     def draw_frame(image, tracks, frame_id,
