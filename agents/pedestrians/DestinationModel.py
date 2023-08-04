@@ -78,7 +78,7 @@ class DestinationModel(ForceModel):
         return self._nextDestination
     
     def addNavPathModel(self, navPath: NavPath):
-        print("addNavPathModel")
+        # print("addNavPathModel")
         self.navPathModel = NavPathModel(
             agent = self.agent,
             internalFactors=self.internalFactors,
@@ -94,7 +94,7 @@ class DestinationModel(ForceModel):
 
     def addCrossWalkAreaModel(self):
 
-        print("addCrossWalkAreaModel")
+        # print("addCrossWalkAreaModel")
         self.crosswalkModel = CrosswalkModel(
             agent = self.agent,
             internalFactors=self.internalFactors,

@@ -14,7 +14,7 @@ varied_width_lanes_settings = {
             (-64.0, 30, -55, 30),
         ],
         "spectator_settings": {
-            "x": -105.2,
+            "x": -90.2,
             "y": 30,
             "z": 50,
             "pitch": -90,

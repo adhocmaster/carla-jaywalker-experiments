@@ -34,7 +34,7 @@ class TimeGapModel(GapModel):
 
         timeGap = self.getAvailableGap()
 
-        self.logger.info(f"Time gap is {timeGap} seconds")
+        self.logger.warn(f"Time gap is {timeGap} seconds")
         if timeGap is None:
             return True
             

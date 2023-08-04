@@ -116,7 +116,8 @@ class NavPathModel():
         vehicleTravelD = currentDToVehicle - requiredDToVehicle
         if vehicleTravelD < 0:
             # return self.agent.getOldVelocity()
-            raise Exception(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
+            self.logger.warn(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
+            return None
         
         # vehicle may stop
         vehicleSpeed = vehicle.get_velocity().length()

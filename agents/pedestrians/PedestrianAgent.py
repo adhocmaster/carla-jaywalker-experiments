@@ -253,6 +253,9 @@ class PedestrianAgent(InfoAgent):
         print("Collision location", self.collisionSensor.get_location())
         print("Obstacle detector location", self.obstacleDetector.get_location())
 
+    def getStopControl(self):
+        return self._localPlanner.getStopControl()
+
     def calculateControl(self):
         if self.destination is None:
             raise Exception("Destination is none")
@@ -265,7 +268,7 @@ class PedestrianAgent(InfoAgent):
             if self.debug:
                 self.logger.info(f"Pedestrian is {self.state}.")
                 self.visualiseState()
-            return self._localPlanner.getStopControl()
+            return self.getStopControl()
 
         # if self.isFinished():
         #     self.visualiseState()
@@ -289,7 +292,7 @@ class PedestrianAgent(InfoAgent):
             self.visualiseState()
             self.visualiseForces()
         
-        self.visualiseForces()
+        # self.visualiseForces()
         self.visualiseState()
 
         return control
