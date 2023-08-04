@@ -1,7 +1,12 @@
 from abc import abstractmethod
+import logging
+from typing import Tuple
+from agents.navigation.behavior_agent import BehaviorAgent
+from agents.pedestrians.PedestrianAgent import PedestrianAgent
 import carla
 import os
 from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, NotImplementedInterface, SimulationMode
+from settings.SourceDestinationPair import SourceDestinationPair
 # from lib.SimulationMode import SimulationMode
 
 class BaseResearch(ClientUser):
@@ -105,5 +110,132 @@ class BaseResearch(ClientUser):
     @abstractmethod
     def setupSimulator(self):
         raise NotImplementedInterface("setupSimulator")
+    
+
+    # utility methods
+    
+    
+    def createVehicle(self, vehicleSetting: SourceDestinationPair, maxSpeed: float, logLevel=logging.INFO) -> Tuple[carla.Vehicle, BehaviorAgent]:
+        vehicleSpawnPoint = self.settingsManager.locationToVehicleSpawnPoint(vehicleSetting.source)
+        
+        vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)       
+        if vehicle is None:
+            self.logger.error("Cannot spawn vehicle")
+            exit("Cannot spawn vehicle")
+        else:
+            self.logger.info(f"successfully spawn vehicle at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")
+
+        self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
+
+        vehicleAgent = self.vehicleFactory.createSpeedControlledBehaviorAgent(vehicle, max_speed=maxSpeed, behavior='normal', logLevel=logLevel)
+
+        spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
+
+        destination = vehicleSetting.destination
+        vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
+
+        # raise Exception("stop")
+        plan = vehicleAgent.get_local_planner().get_plan()
+        # Utils.draw_trace_route(self._vehicle.get_world().debug, plan)
+        self.visualizer.drawTraceRoute(plan, color=(10, 10, 0, 0), life_time=15.0)
+        self.visualizer.drawDestinationPoint(destination, color=(0, 0, 255, 0), life_time=15.0)
+
+        return vehicle, vehicleAgent
+    
+    def createWalker(self, walkerSetting: SourceDestinationPair) -> Tuple[carla.Walker, PedestrianAgent]:
+
+        walkerSpawnPoint = carla.Transform(location = walkerSetting.source)
+        
+        self.visualizer.drawWalkerNavigationPoints([walkerSpawnPoint])
+
+
+        walker = self.pedFactory.spawn(walkerSpawnPoint)
+
+        if walker is None:
+            self.logger.error("Cannot spawn walker")
+            exit("Cannot spawn walker")
+        else:
+            self.logger.info(f"successfully spawn walker {walker.id} at {walkerSpawnPoint.location.x, walkerSpawnPoint.location.y, walkerSpawnPoint.location.z}")
+            self.logger.info(walker.get_control())
+            
+            # visualizer.trackOnTick(walker.id, {"life_time": 1})      
+        
+        # self.world.wait_for_tick() # otherwise we can get wrong agent location!
+        self.tickOrWaitBeforeSimulation()
+
+
+        walkerAgent = self.pedFactory.createAgent(walker=walker, logLevel=self.logLevel, optionalFactors=[], config=None)
+
+        walkerDestination = walkerSetting.destination
+        walkerAgent.setDestination(walkerDestination)
+        self.visualizer.drawDestinationPoint(walkerDestination, life_time=15.0)
+
+        self.setWalkerDebugSettings(walkerAgent, walkerSetting)
+
+        return walker, walkerAgent
+
+
+    def setWalkerDebugSettings(self, walkerAgent: PedestrianAgent, walkerSetting: SourceDestinationPair):
+        walkerSpawnPoint = carla.Transform(location = walkerSetting.source)
+
+        walkerAgent.debug = False
+        walkerAgent.updateLogLevel(logging.WARN)
+
+        visualizationForceLocation = self.settingsManager.getVisualizationForceLocation()
+        if visualizationForceLocation is None:
+            visualizationForceLocation = walkerSpawnPoint.location
+        
+        visualizationInfoLocation = carla.Location(x=visualizationForceLocation.x + 2, y=visualizationForceLocation.y + 2, z=visualizationForceLocation.z)
+
+        
+        walkerAgent.visualizationForceLocation = visualizationForceLocation
+        walkerAgent.visualizationInfoLocation = visualizationInfoLocation
 
     
+    def updateWalker(self, world_snapshot, walkerAgent: PedestrianAgent, walker: carla.Walker):
+
+        # print("updateWalker")
+        if not walker.is_alive:
+            return
+        
+        if walkerAgent is None:
+            self.logger.warn(f"No walker to update")
+            return
+
+        if walkerAgent.isFinished():
+            self.logger.warn(f"Walker {walkerAgent.walker.id} reached destination")
+            walker.apply_control(walkerAgent.getStopControl())
+            return
+        
+        control = walkerAgent.calculateControl()
+        # print("apply_control")
+        walker.apply_control(control)
+            
+    def updateVehicle(self, world_snapshot, vehicleAgent: BehaviorAgent, vehicle: carla.Vehicle):
+        if not vehicle.is_alive:
+            return
+
+        if vehicleAgent is None:
+            self.logger.warn(f"No vehicle to update")
+            return 
+
+        if vehicleAgent.done():
+            self.logger.info(f"vehicle {vehicle.id} reached destination")
+            vehicle.apply_control(carla.VehicleControl())
+            return
+
+        
+        control = vehicleAgent.run_step()
+        control.manual_gear_shift = False
+        self.logger.info(control)
+        vehicle.apply_control(control)
+        pass
+
+    
+    
+    def destoryActors(self):
+        
+        self.logger.info('\ndestroying  walkers')
+        self.pedFactory.reset()
+        self.logger.info('\ndestroying  vehicles')
+        self.vehicleFactory.reset()
