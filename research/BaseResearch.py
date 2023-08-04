@@ -1,5 +1,7 @@
 from abc import abstractmethod
 import logging
+import random
+import numpy as np
 from typing import Tuple
 from agents.navigation.behavior_agent import BehaviorAgent
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
@@ -115,9 +117,26 @@ class BaseResearch(ClientUser):
     # utility methods
     
     
-    def createVehicle(self, vehicleSetting: SourceDestinationPair, maxSpeed: float, logLevel=logging.INFO) -> Tuple[carla.Vehicle, BehaviorAgent]:
+    def createVehicle(
+            self, 
+            vehicleSetting: SourceDestinationPair, 
+            maxSpeed: float, 
+            logLevel=logging.INFO, 
+            randomizeSpawnPoint=False
+        ) -> Tuple[carla.Vehicle, BehaviorAgent]:
+        
         vehicleSpawnPoint = self.settingsManager.locationToVehicleSpawnPoint(vehicleSetting.source)
         
+        if randomizeSpawnPoint:
+            currentWp = self.map.get_waypoint(vehicleSpawnPoint.location)
+            distance = random.random() * 10 # 0 to 10 meter gap
+            # vehicleSpawnPoint = currentWp.next(distance)[0].transform
+            if np.random.choice([True, False]): # back for forward
+                vehicleSpawnPoint = currentWp.next(distance)[0].transform
+            else:
+                vehicleSpawnPoint = currentWp.previous(distance)[0].transform
+            vehicleSpawnPoint.location += carla.Location(z=1)
+
         vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)       
         if vehicle is None:
             self.logger.error("Cannot spawn vehicle")
@@ -227,7 +246,7 @@ class BaseResearch(ClientUser):
         
         control = vehicleAgent.run_step()
         control.manual_gear_shift = False
-        self.logger.info(control)
+        self.logger.debug(control)
         vehicle.apply_control(control)
         pass
 

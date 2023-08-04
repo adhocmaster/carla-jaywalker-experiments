@@ -160,54 +160,9 @@ class Research1v1(SettingBasedResearch):
 
     def createWalker(self):
         
-        self.visualizer.drawWalkerNavigationPoints([self.walkerSpawnPoint])
-
-
-        self.walker = self.pedFactory.spawn(self.walkerSpawnPoint)
-
-        if self.walker is None:
-            self.logger.error("Cannot spawn walker")
-            exit("Cannot spawn walker")
-        else:
-            self.logger.info(f"successfully spawn walker {self.walker.id} at {self.walkerSpawnPoint.location.x, self.walkerSpawnPoint.location.y, self.walkerSpawnPoint.location.z}")
-            self.logger.info(self.walker.get_control())
-            
-            # visualizer.trackOnTick(walker.id, {"life_time": 1})      
-        
-        # self.world.wait_for_tick() # otherwise we can get wrong agent location!
-        self.tickOrWaitBeforeSimulation()
-
-
-        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=self.logLevel, optionalFactors=self.optionalFactors, config=None)
-
-        self.walkerAgent.setDestination(self.walkerDestination)
-        self.visualizer.drawDestinationPoint(self.walkerDestination, life_time=15.0)
-        self.walkerAgent.setEgoVehicle(self.vehicle)
-
-
-        # self.setWalkerNavPath()
-        self.setWalkerDebugSettings()
-        # self.walkerAgent.debug = False
-
-        # self.walkerAgent.updateLogLevel(logging.INFO)
-
+        self.walker, self.walkerAgent = super().createWalker(self.getWalkerSetting())
 
         pass
-
-    def setWalkerDebugSettings(self):
-        self.walkerAgent.debug = False
-        self.walkerAgent.updateLogLevel(logging.WARN)
-
-        visualizationForceLocation = self.settingsManager.getVisualizationForceLocation()
-        if visualizationForceLocation is None:
-            visualizationForceLocation = self.walkerSpawnPoint.location
-        
-        visualizationInfoLocation = carla.Location(x=visualizationForceLocation.x + 2, y=visualizationForceLocation.y + 2, z=visualizationForceLocation.z)
-
-        
-        self.walkerAgent.visualizationForceLocation = visualizationForceLocation
-        self.walkerAgent.visualizationInfoLocation = visualizationInfoLocation
-
 
 
     def getWalkerCrossingAxisRotation(self):
@@ -219,47 +174,8 @@ class Research1v1(SettingBasedResearch):
 
     
     def createVehicle(self, randomizeSpawnPoint=False):
-        vehicleSpawnPoint = self.vehicleSpawnPoint
-        # vehicleSpawnPoint = random.choice(self.mapManager.spawn_points)
-        # randomize spawn point
-        if randomizeSpawnPoint:
-            currentWp = self.map.get_waypoint(vehicleSpawnPoint.location)
-            distance = random.random() * 10 # 0 to 10 meter gap
-            # vehicleSpawnPoint = currentWp.next(distance)[0].transform
-            if np.random.choice([True, False]): # back for forward
-                vehicleSpawnPoint = currentWp.next(distance)[0].transform
-            else:
-                vehicleSpawnPoint = currentWp.previous(distance)[0].transform
-            vehicleSpawnPoint.location += carla.Location(z=1)
-
-        self.vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)       
-        if self.vehicle is None:
-            self.logger.error("Cannot spawn vehicle")
-            exit("Cannot spawn vehicle")
-        else:
-            self.logger.info(f"successfully spawn vehicle at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")
-
-        self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
-
-        # self.vehicleAgent = self.vehicleFactory.createAgent(self.vehicle, target_speed=20, logLevel=logging.DEBUG)
-        # self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='cautious', logLevel=logging.DEBUG)
-        max_speed = random.choice([7, 12, 17, 22])
-        self.vehicleAgent = self.vehicleFactory.createSpeedControlledBehaviorAgent(self.vehicle, max_speed=max_speed, behavior='normal', logLevel=logging.INFO)
-
-        spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
-
-        destination = self.vehicleSetting.destination
-
-
-        self.vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
-        # raise Exception("stop")
-        plan = self.vehicleAgent.get_local_planner().get_plan()
-        # Utils.draw_trace_route(self._vehicle.get_world().debug, plan)
-        self.visualizer.drawTraceRoute(plan, color=(10, 10, 0, 0), life_time=15.0)
-        self.visualizer.drawDestinationPoint(destination, color=(0, 0, 255, 0), life_time=15.0)
-
-        pass
-
+        maxSpeed = random.choice([10, 14, 18, 22])
+        self.vehicle, self.vehicleAgent = super().createVehicle(self.getVehicleSetting(), maxSpeed=maxSpeed, randomizeSpawnPoint=randomizeSpawnPoint)
 
 
     def recreateVehicle(self):
@@ -415,8 +331,8 @@ class Research1v1(SettingBasedResearch):
 
         self.walkerAgent.onTickStart(world_snapshot)
 
-        self.updateWalker(world_snapshot)
-        self.updateVehicle(world_snapshot)
+        self.updateWalker(world_snapshot, self.walkerAgent, self.walker)
+        self.updateVehicle(world_snapshot, self.vehicleAgent, self.vehicle)
 
         # draw waypoints upto walker
         # self.drawWaypointsToWalker()
@@ -429,52 +345,6 @@ class Research1v1(SettingBasedResearch):
         self.logger.info(f"Arc distance to pedestrian {Utils.getDistanceCoveredByWaypoints(waypoints)}")
     
     
-    def updateWalker(self, world_snapshot):
-
-        # print("updateWalker")
-
-        if self.walkerAgent is None:
-            self.logger.warn(f"No walker to update")
-            return
-
-        if self.walkerAgent.isFinished():
-            self.logger.warn(f"Walker {self.walkerAgent.walker.id} reached destination")
-            # self.logger.warn(f"Walker {self.walkerAgent.walker.id} reached destination. Going back")
-            # if walkerAgent.destination == walkerSetting.destination:
-            #     walkerAgent.set_destination(walkerSetting.source)
-            #     visualizer.drawDestinationPoint(destination)
-            # else:
-            #     walkerAgent.set_destination(walkerSetting.destination)
-            #     visualizer.drawDestinationPoint(destination)
-            # return
-        
-        # print("canUpdate")
-        # if self.walkerAgent.canUpdate():
-        control = self.walkerAgent.calculateControl()
-        # print("apply_control")
-        self.walker.apply_control(control)
-            
-    def updateVehicle(self, world_snapshot):
-
-        if self.vehicleAgent is None:
-            self.logger.warn(f"No vehicle to update")
-            return 
-
-        if self.vehicleAgent.done():
-            # destination = random.choice(self.mapManager.spawn_points).location
-            # self.vehicleAgent.set_destination(destination, self.vehicle.get_location())
-            # self.vehicleAgent.set_destination(destination)
-            self.logger.info("vehicle reached destination")
-            # self.visualizer.drawDestinationPoint(destination)
-            return carla.VehicleControl()
-
-        
-        control = self.vehicleAgent.run_step()
-        control.manual_gear_shift = False
-        self.logger.info(control)
-        self.vehicle.apply_control(control)
-        pass
-
     #region stats
 
     def updateStatDataframe(self):
