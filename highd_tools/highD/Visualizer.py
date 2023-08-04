@@ -4,6 +4,7 @@ import time
 import cv2
 import numpy as np
 import pandas as pd
+import math
 
 SCALE_FACTOR = 4 * 0.10106
 
@@ -247,6 +248,7 @@ class GIF():
     def draw_frame_with_angle(image, tracks, frame_id,
                 ego_id=None, target_id=None,
                 ego_color=(255, 0, 0), target_color=(0, 255, 0), other_color=(0, 0, 255)):
+
         # Filter the frame data
         tracks = tracks[tracks['frame'] == frame_id]
 
@@ -266,7 +268,35 @@ class GIF():
             y = int(df_bbox['y'])
             width = int(df_bbox['width'])
             height = int(df_bbox['height'])
-            cv2.rectangle(image, (x, y), (x + width, y + height), color, 2)
+            angle = vehicle_data['angle'].iloc[0]
+
+            # Create a separate image to draw the car
+            car_img = np.zeros_like(image)
+
+            # Draw the car onto the separate image
+            car_rect = ((x + width // 2, y + height // 2), (width, height), 0)
+            cv2.ellipse(car_img, car_rect, color, -1)
+
+            # Get the rotation matrix
+            M = cv2.getRotationMatrix2D((x + width // 2, y + height // 2), -angle, 1)
+
+            # Apply the rotation to the car image
+            car_img = cv2.warpAffine(car_img, M, (image.shape[1], image.shape[0]))
+
+            # Add the rotated car image to the original image
+            image = cv2.add(image, car_img)
+
+            # Draw the angle of the vehicle in a slightly larger font
+            cv2.putText(image, f"Angle: {angle.round(2)}", (x, y - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)
+            
+            # Draw line representing the angle of movement
+            start_point = (x + width // 2, y + height // 2)
+            end_point = (int(start_point[0] + 30 * math.cos(math.radians(-angle))), 
+                        int(start_point[1] + 30 * math.sin(math.radians(-angle))))
+            cv2.arrowedLine(image, start_point, end_point, color, 2, tipLength = 0.1)
+
+            return image
 
         # Draw the frame number on the image
         cv2.putText(image, f"F: {frame_id}", (10, 20),
@@ -274,16 +304,12 @@ class GIF():
 
         for id in agent_ids:
             vehicle_data = tracks[tracks['id'] == id]
-            angle = vehicle_data['angle'].iloc[0] # Assuming 'angle' is the name of the column
             if ego_id is not None and id == ego_id:
-                draw_vehicle(image, vehicle_data, ego_color)
-                # Draw the angle of the ego vehicle next to the frame counter
-                cv2.putText(image, f"Angle: {angle.round(4)}", (10, 40),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                image = draw_vehicle(image, vehicle_data, ego_color)
             elif target_id is not None and id == target_id:
-                draw_vehicle(image, vehicle_data, target_color)
+                image = draw_vehicle(image, vehicle_data, target_color)
             else:
-                draw_vehicle(image, vehicle_data, other_color)
+                image = draw_vehicle(image, vehicle_data, other_color)
 
         return image
 
