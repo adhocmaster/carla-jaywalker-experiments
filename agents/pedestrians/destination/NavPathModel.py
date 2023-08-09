@@ -213,7 +213,7 @@ class NavPathModel():
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=1.0, color=(0, 255, 255), coords=False, life_time=20.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=0.25, color=(0, 255, 255), coords=False, life_time=20.0)
 
     def getNextDestinationPoint(self):
 
