@@ -53,7 +53,8 @@ if client.get_client_version() != client.get_server_version():
 
 
 mapManager = MapManager(client)
-mapManager.load(MapNames.varied_width_lanes)
+# mapManager.load(MapNames.varied_width_lanes)
+mapManager.load(MapNames.roundabout1)
 # mapManager.load(MapNames.t_junction)
 # mapManager.load(MapNames.circle_t_junctions, forceReload=True)
 

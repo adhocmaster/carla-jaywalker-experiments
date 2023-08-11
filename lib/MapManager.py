@@ -10,6 +10,7 @@ class MapNames(Enum):
     t_junction = 't_junction'
     straight_road_with_parking = 'straight'
     varied_width_lanes = 'varied_width_lanes'
+    roundabout1 = 'roundabout1'
     # Town01 = 'Town01'
     # Town02 = 'Town02'
     # Town03 = 'Town03'
