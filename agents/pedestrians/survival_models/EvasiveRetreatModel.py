@@ -43,7 +43,10 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         # 1. return to crossing is safe destination is reached 
         if self.canSwitchToCrossing(TG, TTX):
             return PedState.CROSSING
-               
+        
+        if TG is None:
+            return None
+        
 
 
         # 2. any other state means, we need to reset the safe destination
