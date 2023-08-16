@@ -1,5 +1,5 @@
 
-from agents.pedestrians.soft import NavPointLocation, NavPointBehavior, LaneSection, Direction, NavPath, NavPoint
+from agents.pedestrians.soft import *
 from research.Research1v1 import Research1v1
 
 
@@ -9,17 +9,22 @@ class Research1v1NavPathModel(Research1v1):
     def createWalker(self):
         
         super().createWalker()
+        
+        self.walkerAgent.setEgoVehicle(self.vehicle)
         self.setWalkerNavPath()
         pass
 
     
     def resetWalker(self, sameOrigin=True):
         super().resetWalker()
+        
+        self.walkerAgent.setEgoVehicle(self.vehicle)
         self.setWalkerNavPath()
         pass
 
     
     def setWalkerNavPath(self):
+        
         point1 = NavPoint(
             NavPointLocation(
                 laneId=-1,
@@ -28,8 +33,7 @@ class Research1v1NavPathModel(Research1v1):
                 distanceToInitialEgo=24.0, 
             ),
             NavPointBehavior(
-                speed=1,
-                direction=Direction.LR
+                speed=1
             )
         )
 
@@ -41,8 +45,7 @@ class Research1v1NavPathModel(Research1v1):
                 distanceToInitialEgo=25.0, 
             ),
             NavPointBehavior(
-                speed=0.5,
-                direction=Direction.LR
+                speed=0.5
             )
         )
 
@@ -54,8 +57,7 @@ class Research1v1NavPathModel(Research1v1):
                 distanceToInitialEgo=25.0, 
             ),
             NavPointBehavior(
-                speed=0.1,
-                direction=Direction.LR
+                speed=0.1
             )
         )
 
@@ -68,21 +70,38 @@ class Research1v1NavPathModel(Research1v1):
                 distanceToInitialEgo=25.0, 
             ),
             NavPointBehavior(
-                speed=1,
-                direction=Direction.LR
+                speed=1
             )
         )
 
-        navPath = NavPath(
+
+        roadConfiguration = NavPathRoadConfiguration(
             roadWidth=2 * 3.5,
-            path=[point1, point2, point3, point4],
             nEgoDirectionLanes=1,
-            nEgoOppositeDirectionLanes=1,
+            nEgoOppositeDirectionLanes=1
+        )
+
+        egoConfiguration = NavPathEgoConfiguration(
+            egoLaneWrtCenter = 1,
+            egoSpeedStart=10,
+            egoSpeedEnd=20
+        )
+
+        pedConfiguration = NavPathPedestrianConfiguration(
+            
+            direction=Direction.LR,
             avgSpeed=0.5,
             maxSpeed=1.5,
-            minSpeed=0.0,
-            egoLaneWrtCenter = 1,
-            egoSpeedStart=20,
-            egoSpeedEnd=10
+            minSpeed=0.0
+        )
+            
+            
+
+        navPath = NavPath(
+            id="psi-002",
+            roadConfiguration=roadConfiguration,
+            egoConfiguration=egoConfiguration,
+            pedConfiguration=pedConfiguration,
+            path=[point1, point2, point3, point4]
         )
         self.walkerAgent.setNavPath(navPath)
