@@ -35,13 +35,14 @@ class Research4v4(SettingBasedResearch):
     
     def __init__(self, 
                  client: carla.Client, 
-                 mapName=MapNames.circle_t_junctions, 
+                 mapName=MapNames.varied_width_lanes, 
                  logLevel="INFO", 
                  outputDir:str = "logs", 
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
-                 maxStepsPerCrossing=200
+                 maxStepsPerCrossing=200,
+                 navPathFilePath="settings/nav_path_straight_road.json"
                  ):
 
         self.name = "Research4v4"
@@ -62,6 +63,7 @@ class Research4v4(SettingBasedResearch):
         self.vehicles: List[carla.Vehicle] = []
         self.vehicleAgents: List[BehaviorAgent] = []
 
+        self.navPathFilePath = navPathFilePath
         self._navPath = None
 
         self.setup()
@@ -73,85 +75,8 @@ class Research4v4(SettingBasedResearch):
     @property
     def navPath(self):
         if self._navPath is None:
-            point1 = NavPoint(
-                NavPointLocation(
-                    laneId=-1,
-                    laneSection=LaneSection.LEFT,
-                    distanceToEgo=24.0, 
-                    distanceToInitialEgo=24.0, 
-                ),
-                NavPointBehavior(
-                    speed=1
-                )
-            )
-
-            point2 = NavPoint(
-                NavPointLocation(
-                    laneId=-1,
-                    laneSection=LaneSection.MIDDLE,
-                    distanceToEgo=7.0, 
-                    distanceToInitialEgo=25.0, 
-                ),
-                NavPointBehavior(
-                    speed=0.5
-                )
-            )
-
-            point3 = NavPoint(
-                NavPointLocation(
-                    laneId=-1,
-                    laneSection=LaneSection.MIDDLE,
-                    distanceToEgo=1.0, 
-                    distanceToInitialEgo=25.0, 
-                ),
-                NavPointBehavior(
-                    speed=0.1
-                )
-            )
-
-
-            point4 = NavPoint(
-                NavPointLocation(
-                    laneId=0,
-                    laneSection=LaneSection.LEFT,
-                    distanceToEgo=-1, 
-                    distanceToInitialEgo=25.0, 
-                ),
-                NavPointBehavior(
-                    speed=1
-                )
-            )
-
-
-            roadConfiguration = NavPathRoadConfiguration(
-                roadWidth=2 * 3.5,
-                nEgoDirectionLanes=1,
-                nEgoOppositeDirectionLanes=1
-            )
-
-            egoConfiguration = NavPathEgoConfiguration(
-                egoLaneWrtCenter = 1,
-                egoSpeedStart=10,
-                egoSpeedEnd=20
-            )
-
-            pedConfiguration = NavPathPedestrianConfiguration(
-                
-                direction=Direction.LR,
-                avgSpeed=0.5,
-                maxSpeed=1.5,
-                minSpeed=0.0
-            )
-                
-                
-
-            self._navPath = NavPath(
-                id="psi-002",
-                roadConfiguration=roadConfiguration,
-                egoConfiguration=egoConfiguration,
-                pedConfiguration=pedConfiguration,
-                path=[point1, point2, point3, point4]
-            )
+            navPaths = self.settingsManager.getNavPaths(self.navPathFilePath)
+            self._navPath = random.choice(navPaths)
 
         return self._navPath
     

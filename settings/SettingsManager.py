@@ -1,7 +1,9 @@
+import json
 import carla
 import logging
 
 from matplotlib import transforms
+from agents.pedestrians.soft import NavObjectMapper, NavPath
 from lib.ClientUser import ClientUser
 from .SourceDestinationPair import SourceDestinationPair
 from typing import List, Optional
@@ -219,6 +221,11 @@ class SettingsManager(ClientUser):
             y = self.currentSetting["visualization_force_location"]["y"],
             z = self.currentSetting["visualization_force_location"]["z"]
         )
+    
+    def getNavPaths(self, filePath: str) -> List[NavPath]:
+        with open(filePath, "r") as f:
+            dicts = json.loads(f.read())
+            return NavObjectMapper.pathsFromDicts(dicts)
     
     
         

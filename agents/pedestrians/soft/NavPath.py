@@ -59,6 +59,11 @@ class NavPath:
     
     
     @property
+    def direction(self):
+        return self.pedConfiguration.direction
+    
+    
+    @property
     def avgSpeed(self):
         return self.pedConfiguration.avgSpeed
     

@@ -5,7 +5,7 @@ from agents.pedestrians.soft import LaneSection, NavObjectMapper
 
 @pytest.fixture()
 def navPathJSON() -> str:
-    path = "settings/nav_path.json"
+    path = "settings/nav_path_straight_road.json"
     with open(path, "r") as f:
         return f.read()
     

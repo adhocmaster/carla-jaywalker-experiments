@@ -10,6 +10,7 @@ from datetime import date
 
 from agents.pedestrians.soft import Direction, LaneSection, NavPath, NavPoint
 from research.SettingBasedResearch import SettingBasedResearch
+from settings.SourceDestinationPair import SourceDestinationPair
 
 from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
@@ -111,9 +112,8 @@ class Research1v1(SettingBasedResearch):
 
         self.walker = None
         self.walkerAgent = None
-        self.walkerSetting = self.getWalkerSetting()
-        self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source)
-        self.walkerDestination = self.walkerSetting.destination
+        self._walkerSetting = None
+        # self.walkerSetting = self.getWalkerSetting()
 
     
 
@@ -148,19 +148,29 @@ class Research1v1(SettingBasedResearch):
     
     #region actor generation
 
-    def getWalkerSetting(self):
-        walkerSettings = self.settingsManager.getWalkerSettings()
-        walkerSetting = walkerSettings[0]
-        return walkerSetting
+    @property
+    def walkerSetting(self):
+        return self._walkerSetting
+
+    def getWalkerSetting(self, reverse=False):
+        if self._walkerSetting is None:
+            walkerSettings = self.settingsManager.getWalkerSettings()
+            walkerSetting = walkerSettings[0]
+            if reverse:
+                walkerSetting = SourceDestinationPair(source=walkerSetting.destination, destination=walkerSetting.source)
+            
+            self._walkerSetting = walkerSetting
+
+        return self._walkerSetting
 
     def getVehicleSetting(self):
         vehicleSetting = self.settingsManager.getVehicleSettings()
         vehicleSetting = vehicleSetting[0]
         return vehicleSetting
 
-    def createWalker(self):
+    def createWalker(self, reverse=False):
         
-        self.walker, self.walkerAgent = super().createWalker(self.getWalkerSetting())
+        self.walker, self.walkerAgent = super().createWalker(self.getWalkerSetting(reverse=reverse))
 
         pass
 
