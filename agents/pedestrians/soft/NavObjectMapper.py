@@ -28,7 +28,7 @@ class NavObjectMapper:
         print(pathDic['egoConfiguration'])
         egoConfiguration = from_dict(data_class=NavPathEgoConfiguration, data=pathDic['egoConfiguration'])
         print(pathDic['pedConfiguration'])
-        pedConfiguration = from_dict(data_class=NavPathPedestrianConfiguration, data=pathDic['pedConfiguration'])
+        pedConfiguration = from_dict(data_class=NavPathPedestrianConfiguration, data=pathDic['pedConfiguration'], config=Config(cast=[Enum]))
         path = [NavObjectMapper.pointFromDict(pointDic) for pointDic in pathDic['path']]
 
         return NavPath(

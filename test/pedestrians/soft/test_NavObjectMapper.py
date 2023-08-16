@@ -17,7 +17,7 @@ def test_jsonToNavPaths(navPathJSON):
     print(navPaths)
     assert len(navPaths) > 0
     firstPah = navPaths[0]
-    assert firstPah.id == 1
+    assert firstPah.id == "psi-002"
     assert firstPah.roadWidth == 7.0
     assert firstPah.nEgoDirectionLanes == 1
     assert firstPah.nEgoOppositeDirectionLanes == 1

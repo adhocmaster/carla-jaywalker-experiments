@@ -1,6 +1,7 @@
 from typing import List
 
 from dataclasses import dataclass, field
+from agents.pedestrians.soft.Direction import Direction
 
 from agents.pedestrians.soft.NavPoint import NavPoint
 
@@ -21,6 +22,7 @@ class NavPathPedestrianConfiguration:
     avgSpeed: float
     maxSpeed: float
     minSpeed: float
+    direction: Direction
 
 class NavPath:
 

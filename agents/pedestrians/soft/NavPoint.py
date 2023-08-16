@@ -18,7 +18,7 @@ class NavPointLocation:
 @dataclass
 class NavPointBehavior:
     speed: float = None
-    direction: Direction = None
+    # direction: Direction = None
     behaviorTags: Set[BehaviorType] = field(default_factory=set)
 
 
@@ -41,7 +41,8 @@ class NavPoint:
         return (
             f"{self.laneId}: {self.laneSection}"
             f"\n{self.distanceToEgo}: {self.distanceToInitialEgo}"
-            f"\nspeed: {self.speed}, direction: {self.direction}"
+            # f"\nspeed: {self.speed}, direction: {self.direction}"
+            f"\nspeed: {self.speed}"
             f"\ntags: {self.behaviorTags}"
         )
     
@@ -65,9 +66,9 @@ class NavPoint:
     def speed(self) -> float:
         return self.behavior.speed
     
-    @property
-    def direction(self) -> Direction:
-        return self.behavior.direction
+    # @property
+    # def direction(self) -> Direction:
+    #     return self.behavior.direction
 
     @property
     def behaviorTags(self) -> Set[BehaviorType]:
