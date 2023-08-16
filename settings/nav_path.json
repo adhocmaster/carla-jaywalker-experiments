@@ -98,35 +98,35 @@
             },
             {
                 "location": {
-                    "laneId": -1,
+                    "laneId": 0,
                     "laneSection": "MIDDLE",
-                    "distanceToEgo": 7.0,
-                    "distanceToInitialEgo": 25.0
+                    "distanceToEgo": 15.0,
+                    "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
-                    "speed": 0.5
-                }
-            },
-            {
-                "location": {
-                    "laneId": -1,
-                    "laneSection": "MIDDLE",
-                    "distanceToEgo": 1.0,
-                    "distanceToInitialEgo": 25.0
-                },
-                "behavior": {
-                    "speed": 0.1
+                    "speed": 0.2
                 }
             },
             {
                 "location": {
                     "laneId": 0,
-                    "laneSection": "LEFT",
-                    "distanceToEgo": 24.0,
-                    "distanceToInitialEgo": 24.0
+                    "laneSection": "RIGHT",
+                    "distanceToEgo": 6.0,
+                    "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
-                    "speed": 1
+                    "speed": 0.8
+                }
+            },
+            {
+                "location": {
+                    "laneId": 1,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 2.0,
+                    "distanceToInitialEgo": 20.0
+                },
+                "behavior": {
+                    "speed": 0.1
                 }
             }
         ]
