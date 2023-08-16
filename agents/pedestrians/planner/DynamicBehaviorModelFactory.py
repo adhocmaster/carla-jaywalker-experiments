@@ -39,10 +39,10 @@ class DynamicBehaviorModelFactory:
             return
         
         # remove conflicting behaviors first
-        # if behavior == BehaviorType.EVASIVE_RETREAT:
-        #     self.removeBehavior(agent, BehaviorType.EVASIVE_STOP)
-        # elif behavior == BehaviorType.EVASIVE_STOP:
-        #     self.removeBehavior(agent, BehaviorType.EVASIVE_RETREAT)
+        if behavior == BehaviorType.EVASIVE_RETREAT:
+            self.removeBehavior(agent, BehaviorType.EVASIVE_STOP)
+        elif behavior == BehaviorType.EVASIVE_STOP:
+            self.removeBehavior(agent, BehaviorType.EVASIVE_RETREAT)
 
         agent.currentBehaviors.add(behavior)
         self.__addModel(agent, behavior)

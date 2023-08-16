@@ -71,7 +71,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
             newState = model.getNewState()
             if newState is not None:
                 newStates.add(newState)
-                print(f"New state from {model.name} is {newState}")
+                # print(f"New state from {model.name} is {newState}")
         
         if len(newStates) > 1:
             states = [state.value for state in newStates]

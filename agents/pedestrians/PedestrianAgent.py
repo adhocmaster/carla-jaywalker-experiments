@@ -13,7 +13,7 @@ from lib import SimulationVisualization
 from .planner.PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 from .PedUtils import PedUtils
 from lib import Geometry, Utils
 
@@ -321,22 +321,22 @@ class PedestrianAgent(InfoAgent):
         if self.onSideWalk():
             return False
 
-        distance = self.distanceToNextSideWalk() 
+        distance = self.getDistanceToSidewalkAhead(rayLength=1) 
         if distance is None:
             self.logger.info(f"Distance to sidewalk is none!")
 
             return False
 
-        self.logger.info(f"current distance to sidewalk is {distance}")
+        self.logger.warn(f"current distance to sidewalk is {distance}")
         distance -= self.getOldSpeed() * self.time_delta
-        self.logger.info(f"after tick distance to sidewalk is {distance}")
+        self.logger.warn(f"after tick distance to sidewalk is {distance}")
 
         # walkerSpeed = self.getOldSpeed()
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
         # if distance < 0.2 and distance > 0.1:
         if distance < 0.2:
-            self.logger.info(f"after tick distance to sidewalk is {distance}. Can jump")
+            self.logger.warn(f"after tick distance to sidewalk is {distance}. Can jump")
             return True
         return False
 
@@ -353,8 +353,8 @@ class PedestrianAgent(InfoAgent):
 
         if self.canClimbSideWalk():
             self.updateJumped()
-            print((f"{self.name} climbing up a sidewalk."))
-            self.logger.info(f"{self.name} climbing up a sidewalk.")
+            # print((f"{self.name} climbing up a sidewalk."))
+            self.logger.warn(f"{self.name} climbing up a sidewalk.")
             # self._walker.add_force(carla.Vector3D(0, 0, 10))
             # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
             
@@ -398,19 +398,19 @@ class PedestrianAgent(InfoAgent):
         return False
 
 
-    def getObstaclesToDistance(self):
+    def getDistanceToSidewalkAhead(self, rayLength=3) -> Optional[float]:
         actorLocation = self._walker.get_location()
         actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
-        destinationXYLocation = carla.Location(x = self.destination.x, y = self.destination.y, z=0.05)
+        actorVelocity = self.getOldVelocity()
+        actorSpeed = actorVelocity.length()
+        if actorSpeed == 0:
+            return None
+                # based on forward vector of the old contorl
+        oldControl = self.getOldControl()
+        forwardVector = oldControl.direction * rayLength
+        destinationXYLocation = carla.Location(x = actorLocation.x + forwardVector.x, y = actorLocation.y + forwardVector.y, z=0.05)
         labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
-        # for lb in labeledObjects:
-        #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
-        return labeledObjects
-    
-    def distanceToNextSideWalk(self):
-        actorLocation = self._walker.get_location()
-        # actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
-        labeledObjects = self.getObstaclesToDistance()
+        # print(labeledObjects)
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
                 # if self.visualizer is not None and self.debug:
@@ -420,40 +420,48 @@ class PedestrianAgent(InfoAgent):
                 distance = actorLocation.distance_2d(lb.location)
                 self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
                 return distance
+
         return None
+
+
+    # def getObstaclesToDestination(self):
+    #     actorLocation = self._walker.get_location()
+    #     actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
+    #     destinationXYLocation = carla.Location(x = self.destination.x, y = self.destination.y, z=0.05)
+    #     labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
+    #     # for lb in labeledObjects:
+    #     #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
+    #     return labeledObjects
+    
+    # def distanceToNextSideWalk(self):
+    #     actorLocation = self._walker.get_location()
+    #     # actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
+    #     labeledObjects = self.getObstaclesToDestination()
+    #     for lb in labeledObjects:
+    #         if lb.label == carla.CityObjectLabel.Sidewalks:
+    #             # if self.visualizer is not None and self.debug:
+    #             #     self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
+    #             # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
+    #             # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
+    #             distance = actorLocation.distance_2d(lb.location)
+    #             self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
+    #             return distance
+    #     return None
 
     
     def hasReachedDestinationAlongLocalY(self, destination: carla.Location, tolerance: float):
         
+
         desVector = destination - self.location
 
         if desVector.length() < tolerance:
             return True
         
-        # overshoot check
+        # overshoot check. If destination vector is in the opposite direction of the local Y direction, then we have overshooted. This is causing problems.
         if abs(Utils.angleBetweenVectors(desVector, self.localYDirection)) > math.pi / 2:
             return True
         return False
 
-        localYToDest = abs(Utils.projectAonB2D(destination, self.localYDirection))
-        localYToCurrentLoc = abs(Utils.projectAonB2D(self.location, self.localYDirection))
-        self.logger.warn(f"localYDirection {self.localYDirection}")
-        self.logger.warn(f"destination {destination} and current location {self.location}")
-        self.logger.warn(f"localYToDest {localYToDest} and localYToCurrentLoc {localYToCurrentLoc}")
-
-        
-        self.visualizer.drawForce(self.location + carla.Location(x=2.0), self._localYDirection, color=(0,0,20), life_time=20.0)
-        self.visualizer.drawForce(self.location + carla.Location(x=4.0), desVector.make_unit_vector(), color=(0,20,0), life_time=20.0)
-
-        if localYToDest < localYToCurrentLoc: # overshooting
-            return True
-
-        d =  abs(localYToDest - localYToCurrentLoc)
-        # d =  agentLocation.distance_2d(nextDest)
-        self.logger.info(f"distance to destination is {d} meters")
-        if d < tolerance: # maybe a random value?
-            return True
-        return False
 
 
     #endregion

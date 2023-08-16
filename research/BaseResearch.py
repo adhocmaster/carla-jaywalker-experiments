@@ -80,20 +80,22 @@ class BaseResearch(ClientUser):
         self.configureMap()
         self.time_delta = 0.007
         settings = self.world.get_settings()
-        settings.synchronous_mode = False # Enables synchronous mode
+        settings.synchronous_mode = False # Enables asynchronous mode
         settings.substepping = False
         settings.fixed_delta_seconds = self.time_delta
+        print("applying settings", settings)
         self.world.apply_settings(settings)
         pass
 
     def initWorldSettingsSynchronousMode(self):
+        self.configureMap()
         self.time_delta = 0.04
         settings = self.world.get_settings()
         # settings.substepping = False # https://carla.readthedocs.io/en/latest/python_api/#carlaworldsettings
         settings.synchronous_mode = True # Enables synchronous mode
         settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
+        print("applying settings", settings)
         self.world.apply_settings(settings)
-        self.configureMap()
         pass
 
     def tickOrWaitBeforeSimulation(self):

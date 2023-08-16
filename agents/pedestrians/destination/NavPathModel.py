@@ -124,7 +124,7 @@ class NavPathModel():
         vehicleTravelD = currentDToVehicle - requiredDToVehicle
         if vehicleTravelD < 0:
             # return self.agent.getOldVelocity()
-            self.logger.warn(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
+            self.logger.info(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
             return None
         
         # vehicle may stop
@@ -230,7 +230,7 @@ class NavPathModel():
         # TODO
         # find if the pedestrian reached the local y coordinate with a threshold around 100 cm
         # change next destination point to the next intermediate point return 
-        if self.hasReachedNextDestinationPoint(self.agent.location):
+        if self.hasReachedNextDestinationPoint():
             if self.nextIntermediatePointIdx == len(self.intermediatePoints) - 1:
                 self.agent.logger.info(f"going to the final destination")
                 d =  self.agent.location.distance_2d(self.finalDestination)
@@ -239,9 +239,19 @@ class NavPathModel():
             self.nextIntermediatePointIdx += 1 # this might overflow if we have reached the final 
         
         return self.intermediatePoints[self.nextIntermediatePointIdx]
+    
+
+    def activateBehaviorModels(self):
+        """Activates behavior models slightly before the agent reaches the next nav point.
+        """
+        nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
+        
+
+
+        hasReached = self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)
 
     
-    def hasReachedNextDestinationPoint(self, agentLocation: carla.Location):
+    def hasReachedFirstDestinationPoint(self):
         """
         Has a side effect of activating and deactivating forces.
         """
@@ -256,10 +266,37 @@ class NavPathModel():
             self.logger.debug(f"has reached nav point {navPoint}")
             for behaviorType in navPoint.behaviorTags:
                 # print(navPoint)
-                self.logger.warn(f"has reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
+                self.logger.warn(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
+                self.agent.visualizer.drawPoint(nextDest, color=(0, 0, 255), life_time=10.0)
                 self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
         return hasReached
+    
+
+    def hasReachedNextDestinationPoint(self):
+        if self.nextIntermediatePointIdx == 0:
+            return self.hasReachedFirstDestinationPoint()
+        
+        prevDest = self.intermediatePoints[self.nextIntermediatePointIdx - 1]
+        nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
+
+
+        destDirection = (nextDest - prevDest).make_unit_vector() # might be 0 if both nav points are at the same location
+        destinationVec = nextDest - prevDest
+
+        progressVec = nextDest - self.agent.location
+        if progressVec.length() < 0.25: # 0.25 meters close
+            return True
+        
+        # overshoot check
+        overshoot = (self.agent.location - prevDest).dot(destDirection) - destinationVec.length()
+        if overshoot > -0.25:
+            return True
+        
+        return False
+
+
+        
     
     
     def calculateForce(self) -> Optional[carla.Vector3D]:

@@ -53,7 +53,7 @@ class ResearchFactory:
                             port=2000, 
                             defaultLogLevel=logging.INFO, 
                             output_dir="logs", 
-                            map=MapNames.circle_t_junctions,
+                            map=MapNames.varied_width_lanes,
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
                             stats=True
@@ -104,7 +104,7 @@ class ResearchFactory:
                             port=2000, 
                             defaultLogLevel=logging.INFO, 
                             output_dir="logs", 
-                            map=MapNames.circle_t_junctions,
+                            map=MapNames.varied_width_lanes,
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
                             stats=True

@@ -1,3 +1,4 @@
+import carla
 from agents.pedestrians.ForceModel import ForceModel
 from agents.pedestrians.PedState import PedState
 from agents.pedestrians.PedUtils import PedUtils
@@ -63,9 +64,9 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         # if conflictPoint is None:
         #     return None
 
-        self.agent.logger.warn(f"TG:  {TG} and TTX: {TTX}")
+        self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
         diff = TG - TTX  # may be too far
-        self.agent.logger.warn(f"difference between TG and TTX: {diff}")
+        self.agent.logger.info(f"difference between TG and TTX: {diff}")
 
         
         if diff < 0:  # means vehicle will cross first
@@ -83,8 +84,9 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         if self.haveSafeDestination == False:
             # this is the first step
             self.findSafeDestination()
+            self.agent.visualizer.drawPoints([self._safeDestination], life_time=5.0)
 
-        self.agent.logger.info(f"Survival desitnation = {self._safeDestination}")
+        self.agent.logger.debug(f"Survival desitnation = {self._safeDestination}")
         # do normal calculations
         # force is now the same as the destination model.
 
@@ -100,7 +102,8 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
 
         # stopping case
         if self.agent.location.distance_2d(self._safeDestination) < 0.5:
-            force = force * -100  # a huge negative force to stop fast
+            self.agent.logger.debug(f"making hard stop as pedestrian is close to the safe destination")
+            force = force * -1  # a huge negative force to stop fast
 
         return force
 
@@ -109,7 +112,26 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
     def findSafeDestination(self):
 
         # find a location from previous locations that is 5-10 meter back.
+        # print(f"Finding safe destination for {self.agent.id}")
 
+        # it does not work well. 
+
+        self._safeDestination = self.getSafeDestinationInTheOppositeDirection()
+        # self._safeDestination = self.getSafeDestinationFromHistory()
+        self.agent.logger.debug(f"safe destination for retreat: {self._safeDestination}")
+
+
+        self.agent.logger.info(
+            f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}"
+        )
+        self.agent.logger.info(
+            f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}"
+        )
+
+        self.haveSafeDestination = True
+    
+    def getSafeDestinationFromHistory(self) -> carla.Location:
+        
         prevLocations = self.agent.previousLocations
 
         if len(prevLocations) == 0:
@@ -135,36 +157,14 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
             safeDestination = (
                 self.agent.location + backwardVector.make_unit_vector() * distance
             )
+        return safeDestination
 
-        self._safeDestination = safeDestination
-        self.agent.logger.info(safeDestination)
+    def getSafeDestinationInTheOppositeDirection(self) -> carla.Location:
+        oldControl = self.agent.getOldControl()
+        backwardVector = oldControl.direction * -1
+        safeDestination = self.agent.location + backwardVector * 2 # 2 meter back
+        return safeDestination
 
-        # if len(prevLocations) == 1:
-        #     self._safeDestination = prevLocations[0]
-        #     return
-
-        # lastLocation = prevLocations[0]
-        # firstLocation = prevLocations[-1]
-
-        # distanceToDestination = lastLocation.distance_2d(firstLocation)
-
-        # if distanceToDestination < self.internalFactors["survival_safety_distance"]:
-
-        #     self._safeDestination = firstLocation
-        #     self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}")
-        #     return
-
-        # # TODO improve this
-        # self._safeDestination = firstLocation
-
-        self.agent.logger.info(
-            f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}"
-        )
-        self.agent.logger.info(
-            f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}"
-        )
-
-        self.haveSafeDestination = True
 
     def canSwitchToCrossing(self, TG, TTX):
 

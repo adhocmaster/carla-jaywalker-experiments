@@ -71,6 +71,24 @@ class Research4v4(SettingBasedResearch):
     def setup(self):
         super().setup()
 
+    
+    def reset(self):
+        """Only used for episodic simulator
+        """
+        self.logger.info(f"Resetting environment")
+        # self.pedFactory.reset()
+        # self.vehicleFactory.reset()
+        self.destoryActors()
+
+        super().reset()
+
+        self.episodeNumber += 1
+        self.episodeTimeStep = 0
+        self.createDynamicAgents()
+        self.setupSimulator(episodic=True)
+
+        self.logger.warn(f"started episode {self.episodeNumber}")
+
         
     @property
     def navPath(self):

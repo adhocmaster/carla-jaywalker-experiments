@@ -2,9 +2,13 @@ import logging
 
 from enum import Enum, auto
 from .R1V1Env1 import R1V1Env1
+from .R4V4EnvNavModel import R4V4EnvNavModel
+from .R1V1Env1NavModel import R1V1Env1NavModel
 
 class AvailableEnvironments(Enum):
     R1V1Env1 = R1V1Env1
+    R1V1Env1NavModel = R1V1Env1NavModel
+    R4V4EnvNavModel = R4V4EnvNavModel
 
 class EnvironmentFactory:
 

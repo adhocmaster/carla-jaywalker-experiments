@@ -22,7 +22,7 @@ class Utils:
 
     #region simulation setup
     @staticmethod
-    def createClient(logger, host, port, timeout=5.0):
+    def createClient(logger, host, port, timeout=15.0):
         client = carla.Client(host, port)
         client.set_timeout(timeout)
 
@@ -35,7 +35,7 @@ class Utils:
         return client
 
     @staticmethod
-    def getTimeDelta(world):
+    def getTimeDelta(world: carla.World):
         settings = world.get_settings()
         # print("Utils->getTimeDelta:", settings)
         return settings.fixed_delta_seconds 

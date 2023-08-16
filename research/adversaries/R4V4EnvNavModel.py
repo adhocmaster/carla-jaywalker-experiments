@@ -8,7 +8,7 @@ import gym.spaces as spaces
 import numpy as np
 from lib.Geometry import Geometry
 
-class R1V1Env1(Environment):
+class R4V4EnvNavModel(Environment):
 
 
     @staticmethod
@@ -21,15 +21,15 @@ class R1V1Env1(Environment):
         ):
 
 
-        research = ResearchFactory.createResearch1v1(
+        research = ResearchFactory.createResearch4v4(
             host=host, 
             port=port, 
             defaultLogLevel=defaultLogLevel,
             output_dir=output_dir, 
             simulationMode=SimulationMode.SYNCHRONOUS, 
-            stats=True
+            stats=False
             )
-        return R1V1Env1(
+        return R4V4EnvNavModel(
             research=research
         )
 
@@ -114,25 +114,6 @@ class R1V1Env1(Environment):
 
     def state(self):
         return None
-        # walkerAgent = self.research.getWalkerAgent()
-        # vehicleAgent = self.research.getVehicleAgent()
-
-        # state = {
-        #     "pedestrian": {
-                
-        #         'position': np.array([0.0, 0.0]),
-        #         'source': np.array([self.research.walkerSpawnPoint.location.x, self.research.walkerSpawnPoint.location.y]),
-        #         'dest': np.array([self.research.walkerDestination.x, self.research.walkerDestination.y]),
-        #         'relaxation_time': walkerAgent.getInternalFactor('relaxation_time'),
-        #         'risk_level': walkerAgent.getInternalFactor('risk_level'),
-        #         'velocity': np.array([walkerAgent.velocity.x, walkerAgent.velocity.y]),
-        #         # "lane": spaces.Discrete(nLanes, start=1)
-        #     },
-        #     "vehicle": self.vehicleState(),
-        #     "road": self.roadState()
-        # }
-
-        # return state
 
     def getCenter(self):
         if self.coordinateSystem == "ped":
@@ -177,5 +158,7 @@ class R1V1Env1(Environment):
         
 
 
-
+    
+    def saveStats(self):
+        pass
     #endregion

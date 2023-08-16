@@ -18,6 +18,8 @@ class Research1v1NavPathModel(Research1v1):
     
     def createWalker(self):
         
+        self.optionalFactors = []
+        
         reverse = False
         if self.navPath.direction == Direction.RL:
             reverse = True
