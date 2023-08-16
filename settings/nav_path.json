@@ -1,0 +1,15 @@
+[
+    {
+        "id": "1",
+        "roadWidth": "3",
+        "nEgoDirectionLanes": "1",
+        "nEgoOppositeDirectionLanes": "1",
+        "avgSpeed": "50",
+        "maxSpeed": "60",
+        "minSpeed": "40",
+        "egoLaneWrtCenter": "1",
+        "egoSpeedStart": "50",
+        "egoSpeedEnd": "60"
+
+    }
+]
