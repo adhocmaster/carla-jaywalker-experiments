@@ -54,6 +54,14 @@ class NavPathModel():
         self.dynamicBehaviorModelFactory = DynamicBehaviorModelFactory()
         matcher = BehaviorMatcher()
         matcher.tagNavPoints(self.navPath)
+        
+
+        # for idx, navPoint in enumerate(self.navPath.path):
+        #     print("\n")
+        #     print("nav idx:", idx)
+        #     print(navPoint)
+        #     print(id(navPoint.behaviorTags))
+        # raise Exception("stop here")
         self.initNavigation()
 
     def getFinalDestination(self):
@@ -247,6 +255,8 @@ class NavPathModel():
             navPoint = self.intermediatePointsToNavPointMap[nextDest]
             self.logger.debug(f"has reached nav point {navPoint}")
             for behaviorType in navPoint.behaviorTags:
+                # print(navPoint)
+                self.logger.warn(f"has reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
                 self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
         return hasReached

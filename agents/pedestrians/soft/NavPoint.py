@@ -19,7 +19,7 @@ class NavPointLocation:
 class NavPointBehavior:
     speed: float = None
     # direction: Direction = None
-    behaviorTags: Set[BehaviorType] = field(default_factory=set)
+    behaviorTags: Set[BehaviorType] = field(default_factory=lambda: set([]))
 
 
 
@@ -39,8 +39,8 @@ class NavPoint:
 
     def __str__(self) -> str:
         return (
-            f"{self.laneId}: {self.laneSection}"
-            f"\n{self.distanceToEgo}: {self.distanceToInitialEgo}"
+            f"lane: {self.laneId}: {self.laneSection}"
+            f"\nego: {self.distanceToEgo}: {self.distanceToInitialEgo}"
             # f"\nspeed: {self.speed}, direction: {self.direction}"
             f"\nspeed: {self.speed}"
             f"\ntags: {self.behaviorTags}"

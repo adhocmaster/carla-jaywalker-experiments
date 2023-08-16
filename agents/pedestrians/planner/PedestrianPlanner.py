@@ -51,6 +51,10 @@ class PedestrianPlanner:
         pass
 
     @property
+    def modelMap(self):
+        return self.configuredModels.modelMap
+    
+    @property
     def models(self):
         return self.configuredModels.models
     
@@ -126,6 +130,14 @@ class PedestrianPlanner:
     def reset(self):
         for name in self.modelCoeff:
             self.modelCoeff[name] = 1.0
+
+    def removeModel(self, name: any):
+        """_summary_
+
+        Args:
+            name (any): class type
+        """
+        self.configuredModels.remove(name)
         
     def updateModelCoeff(self, name, val):
         self.modelCoeff[name] = val

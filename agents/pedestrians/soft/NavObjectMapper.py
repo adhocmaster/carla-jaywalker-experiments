@@ -23,11 +23,11 @@ class NavObjectMapper:
         Args:
             pathDic (_type_): dictionary for a single NavPath
         """
-        print(pathDic['roadConfiguration'])
+        # print(pathDic['roadConfiguration'])
         roadConfiguration = from_dict(data_class=NavPathRoadConfiguration, data=pathDic['roadConfiguration'])
-        print(pathDic['egoConfiguration'])
+        # print(pathDic['egoConfiguration'])
         egoConfiguration = from_dict(data_class=NavPathEgoConfiguration, data=pathDic['egoConfiguration'])
-        print(pathDic['pedConfiguration'])
+        # print(pathDic['pedConfiguration'])
         pedConfiguration = from_dict(data_class=NavPathPedestrianConfiguration, data=pathDic['pedConfiguration'], config=Config(cast=[Enum]))
         path = [NavObjectMapper.pointFromDict(pointDic) for pointDic in pathDic['path']]
 
@@ -47,7 +47,9 @@ class NavObjectMapper:
             pointDic (_type_): dictionary for a single NavPoint
         """
         location = from_dict(data_class=NavPointLocation, data=pointDic['location'], config=Config(cast=[Enum]))
-        behavior = from_dict(data_class=NavPointBehavior, data=pointDic['behavior'], config=Config(cast=[Enum]))
+        behavior = from_dict(data_class=NavPointBehavior, data=pointDic['behavior'])
+
+        # print(id(behavior), id(behavior.behaviorTags))
 
         return NavPoint(
             location=location,

@@ -71,11 +71,12 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
             newState = model.getNewState()
             if newState is not None:
                 newStates.add(newState)
+                print(f"New state from {model.name} is {newState}")
         
         if len(newStates) > 1:
             states = [state.value for state in newStates]
             self.logger.error(states)
-            raise TooManyNewStates("Models returned different states")
+            raise TooManyNewStates(f"Models returned different states in {self.agent.state}")
         
         if len(newStates) > 0:
             return newStates.pop()
