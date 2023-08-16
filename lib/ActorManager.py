@@ -101,11 +101,19 @@ class ActorManager:
         return self._previousActorDistances[otherActor.id]
 
     # region Oncoming
-    def isOncoming(self, otherActor):
+    def isOncomingOld(self, otherActor):
+        """This method has issues when self.actor is moving faster in the same direction as the otherActor.
+
+        Args:
+            otherActor (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
 
         # print(f"isOncoming: {otherActor.id}")
         if otherActor.id not in self._previousActorDistances:
-            self.logger.debug(f"actor not oncoming as previous distance is unknown")
+            self.logger.warning(f"actor not oncoming as previous distance is unknown")
             return False # in the first tick there will not be any previous distance
         self.logger.debug(f"actor previous distance {self._previousActorDistances[otherActor.id]} and current distance {self._currentActorDistances[otherActor.id]}")
         # print(f"_previousActorDistances: {self._previousActorDistances[otherActor.id]}")
@@ -117,6 +125,18 @@ class ActorManager:
         # print(f"isOncoming: not oncoming")
         # self.logger.info(f"actor not oncoming")
         return False
+    
+    def isOncoming(self, otherActor: carla.Actor) -> bool:
+        otherVelo = otherActor.get_velocity()
+        if otherVelo.length() < 0.0001:
+            return False
+        
+        locationVec = self.actor.get_location() - otherActor.get_location()
+        if abs(Utils.angleBetweenVectors(locationVec, otherVelo)) > math.pi / 3:
+            return False
+        
+        return True
+        
     
     def getOncomingVehicles(self):
         if "oncomingVehicles" in self._tickCache:

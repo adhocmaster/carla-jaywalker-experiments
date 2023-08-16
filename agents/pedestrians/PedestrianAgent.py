@@ -335,7 +335,7 @@ class PedestrianAgent(InfoAgent):
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
         # if distance < 0.2 and distance > 0.1:
-        if distance < 0.2:
+        if distance < 0.7:
             self.logger.warn(f"after tick distance to sidewalk is {distance}. Can jump")
             return True
         return False
@@ -370,9 +370,11 @@ class PedestrianAgent(InfoAgent):
 
             # issue with velocity is when it's close to 0 nothing works.
             
-            desiredDirection = self._localPlanner.desiredDirection
+            # desiredDirection = self._localPlanner.desiredDirection
 
-            translation = desiredDirection * 1.5
+            sidewalkDirection = self.getDirectionToSidewalkAhead()
+
+            translation = sidewalkDirection * 1.5
 
             self._walker.set_location(
                 carla.Location(
@@ -399,6 +401,25 @@ class PedestrianAgent(InfoAgent):
 
 
     def getDistanceToSidewalkAhead(self, rayLength=3) -> Optional[float]:
+        sidewalk = self.getSidewalkAhead(rayLength=rayLength)
+        if sidewalk is None:
+            return None
+        
+        actorLocation = self._walker.get_location()
+        distance = actorLocation.distance_2d(sidewalk.location)
+        self.logger.info(f"Sidewalk location {sidewalk.location} and semantic {sidewalk.label} XY distance {distance}")
+        return distance
+    
+    def getDirectionToSidewalkAhead(self, rayLength=3) -> Optional[carla.Vector3D]:
+        sidewalk = self.getSidewalkAhead(rayLength=rayLength)
+        if sidewalk is None:
+            return None
+        
+        actorLocation = self._walker.get_location()
+        return (sidewalk.location - actorLocation).make_unit_vector()
+
+
+    def getSidewalkAhead(self, rayLength=3) -> Optional[carla.LabelledPoint]:
         actorLocation = self._walker.get_location()
         actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
         actorVelocity = self.getOldVelocity()
@@ -413,16 +434,9 @@ class PedestrianAgent(InfoAgent):
         # print(labeledObjects)
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
-                # if self.visualizer is not None and self.debug:
-                #     self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
-                # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
-                # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
-                distance = actorLocation.distance_2d(lb.location)
-                self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
-                return distance
+                return lb
 
         return None
-
 
     # def getObstaclesToDestination(self):
     #     actorLocation = self._walker.get_location()

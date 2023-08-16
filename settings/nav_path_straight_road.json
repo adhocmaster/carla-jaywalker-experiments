@@ -76,7 +76,7 @@
         "egoConfiguration": {
             "egoLaneWrtCenter": 2,
             "egoSpeedStart": 10,
-            "egoSpeedEnd": 20
+            "egoSpeedEnd": 15
         },
         "pedConfiguration": {
             "direction": "RL",

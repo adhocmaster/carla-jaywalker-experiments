@@ -94,51 +94,6 @@ class NavPathModel():
         
         # return True
         
-    
-    def getAverageVelocityRequiredToReachNext(self) -> Optional[carla.Vector3D]:
-        """Returns the average velocity required to reach the next intermediate point
-
-        Returns:
-            float: average velocity required to reach the next intermediate point
-        """
-        ## TODO fist check if the vehicle is oncoming or not. Because if the vehicle passed, we don't need to follow the nav path anymore.
-
-        vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
-
-        if not self.agent.actorManager.isOncoming(vehicle):
-            return None
-        
-        # print(f"next location id {self.nextIntermediatePointIdx}")
-        nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
-
-        if nextLoc == self.finalDestination:
-            return None
-
-        nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
-
-        currentDToVehicle = Utils.distanceToVehicle(nextLoc, vehicle)
-
-        assert currentDToVehicle is not None
-
-        requiredDToVehicle = nextNavPoint.distanceToEgo
-        vehicleTravelD = currentDToVehicle - requiredDToVehicle
-        if vehicleTravelD < 0:
-            # return self.agent.getOldVelocity()
-            self.logger.info(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
-            return None
-        
-        # vehicle may stop
-        vehicleSpeed = vehicle.get_velocity().length()
-        if vehicleSpeed < 0.1:
-            return None
-        timeToReachNextNavPoint = vehicleTravelD / vehicleSpeed
-        # print("timeToReachNextNavPoint", timeToReachNextNavPoint)
-        dToNext = self.agent.location.distance_2d(nextLoc)
-        # print("dToNext", dToNext)
-        speed = dToNext / timeToReachNextNavPoint
-        # print("speed", speed)
-        direction = (nextLoc - self.agent.location).make_unit_vector()
-        return speed * direction 
 
 
     def isDone(self):
@@ -245,10 +200,13 @@ class NavPathModel():
         """Activates behavior models slightly before the agent reaches the next nav point.
         """
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
-        
-
-
-        hasReached = self.agent.hasReachedDestinationAlongLocalY(nextDest, 0.5)
+        navPoint = self.intermediatePointsToNavPointMap[nextDest]
+        self.logger.debug(f"has reached nav point {navPoint}")
+        for behaviorType in navPoint.behaviorTags:
+            # print(navPoint)
+            self.logger.warn(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
+            self.agent.visualizer.drawPoint(nextDest, color=(0, 0, 255), life_time=10.0)
+            self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
     
     def hasReachedFirstDestinationPoint(self):
@@ -262,13 +220,7 @@ class NavPathModel():
 
         if hasReached and nextDest in self.intermediatePointsToNavPointMap:
             # activate the models required for the nav point
-            navPoint = self.intermediatePointsToNavPointMap[nextDest]
-            self.logger.debug(f"has reached nav point {navPoint}")
-            for behaviorType in navPoint.behaviorTags:
-                # print(navPoint)
-                self.logger.warn(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
-                self.agent.visualizer.drawPoint(nextDest, color=(0, 0, 255), life_time=10.0)
-                self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
+            self.activateBehaviorModels()
 
         return hasReached
     
@@ -284,16 +236,24 @@ class NavPathModel():
         destDirection = (nextDest - prevDest).make_unit_vector() # might be 0 if both nav points are at the same location
         destinationVec = nextDest - prevDest
 
-        progressVec = nextDest - self.agent.location
-        if progressVec.length() < 0.25: # 0.25 meters close
+        if self.distanceToNextDestination() < 0.25: # 0.25 meters close
+            self.activateBehaviorModels()
             return True
         
         # overshoot check
         overshoot = (self.agent.location - prevDest).dot(destDirection) - destinationVec.length()
         if overshoot > -0.25:
+            self.activateBehaviorModels()
             return True
         
         return False
+    
+
+    def distanceToNextDestination(self):
+        nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
+        progressVec = nextDest - self.agent.location
+        return progressVec.length()
+
 
 
         
@@ -321,7 +281,63 @@ class NavPathModel():
         #     self.agent.visualizationForceLocation, 
         #     self.agent.visualizationInfoLocation
         # )
+
+        # if very close to the next destination, invert the force
         
-        return requiredChangeInVelocity / 0.01 #instant change
+        force = requiredChangeInVelocity / 0.01 #instant change
+
+        if self.distanceToNextDestination() < 0.5:
+            force = -1 * force
+
+        return force
         
+    
+    def getAverageVelocityRequiredToReachNext(self) -> Optional[carla.Vector3D]:
+        """Returns the average velocity required to reach the next intermediate point
+
+        Returns:
+            float: average velocity required to reach the next intermediate point
+        """
+        ## TODO fist check if the vehicle is oncoming or not. Because if the vehicle passed, we don't need to follow the nav path anymore.
+
+        vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
+
+        if not self.agent.actorManager.isOncoming(vehicle):
+            self.agent.logger.warning(f"vehicle is not oncoming. stopping nav path model")
+            return None
+        
+        # print(f"next location id {self.nextIntermediatePointIdx}")
+        nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
+
+        if nextLoc == self.finalDestination:
+            self.agent.logger.warning(f"no intermediate location. stopping nav path model")
+            return None
+
+        nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
+
+        currentDToVehicle = Utils.distanceToVehicle(nextLoc, vehicle)
+
+        assert currentDToVehicle is not None
+
+        requiredDToVehicle = nextNavPoint.distanceToEgo
+        vehicleTravelD = currentDToVehicle - requiredDToVehicle
+        if vehicleTravelD < 0:
+            # return self.agent.getOldVelocity()
+            self.logger.warn(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
+            direction = (nextLoc - self.agent.location).make_unit_vector()
+            return 10 * direction 
+            # return None
+        
+        # vehicle may stop
+        vehicleSpeed = vehicle.get_velocity().length()
+        if vehicleSpeed < 0.1:
+            return None
+        timeToReachNextNavPoint = vehicleTravelD / vehicleSpeed
+        # print("timeToReachNextNavPoint", timeToReachNextNavPoint)
+        dToNext = self.agent.location.distance_2d(nextLoc)
+        # print("dToNext", dToNext)
+        speed = dToNext / timeToReachNextNavPoint
+        # print("speed", speed)
+        direction = (nextLoc - self.agent.location).make_unit_vector()
+        return speed * direction * 1.1
     

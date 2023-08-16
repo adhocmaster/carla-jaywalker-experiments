@@ -43,10 +43,7 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         # 1. return to crossing is safe destination is reached 
         if self.canSwitchToCrossing(TG, TTX):
             return PedState.CROSSING
-        
-        if TG is None:
-            return None
-        
+               
 
 
         # 2. any other state means, we need to reset the safe destination
@@ -84,7 +81,7 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         if self.haveSafeDestination == False:
             # this is the first step
             self.findSafeDestination()
-            self.agent.visualizer.drawPoints([self._safeDestination], life_time=5.0)
+            self.agent.visualizer.drawPoints([self._safeDestination], color=(255, 255, 0), life_time=15.0)
 
         self.agent.logger.debug(f"Survival desitnation = {self._safeDestination}")
         # do normal calculations
@@ -97,13 +94,13 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         oldVelocity = self.agent.getOldVelocity()
 
         force = (desiredVelocity - oldVelocity) / (
-            self.internalFactors["relaxation_time"] * 0.1
+            self.internalFactors["relaxation_time"] 
         )
 
         # stopping case
         if self.agent.location.distance_2d(self._safeDestination) < 0.5:
             self.agent.logger.debug(f"making hard stop as pedestrian is close to the safe destination")
-            force = force * -1  # a huge negative force to stop fast
+            force = force * -10  # a huge negative force to stop fast
 
         return force
 
@@ -160,8 +157,7 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         return safeDestination
 
     def getSafeDestinationInTheOppositeDirection(self) -> carla.Location:
-        oldControl = self.agent.getOldControl()
-        backwardVector = oldControl.direction * -1
+        backwardVector = (self.agent.location - self.agent.destination).make_unit_vector()
         safeDestination = self.agent.location + backwardVector * 2 # 2 meter back
         return safeDestination
 
