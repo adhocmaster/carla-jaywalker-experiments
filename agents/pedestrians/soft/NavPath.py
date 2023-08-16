@@ -12,36 +12,34 @@ class NavPathRoadConfiguration:
 
 @dataclass
 class NavPathEgoConfiguration:
-    avgSpeed: float
-    maxSpeed: float
-    minSpeed: float
     egoLaneWrtCenter: int
     egoSpeedStart: float
     egoSpeedEnd: float
+
+@dataclass
+class NavPathPedestrianConfiguration:
+    avgSpeed: float
+    maxSpeed: float
+    minSpeed: float
 
 class NavPath:
 
     def __init__(
             self, 
+            id: any,
             roadConfiguration: NavPathRoadConfiguration,
             egoConfiguration: NavPathEgoConfiguration,
+            pedConfiguration: NavPathPedestrianConfiguration,
             path: List[NavPoint], 
             ):
         
+        self.id = id
         self.roadConfiguration = roadConfiguration
         self.egoConfiguration = egoConfiguration
+        self.pedConfiguration = pedConfiguration
         self.path = path
         
-        # self.nEgoDirectionLanes = nEgoDirectionLanes
-        # self.nEgoOppositeDirectionLanes = nEgoOppositeDirectionLanes
-        # self.avgSpeed = avgSpeed
-        # self.maxSpeed = maxSpeed
-        # self.minSpeed = minSpeed
-
         assert egoConfiguration.egoLaneWrtCenter > 0
-        # self.egoLaneWrtCenter = egoLaneWrtCenter
-        # self.egoSpeedStart = egoSpeedStart
-        # self.egoSpeedEnd = egoSpeedEnd
 
     @property
     def roadWidth(self):
@@ -60,17 +58,17 @@ class NavPath:
     
     @property
     def avgSpeed(self):
-        return self.egoConfiguration.avgSpeed
+        return self.pedConfiguration.avgSpeed
     
     
     @property
     def maxSpeed(self):
-        return self.egoConfiguration.maxSpeed
+        return self.pedConfiguration.maxSpeed
     
     
     @property
     def minSpeed(self):
-        return self.egoConfiguration.minSpeed
+        return self.pedConfiguration.minSpeed
     
     
     @property

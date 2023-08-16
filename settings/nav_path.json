@@ -1,15 +1,71 @@
 [
     {
-        "id": "1",
-        "roadWidth": "3",
-        "nEgoDirectionLanes": "1",
-        "nEgoOppositeDirectionLanes": "1",
-        "avgSpeed": "50",
-        "maxSpeed": "60",
-        "minSpeed": "40",
-        "egoLaneWrtCenter": "1",
-        "egoSpeedStart": "50",
-        "egoSpeedEnd": "60"
+        "id": 1,
+        "roadConfiguration": {
+            "roadWidth": 7.0,
+            "nEgoDirectionLanes": 1,
+            "nEgoOppositeDirectionLanes": 1
+        },
+        "egoConfiguration": {
+            "egoLaneWrtCenter": 1,
+            "egoSpeedStart": 10,
+            "egoSpeedEnd": 20
+        },
+        "pedConfiguration": {
+            "avgSpeed": 0.5,
+            "maxSpeed": 1.5,
+            "minSpeed": 0.0
+        },
+        "path": [
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 24.0,
+                    "distanceToInitialEgo": 24.0
+                },
+                "behavior": {
+                    "speed": 1,
+                    "direction": "LR"
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "MIDDLE",
+                    "distanceToEgo": 7.0,
+                    "distanceToInitialEgo": 25.0
+                },
+                "behavior": {
+                    "speed": 0.5,
+                    "direction": "LR"
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "MIDDLE",
+                    "distanceToEgo": 1.0,
+                    "distanceToInitialEgo": 25.0
+                },
+                "behavior": {
+                    "speed": 0.1,
+                    "direction": "LR"
+                }
+            },
+            {
+                "location": {
+                    "laneId": 0,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 24.0,
+                    "distanceToInitialEgo": 24.0
+                },
+                "behavior": {
+                    "speed": 1,
+                    "direction": "LR"
+                }
+            }
+        ]
 
     }
 ]
