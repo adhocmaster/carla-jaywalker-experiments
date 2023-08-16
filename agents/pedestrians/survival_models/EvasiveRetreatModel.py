@@ -39,9 +39,14 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
             self.agent._localPlanner.getDestinationModel().getDesiredSpeed(),
         )
 
-        # 1. return to crossing is safe destination is reached or vehicle stoppped
+        # 1. return to crossing is safe destination is reached 
         if self.canSwitchToCrossing(TG, TTX):
             return PedState.CROSSING
+        
+        if TG is None:
+            return None
+        
+
 
         # 2. any other state means, we need to reset the safe destination
         if self.agent.isSurviving() == False:
@@ -53,20 +58,20 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
 
         self.agent.logger.info(f"Collecting state from {self.name}")
 
-        # 4. Switch to survival mode if close to a collision
-        conflictPoint = self.agent.getPredictedConflictPoint()
-        if conflictPoint is None:
-            return None
+        # 4. Switch to survival mode if close to a collision. we cannot have it because it does not only depend on the current conflict point. 
+        # conflictPoint = self.agent.getPredictedConflictPoint()
+        # if conflictPoint is None:
+        #     return None
 
+        self.agent.logger.warn(f"TG:  {TG} and TTX: {TTX}")
         diff = TG - TTX  # may be too far
-        self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
-        self.agent.logger.info(f"difference between TG and TTX: {diff}")
+        self.agent.logger.warn(f"difference between TG and TTX: {diff}")
 
         
         if diff < 0:  # means vehicle will cross first
             if diff < -2:
                 return PedState.SURVIVAL
-        elif diff < self.internalFactors["threshold_ttc_survival_state"] * 10:
+        elif diff < self.internalFactors["threshold_ttc_survival_state"]:
             return PedState.SURVIVAL
 
         return None
@@ -79,11 +84,11 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
             # this is the first step
             self.findSafeDestination()
 
-        self.agent.logger.info(f"Survival desitnation = {self._destination}")
+        self.agent.logger.info(f"Survival desitnation = {self._safeDestination}")
         # do normal calculations
         # force is now the same as the destination model.
 
-        direction = Utils.getDirection2D(self.agent.location, self._destination)
+        direction = Utils.getDirection2D(self.agent.location, self._safeDestination)
         speed = self.internalFactors["desired_speed"]
         desiredVelocity = direction * speed
 
@@ -94,7 +99,7 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
         )
 
         # stopping case
-        if self.agent.location.distance_2d(self._destination) < 0.5:
+        if self.agent.location.distance_2d(self._safeDestination) < 0.5:
             force = force * -100  # a huge negative force to stop fast
 
         return force
@@ -131,11 +136,11 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
                 self.agent.location + backwardVector.make_unit_vector() * distance
             )
 
-        self._destination = safeDestination
+        self._safeDestination = safeDestination
         self.agent.logger.info(safeDestination)
 
         # if len(prevLocations) == 1:
-        #     self._destination = prevLocations[0]
+        #     self._safeDestination = prevLocations[0]
         #     return
 
         # lastLocation = prevLocations[0]
@@ -145,18 +150,18 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
 
         # if distanceToDestination < self.internalFactors["survival_safety_distance"]:
 
-        #     self._destination = firstLocation
-        #     self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}")
+        #     self._safeDestination = firstLocation
+        #     self.agent.logger.info(f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}")
         #     return
 
         # # TODO improve this
-        # self._destination = firstLocation
+        # self._safeDestination = firstLocation
 
         self.agent.logger.info(
-            f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}"
+            f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}"
         )
         self.agent.logger.info(
-            f"Distance to safe destination: {self.agent.location.distance_2d(self._destination)}"
+            f"Distance to safe destination: {self.agent.location.distance_2d(self._safeDestination)}"
         )
 
         self.haveSafeDestination = True
@@ -165,13 +170,16 @@ class EvasiveRetreatModel(SurvivalModel, StateTransitionModel):
 
         # 1. return to crossing is safe destination is reached
         if self.agent.isSurviving():
-            if self.agent.location.distance_2d(self._destination) < 0.001:
-                self._destination = None
+            if self.agent.location.distance_2d(self._safeDestination) < 0.001:
+                self._safeDestination = None
                 self.haveSafeDestination = False
                 return True
 
-            if TG is None or TG == 0:
-                return True
+            # if TG is None or TG == 0:
+            #     return True
+            
+            # if TG > TTX: # they can cross as probably the vehicle slowed down.
+            #     return True
 
             # diff = TG - TTX # may be too far
             # self.agent.logger.info(f"TG:  {TG} and TTX: {TTX}")
