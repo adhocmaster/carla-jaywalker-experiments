@@ -1,5 +1,5 @@
 
-from ast import Pass
+import importlib
 from typing import List
 from .PedestrianPlanner import PedestrianPlanner
 from ..PedestrianAgent import PedestrianAgent
@@ -57,12 +57,8 @@ class ModelFactory:
                 self.planner.destinationModel.applySpeedModel(speedModel)
                 self._logger.info(f"{self.internalFactors['speed_model']} SpeedModel applied")
             
+        pedGapModel = self.getGapModel()
 
-        pedGapModel = BrewerGapModel(
-                                    self.agent, 
-                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-                                    internalFactors=self.internalFactors
-                                    )
         self.planner.stopGoModel = StopGoModel(         
                                     pedGapModel,
                                     self.agent, 
@@ -78,6 +74,25 @@ class ModelFactory:
                       ])
         self.planner.stateTransitionModels.append(self.planner.stopGoModel)
 
+
+    def getGapModel(self):
+
+        if 'gap_model' in self.internalFactors:
+            module = importlib.import_module("agents.pedestrians.gap_models")
+            class_ = getattr(module, self.internalFactors['gap_model'])
+            pedGapModel = class_(
+                                self.agent, 
+                                actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                internalFactors=self.internalFactors
+                            )
+        else:
+        
+            pedGapModel = BrewerGapModel(
+                                        self.agent, 
+                                        actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                        internalFactors=self.internalFactors
+                                        )
+        return pedGapModel
 
     def createOptionalModels(self, optionalFactors: List[Factors]):
 

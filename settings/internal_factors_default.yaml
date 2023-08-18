@@ -25,6 +25,7 @@ acceleration_positive_max: 100
 acceleration_negative_min: -100
 
 # GAP params
+gap_model: "AlwaysGoModel"
 # for TG_multiplier underestimate TG if less than 1 and overestimate TG if > 1
 TG_multiplier: 1
 brewer_beta0: 6.2064
