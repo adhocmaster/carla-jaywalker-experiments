@@ -54,7 +54,10 @@ class VehicleFactory(ClientUser):
     
     def spawn(self, spawnPoint):
         vehicleBp = self.create()
-        vehicle = self.world.spawn_actor(vehicleBp, spawnPoint)
+        vehicle = self.world.try_spawn_actor(vehicleBp, spawnPoint)
+        if vehicle is None:
+            self.logger.error(f"Cannot spawn vehicle at {spawnPoint.location}")
+            raise Exception(f"Cannot spawn vehicle at {spawnPoint.location}")
         self.vehicles.append(vehicle)
         return vehicle
 

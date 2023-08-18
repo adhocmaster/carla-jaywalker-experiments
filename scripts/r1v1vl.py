@@ -4,7 +4,7 @@ import logging
 import click
 
 from research import ResearchFactory
-from lib import MapNames
+from lib import MapNames, SimulationMode
 
 
 @click.command()
@@ -16,7 +16,7 @@ from lib import MapNames
     help='Number of ticks the simulator will run'
     )
 def r1v1m2Default(max_ticks):
-    research = ResearchFactory.createResearch1v1NavPathModel(map=MapNames.varied_width_lanes, defaultLogLevel=logging.WARN, settingsId="setting1")
+    research = ResearchFactory.createResearch1v1NavPathModel(map=MapNames.varied_width_lanes, defaultLogLevel=logging.WARN, settingsId="setting1", simulationMode = SimulationMode.ASYNCHRONOUS)
     research.maxStepsPerCrossing = max_ticks
     research.run(maxTicks=max_ticks)
 

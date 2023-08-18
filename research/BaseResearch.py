@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import math
 import logging
 import random
 import numpy as np
@@ -81,7 +82,10 @@ class BaseResearch(ClientUser):
         self.time_delta = 0.007
         settings = self.world.get_settings()
         settings.synchronous_mode = False # Enables asynchronous mode
-        settings.substepping = False
+        # settings.substepping = False # set it to true for faster execution. It has no effect on asynchronous mode
+        settings.substepping = True # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
+        settings.max_substeps = 10
+        settings.max_substep_delta_time = self.time_delta / settings.max_substeps
         settings.fixed_delta_seconds = self.time_delta
         print("applying settings", settings)
         self.world.apply_settings(settings)
@@ -91,10 +95,14 @@ class BaseResearch(ClientUser):
         self.configureMap()
         self.time_delta = 0.04
         settings = self.world.get_settings()
-        # settings.substepping = False # https://carla.readthedocs.io/en/latest/python_api/#carlaworldsettings
         settings.synchronous_mode = True # Enables synchronous mode
         settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
-        print("applying settings", settings)
+        
+        # settings.substepping = False # set it to true for faster execution. It has no effect on synchronous mode
+        settings.substepping = True # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
+        settings.max_substeps = 10
+        settings.max_substep_delta_time = self.time_delta / settings.max_substeps
+        # print("applying settings", settings)
         self.world.apply_settings(settings)
         pass
 
@@ -170,10 +178,11 @@ class BaseResearch(ClientUser):
         self.visualizer.drawWalkerNavigationPoints([walkerSpawnPoint])
 
 
+        print("walkerSpawnPoint", walkerSpawnPoint)
         walker = self.pedFactory.spawn(walkerSpawnPoint)
 
         if walker is None:
-            self.logger.error("Cannot spawn walker")
+            self.logger.error(f"Cannot spawn walker at {walkerSetting.source}")
             exit("Cannot spawn walker")
         else:
             self.logger.info(f"successfully spawn walker {walker.id} at {walkerSpawnPoint.location.x, walkerSpawnPoint.location.y, walkerSpawnPoint.location.z}")

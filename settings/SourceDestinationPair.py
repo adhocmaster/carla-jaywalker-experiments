@@ -8,6 +8,6 @@ class SourceDestinationPair:
 
     def __str__(self) -> str:
         return (
-            f"source: {self.source}"
+            f"source: {self.source} "
             f"destination: {self.destination}"
         )

@@ -175,7 +175,7 @@ class SimulationVisualization(ClientUser):
             location = point
             if isinstance(point, carla.Transform):
                 location = point.location
-            location.z = z
+            location = carla.Location(location.x, location.y, z)
             self.logger.debug(f"walker spawn position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=size, color=color, life_time=life_time)
             if coords:

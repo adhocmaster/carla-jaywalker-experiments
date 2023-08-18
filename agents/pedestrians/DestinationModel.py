@@ -219,7 +219,8 @@ class DestinationModel(ForceModel):
                 
                 force = self.navPathModel.calculateForce()
                 if force is not None:
-                    return self.clipForce(force)
+                    return force
+                    # return self.clipForce(force)
 
 
         # self.agent.logger.warn(f"Collecting state from {self.name}")

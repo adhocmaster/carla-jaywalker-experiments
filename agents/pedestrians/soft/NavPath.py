@@ -43,6 +43,10 @@ class NavPath:
         
         assert egoConfiguration.egoLaneWrtCenter > 0
 
+    
+    def __str__(self) -> str:
+        return f"NavPath {self.id}"
+
     @property
     def roadWidth(self):
         return self.roadConfiguration.roadWidth

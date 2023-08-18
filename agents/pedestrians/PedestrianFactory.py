@@ -63,8 +63,12 @@ class PedestrianFactory(ClientUser):
     
     def spawn(self, spawnPoint):
         walkerBp = self.create()
+        print("spawnPoint", spawnPoint)
         # walkerBp.set_attribute('is_invincible', 'true')  
-        walker = self.world.spawn_actor(walkerBp, spawnPoint)
+        walker = self.world.try_spawn_actor(walkerBp, spawnPoint)
+        if walker is None:
+            self.logger.error(f"Cannot spawn walker at {spawnPoint.location}")
+            raise Exception(f"Cannot spawn walker at {spawnPoint.location}")
 
         self.walkers.append(walker)
         return walker

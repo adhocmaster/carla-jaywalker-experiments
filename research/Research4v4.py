@@ -91,11 +91,15 @@ class Research4v4(SettingBasedResearch):
 
         
     @property
-    def navPath(self):
+    def navPath(self) -> NavPath:
         if self._navPath is None:
             navPaths = self.settingsManager.getNavPaths(self.navPathFilePath)
             self._navPath = random.choice(navPaths)
+            
+            self._navPath = navPaths[1] # just for testing
 
+        # print(self._navPath)
+        # exit(0)
         return self._navPath
     
     def createDynamicAgents(self):
@@ -114,6 +118,7 @@ class Research4v4(SettingBasedResearch):
 
     def recreateDynamicAgents(self):
        
+        
         self.vehicleAgents.clear()
         self.logger.info('\ndestroying  vehicles')
         self.vehicleFactory.reset()
@@ -132,7 +137,7 @@ class Research4v4(SettingBasedResearch):
     
     def getVehicleWalkerSettingsPairs(self) -> List[Tuple[SourceDestinationPair, SourceDestinationPair]]:
         
-        walkerSettings = self.settingsManager.getWalkerSettings()
+        walkerSettings = self.getWalkerSettings()
         vehicleSettings = self.settingsManager.getVehicleSettings()
 
         pairs = []
@@ -142,12 +147,30 @@ class Research4v4(SettingBasedResearch):
 
         return pairs
     
+
+    
+    def getWalkerSettings(self):
+        
+        reverse = False
+        if self.navPath.direction == Direction.RL:
+            reverse = True
+
+        walkerSettings = self.settingsManager.getWalkerSettings()
+
+        if not reverse:
+            return walkerSettings
+        
+        return [self.settingsManager.reverseWalkerSetting(walkerSetting) for walkerSetting in walkerSettings]
+
+    
     def createVehicle(self, vehicleSetting: SourceDestinationPair) -> Tuple[carla.Vehicle, BehaviorAgent]:
         maxSpeed = random.choice([10, 14, 18, 22])
         return super().createVehicle(vehicleSetting, maxSpeed=maxSpeed)
     
 
     def createWalker(self, vehicle: carla.Vehicle, walkerSetting: SourceDestinationPair) -> Tuple[carla.Walker, PedestrianAgent]:
+
+        print("walkerSetting", walkerSetting)
 
         walker, walkerAgent = super().createWalker(walkerSetting)
 
