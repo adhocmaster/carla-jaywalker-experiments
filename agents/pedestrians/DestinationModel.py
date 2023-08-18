@@ -230,7 +230,7 @@ class DestinationModel(ForceModel):
         # self.calculateNextDestination()
         self.nextDestination # updates if required. Do not comment it out
 
-        self.agent.logger.warn(f"no force calculating old destination force towads {self.nextDestination}")
+        self.agent.logger.debug(f"no force calculating old destination force towads {self.nextDestination}")
         self.agent.visualizer.drawPoint(self.nextDestination, color=(0, 255, 0), life_time=5)
         force = self.calculateForceForDesiredVelocity()
 

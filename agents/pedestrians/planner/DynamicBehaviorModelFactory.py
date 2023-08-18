@@ -69,6 +69,8 @@ class DynamicBehaviorModelFactory:
     
     def _addEvasiveRetreat(self, agent: PedestrianAgent):
 
+        return
+
         self._logger.warning(f"Adding Evasive Retreat Model to {agent.id}")
         
         survivalDestModel = EvasiveRetreatModel(
