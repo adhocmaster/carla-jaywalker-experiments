@@ -173,7 +173,7 @@ class InfoAgent:
     
     def getNextTickLocation(self) -> carla.Location:
         displacement = self.getOldVelocity() * Utils.getTimeDelta(self.world)
-        return self.location + displacement
+        return self._walker.get_location() + displacement
     
 
 

@@ -99,7 +99,7 @@ class BaseResearch(ClientUser):
         settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
         
         # settings.substepping = False # set it to true for faster execution. It has no effect on synchronous mode
-        settings.substepping = True # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
+        settings.substepping = False # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
         settings.max_substeps = 10
         settings.max_substep_delta_time = self.time_delta / settings.max_substeps
         # print("applying settings", settings)

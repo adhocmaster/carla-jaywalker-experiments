@@ -157,7 +157,7 @@ class Research1v1(SettingBasedResearch):
             walkerSettings = self.settingsManager.getWalkerSettings()
             walkerSetting = walkerSettings[0]
             if reverse:
-                walkerSetting = SourceDestinationPair(source=walkerSetting.destination, destination=walkerSetting.source)
+                walkerSetting = self.settingsManager.reverseWalkerSetting(walkerSetting)
             
             self._walkerSetting = walkerSetting
 
@@ -358,6 +358,8 @@ class Research1v1(SettingBasedResearch):
     #region stats
 
     def updateStatDataframe(self):
+        if not self.stats:
+            return
         # 1. make a dataframe from self.statDict
         df = pd.DataFrame.from_dict(self.statDict)
         # 2. merge it with the statDataframe

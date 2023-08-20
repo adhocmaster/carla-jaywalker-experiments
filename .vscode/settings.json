@@ -6,7 +6,11 @@
     "python.testing.pytestEnabled": true,
     "jupyter.jupyterServerType": "local",
     "python.pythonPath": "C:\\Users\\adhocmaster\\anaconda3\\envs\\carla37\\python.exe",
-    "python.formatting.provider": "black",
     "python.languageServer": "Pylance",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true
+      },
+      "python.formatting.provider": "none",
     "python.analysis.indexing": true
 }
