@@ -286,8 +286,8 @@ class NavPathModel():
         
         force = requiredChangeInVelocity / 0.01 #instant change
 
-        if self.distanceToNextDestination() < 0.5:
-            force = -1 * force
+        # if self.distanceToNextDestination() < 0.5:
+        #     force = -1 * force
 
         return force
         
@@ -339,5 +339,5 @@ class NavPathModel():
         speed = dToNext / timeToReachNextNavPoint
         # print("speed", speed)
         direction = (nextLoc - self.agent.location).make_unit_vector()
-        return speed * direction * 1.1
+        return speed * direction * 1.5
     

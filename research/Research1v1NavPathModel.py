@@ -12,7 +12,7 @@ class Research1v1NavPathModel(Research1v1):
         if hasattr(self, "_navPath") is False or self._navPath is None:
             navPaths = self.settingsManager.getNavPaths("settings/nav_path_straight_road.json")
             self._navPath = random.choice(navPaths)
-            self._navPath = navPaths[1] # just for testing
+            self._navPath = navPaths[3] # just for testing
 
         return self._navPath
     
