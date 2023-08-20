@@ -4,7 +4,7 @@ import carla
 from lib.LoggerFactory import LoggerFactory
 from shapely.geometry import Polygon, LineString
 from agents.pedestrians.planner.DynamicBehaviorModelFactory import DynamicBehaviorModelFactory
-from agents.pedestrians.soft import BehaviorMatcher, NavPoint
+from agents.pedestrians.soft import BehaviorMatcher, Direction, NavPoint
 from agents.pedestrians.soft.LaneSection import LaneSection
 
 from agents.pedestrians.soft.NavPath import NavPath
@@ -125,49 +125,21 @@ class NavPathModel():
         self.intermediatePoints = []
         
         # get nav points which 
+        prevNavPoint = None
         for i, navPoint in enumerate(self.navPath.path):
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo * 1.5)[0] # add extent
+            vehicleConflictWp = vehicleWp.next(navPoint.distanceToInitialEgo * 1.5)[0] # add extent
             # we need to translate wpOnVehicleLane wrt the initial start point on the sidewalk
+          
+            navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint)
 
-            # if navPoint.isInFrontOfEgo():
-            #     wpOnVehicleLane = vehicleWp.next(navPoint.distanceToInitialEgo)[0]
-            # else:
-            #     wpOnVehicleLane = vehicleWp.previous(navPoint.distanceToInitialEgo)[0]
-            vehicleRightVector = wpOnVehicleLane.transform.get_right_vector()
-            vehicleLeftVector = -1 * vehicleRightVector
-            # print("vehicleRightVector", vehicleRightVector)
-            # print("vehicleLeftVector", vehicleLeftVector)
-
-            # print(f"navpoint {i} wpOnVehicleLane: {wpOnVehicleLane} with road id = {wpOnVehicleLane.road_id}, lane id = {wpOnVehicleLane.lane_id}")
-            # how many lanes away
-            # just assume 2-lane for now
-            if navPoint.laneId == 0:
-                nearestWP = wpOnVehicleLane
-            elif navPoint.isOnEgosLeft():
-                nearestWP = wpOnVehicleLane.get_left_lane()
-                # print(f"navpoint {i} on the left")
-            elif navPoint.isOnEgosRight():
-                # print(f"navpoint {i} on the right")
-                nearestWP = wpOnVehicleLane.get_right_lane()
-                
-            # print(f"nearestWP: {nearestWP}")
-
-            if nearestWP is None:
-                raise Exception(f"nearestWP is None for navPoint idx {i}")
-            
-            # this is also broken
-            midLoc = nearestWP.transform.location
-            navLoc = midLoc
-            if navPoint.laneSection == LaneSection.LEFT:
-                navLoc += vehicleLeftVector * nearestWP.lane_width * 0.33
-            elif navPoint.laneSection == LaneSection.RIGHT:
-                navLoc += vehicleRightVector * nearestWP.lane_width * 0.33
-            
-
+            # print("navLoc", navLoc)
             self.intermediatePoints.append(navLoc)
             self.intermediatePointsToNavPointMap[navLoc] = navPoint
+            prevNavPoint = navPoint
+        
+        # raise Exception("stop here")
                 
         self.nextIntermediatePointIdx = 0
         self.intermediatePoints.append(self.finalDestination)
@@ -177,6 +149,60 @@ class NavPathModel():
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
             self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=0.25, color=(0, 255, 255), coords=False, life_time=20.0)
+
+    
+    def getNavWaypoint(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint) -> carla.Waypoint:
+
+        # TODO just assume 2-lane for now
+        if navPoint.laneId == 0:
+            nearestWP = vehicleConflictWp
+        elif navPoint.isOnEgosLeft():
+            nearestWP = vehicleConflictWp.get_left_lane()
+            # print(f"navpoint {i} on the left")
+        elif navPoint.isOnEgosRight():
+            # print(f"navpoint {i} on the right")
+            nearestWP = vehicleConflictWp.get_right_lane()
+        
+        # print(f"nearestWP: {nearestWP}")
+
+        return nearestWP
+    
+    def getNavPointLocation(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint, prevNavPoint: Optional[NavPoint]) -> carla.Location:
+            vehicleRightVector = vehicleConflictWp.transform.get_right_vector()
+            vehicleLeftVector = -1 * vehicleRightVector
+            # print("vehicleRightVector", vehicleRightVector)
+            # print("vehicleLeftVector", vehicleLeftVector)
+            navWP = self.getNavWaypoint(navPoint, vehicleConflictWp)
+            if navWP is None:
+                raise Exception(f"nearestWP is None for navPoint {navPoint}")
+            
+            overlapMigitationOffset = 0.0
+            if prevNavPoint is not None:
+                if navPoint.isAtTheSameLocation(prevNavPoint):
+                    # we need to add some offset
+                    # if self.navPath.direction == Direction.LR:
+                    navPoint.overlapOffset = 0.05 + prevNavPoint.overlapOffset
+            
+            # print("navPoint.overlapOffset", navPoint.overlapOffset)
+            # this is also broken
+            midLoc = navWP.transform.location
+            navLoc = midLoc
+            if navPoint.laneSection == LaneSection.LEFT:
+                navLoc += vehicleLeftVector * navWP.lane_width * 0.33 
+            elif navPoint.laneSection == LaneSection.RIGHT:
+                navLoc += vehicleRightVector * navWP.lane_width * 0.33 
+            
+            if navPoint.overlapOffset > 0:
+                if self.navPath.direction == Direction.LR:
+                    navLoc += vehicleRightVector * navWP.lane_width * navPoint.overlapOffset
+                else:
+                    navLoc += vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
+
+            return navLoc
+
+
+                
+
 
     def getNextDestinationPoint(self):
 
@@ -232,7 +258,8 @@ class NavPathModel():
         prevDest = self.intermediatePoints[self.nextIntermediatePointIdx - 1]
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
 
-
+        # print("prevDest", prevDest)
+        # print("nextDest", nextDest)
         destDirection = (nextDest - prevDest).make_unit_vector() # might be 0 if both nav points are at the same location
         destinationVec = nextDest - prevDest
 

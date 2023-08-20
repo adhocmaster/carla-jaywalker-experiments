@@ -36,6 +36,7 @@ class NavPoint:
 
         self.location = location
         self.behavior = behavior
+        self.overlapOffset = 0.0
 
     def __str__(self) -> str:
         return (
@@ -44,6 +45,7 @@ class NavPoint:
             # f"\nspeed: {self.speed}, direction: {self.direction}"
             f"\nspeed: {self.speed}"
             f"\ntags: {self.behaviorTags}"
+            f"\ntags: {self.overlapOffset}"
         )
     
     @property
@@ -184,6 +186,12 @@ class NavPoint:
             # print("myStepsToTheRightLane", myStepsToTheRightLane)
             # print("otherStepsToTheLeftLane", otherStepsToTheLeftLane)
             return myStepsToTheRightLane + otherStepsToTheLeftLane + middleLaneSteps - 1
+    
+    def isAtTheSameLocation(self, other: 'NavPoint') -> bool:
+        if self.laneId == other.laneId:
+            if self.laneSection == other.laneSection:
+                return True
+        return False
         
             
         
