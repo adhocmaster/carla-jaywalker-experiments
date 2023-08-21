@@ -41,7 +41,12 @@ Please refer to our documentation folder for details:
 2. [Pedestrian Configuration](./docs/pedestrian-configuration.md)
 3. [OpenAI Gynasium based Environment](./docs/gym-env.md)
 4. [Custom Map with RoadRunner](./docs/create-map.md)
-5. [CrossWalk Area Modeling](./docs/cross-walk-area-model.md)
+
+## Research 
+This repository contains multiple research methods for jaywalker behavior modeling. Please, read the documentation for more information.
+1. [Microscopic Behavior Models](./docs/microscopic-behavior-models.md) - Core micro-scopic behavior models for jaywalker which are used in rest of the models.
+2. [CrossWalk Area Modeling](./docs/cross-walk-area-model.md) - Generative pedestrian model covering effective cross-walk area extracted from real-world trajectories.
+2. [Soft Trajectory Modeling](./docs/soft-model.md) - Generative pedestrian model that can combine a planning-based approach with microscopic behavior models. Address the issues with retargeting plans from machine learning based models to out-of-distribution scenarios.
 
 # Installation -
 
