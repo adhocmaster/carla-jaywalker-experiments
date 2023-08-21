@@ -71,17 +71,19 @@ def main(host, port, duration, record, play, actor, file):
         client = carla.Client(host, port)
         client.set_timeout(2.0)
 
-        if record:
+        if play:
+            playSession(client, file, actor)
+        elif record:
             recordSession(client, duration)
-        elif play:
-            play(file, actor)
     except Exception as e:
         print(e)
 
 
 
 def recordSession(client: carla.Client, duration: int):
-    path = os.path.join("../logs/recordings", f"{date.today().strftime('%Y-%m-%d-%H-%M')}.log")
+    abspath = "C:/AV/Carla/CARLA_0.9.13/WindowsNoEditor/PythonAPI/experiments/logs/recordings"
+    # path = os.path.join("../logs/recordings", f"{date.today().strftime('%Y-%m-%d-%H-%M')}.log")
+    path = os.path.join(abspath, f"{date.today().strftime('%Y-%m-%d-%H-%M')}.log")
     
     try:
         client.start_recorder(path)
@@ -97,6 +99,8 @@ def recordSession(client: carla.Client, duration: int):
         client.stop_recorder()
 
 
+def playSession(client, file, actor):
+    client.replay_file(file, 0, 100, 0)
 
 if __name__ == '__main__':
     main()
