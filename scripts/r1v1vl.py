@@ -25,7 +25,9 @@ def r1v1m2Default(max_ticks):
          
     )
     research.maxStepsPerCrossing = max_ticks
-    research.run(maxTicks=max_ticks)
+    # research.run(maxTicks=max_ticks)
+    research.reset()
+    research.simulator.loop(maxTicks=max_ticks)
 
 
 if __name__ == '__main__':
