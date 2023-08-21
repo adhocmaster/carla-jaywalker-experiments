@@ -3,7 +3,9 @@ exec(open("sys_path_hack.py").read())
 import logging
 import click
 import carla
-
+from datetime import date
+import time
+import os
 from research import ResearchFactory
 from lib import MapNames, SimulationMode
 
@@ -26,7 +28,7 @@ from lib import MapNames, SimulationMode
 @click.option(
     '-t', '--duration',
     metavar='number',
-    default=1000,
+    default=60,
     type=int,
     help='Duration in seconds'
     )
@@ -34,7 +36,7 @@ from lib import MapNames, SimulationMode
 @click.option(
     '-r', '--record',
     metavar='boolean',
-    default=False,
+    default=True,
     type=bool,
     help='Start recording'
     )
@@ -68,8 +70,32 @@ def main(host, port, duration, record, play, actor, file):
 
         client = carla.Client(host, port)
         client.set_timeout(2.0)
-        world = client.get_world()
+
+        if record:
+            recordSession(client, duration)
+        elif play:
+            play(file, actor)
+    except Exception as e:
+        print(e)
+
+
+
+def recordSession(client: carla.Client, duration: int):
+    path = os.path.join("../logs/recordings", f"{date.today().strftime('%Y-%m-%d-%H-%M')}.log")
     
+    try:
+        client.start_recorder(path)
+        print(f"Start recording at {path}")
+        if (duration > 0):
+            time.sleep(duration)
+        else:
+            while True:
+                client.world.wait_for_tick()
+                # time.sleep(0.1)
+    finally:
+        print("Stop recording")
+        client.stop_recorder()
+
 
 
 if __name__ == '__main__':

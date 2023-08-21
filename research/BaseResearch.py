@@ -20,7 +20,8 @@ class BaseResearch(ClientUser):
             mapName, logLevel, 
             outputDir:str = "logs", 
             simulationMode = SimulationMode.ASYNCHRONOUS,
-            record=False
+            record=False, 
+            render=True
         ) -> None:
         super().__init__(client)
 
@@ -34,6 +35,7 @@ class BaseResearch(ClientUser):
 
         self.simulationMode = simulationMode
         self.record = record
+        self.render = render
 
         self.time_delta = None
         self.mapManager = None
@@ -68,6 +70,13 @@ class BaseResearch(ClientUser):
         else:
             self.logger.warn(f"Starting simulation in synchronous mode")
             self.initWorldSettingsSynchronousMode()
+
+        
+        settings = self.world.get_settings()
+        if not self.render:
+            settings.no_rendering_mode = True
+        
+        self.world.apply_settings(settings)
 
         pass
 
