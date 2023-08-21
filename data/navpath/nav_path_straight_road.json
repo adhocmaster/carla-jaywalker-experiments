@@ -275,5 +275,72 @@
             }
         ]
 
+    },
+    
+    {
+        "id": "psi-0016",
+        "roadConfiguration": {
+            "roadWidth": 18,
+            "nEgoDirectionLanes": 3,
+            "nEgoOppositeDirectionLanes": 2
+        },
+        "egoConfiguration": {
+            "egoLaneWrtCenter": 2,
+            "egoSpeedStart": 30,
+            "egoSpeedEnd": 30
+        },
+        "pedConfiguration": {
+            "direction": "LR",
+            "avgSpeed": 1.0,
+            "maxSpeed": 2.5,
+            "minSpeed": 0.5
+        },
+        "path": [
+            {
+                "location": {
+                    "laneId": -2,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 30.0,
+                    "distanceToInitialEgo": 30.0
+                },
+                "behavior": {
+                    "speed": 2
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 25.0,
+                    "distanceToInitialEgo": 30.0
+                },
+                "behavior": {
+                    "speed": 1.5
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "RIGHT",
+                    "distanceToEgo": 10.0,
+                    "distanceToInitialEgo": 27.0
+                },
+                "behavior": {
+                    "speed": 0.5
+                }
+            },
+            {
+                "location": {
+                    "laneId": 0,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": -10,
+                    "distanceToInitialEgo": 25.0
+                },
+                "behavior": {
+                    "speed": 0.5
+                }
+            }
+        ]
+
     }
 ]

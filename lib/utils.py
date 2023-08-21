@@ -453,3 +453,10 @@ class Utils:
 
 
     #endregion
+
+    # region waypoints
+    @staticmethod
+    def wayPointsSameDirection(waypoint1: carla.Waypoint, waypoint2: carla.Waypoint):
+        return waypoint1.lane_id * waypoint2.lane_id > 0
+    
+    # endregion

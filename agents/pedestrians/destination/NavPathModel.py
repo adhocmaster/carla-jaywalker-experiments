@@ -139,7 +139,6 @@ class NavPathModel():
             self.intermediatePointsToNavPointMap[navLoc] = navPoint
             prevNavPoint = navPoint
         
-        # raise Exception("stop here")
                 
         self.nextIntermediatePointIdx = 0
         self.intermediatePoints.append(self.finalDestination)
@@ -148,20 +147,43 @@ class NavPathModel():
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=0.25, color=(0, 255, 255), coords=False, life_time=20.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=True, life_time=15.0)
+        self.agent.world.tick()
+        # raise Exception("stop here")
 
     
-    def getNavWaypoint(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint) -> carla.Waypoint:
+    def getNavWaypoint(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint) -> Optional[carla.Waypoint]:
+        """_summary_
+
+        Args:
+            navPoint (NavPoint): _description_
+            vehicleConflictWp (carla.Waypoint): _description_
+
+        Returns:
+            Optional[carla.Waypoint]: It can return None if the nav point lane does not exist in the current road or there is a issue in the map.
+        """
 
         # TODO just assume 2-lane for now
-        if navPoint.laneId == 0:
-            nearestWP = vehicleConflictWp
-        elif navPoint.isOnEgosLeft():
-            nearestWP = vehicleConflictWp.get_left_lane()
+        nearestWP = vehicleConflictWp
+        if navPoint.isOnEgosLeft():
+            laneOffset = -navPoint.laneId 
+            # print(laneOffset)
+            for i in range(laneOffset):
+                if (Utils.wayPointsSameDirection(nearestWP, vehicleConflictWp)):
+                    nearestWP = nearestWP.get_left_lane()
+                else:
+                    nearestWP = nearestWP.get_right_lane()
+                    
+                # print(nearestWP, nearestWP.lane_id, nearestWP.road_id) # does not work as the orientation of left and right is changed based on the driving direction.
             # print(f"navpoint {i} on the left")
         elif navPoint.isOnEgosRight():
+            laneOffset = navPoint.laneId 
             # print(f"navpoint {i} on the right")
-            nearestWP = vehicleConflictWp.get_right_lane()
+            for i in range(laneOffset):
+                if (Utils.wayPointsSameDirection(nearestWP, vehicleConflictWp)):
+                    nearestWP = nearestWP.get_right_lane()
+                else:
+                    nearestWP = nearestWP.get_left_lane()
         
         # print(f"nearestWP: {nearestWP}")
 
@@ -231,7 +253,7 @@ class NavPathModel():
         for behaviorType in navPoint.behaviorTags:
             # print(navPoint)
             self.logger.warn(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
-            self.agent.visualizer.drawPoint(nextDest, color=(0, 0, 255), life_time=10.0)
+            # self.agent.visualizer.drawPoint(nextDest, color=(0, 0, 255), life_time=10.0)
             self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
     
