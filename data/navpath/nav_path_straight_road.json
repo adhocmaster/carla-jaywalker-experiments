@@ -1,6 +1,6 @@
 [
     {
-        "id": "psi-002",
+        "id": "psi-0002",
         "roadConfiguration": {
             "roadWidth": 7.0,
             "nEgoDirectionLanes": 1,
@@ -67,7 +67,7 @@
     },
     
     {
-        "id": "psi-004",
+        "id": "psi-0004",
         "roadConfiguration": {
             "roadWidth": 14.0,
             "nEgoDirectionLanes": 2,
@@ -133,7 +133,7 @@
 
     },
     {
-        "id": "psi-008",
+        "id": "psi-0008",
         "roadConfiguration": {
             "roadWidth": 18,
             "nEgoDirectionLanes": 3,

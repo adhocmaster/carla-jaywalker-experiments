@@ -245,6 +245,16 @@ class SettingsManager(ClientUser):
             dicts = json.loads(f.read())
             return NavObjectMapper.pathsFromDicts(dicts)
     
+    def getNavPath(self, filePath: str, name: str) -> NavPath:
+        with open(filePath, "r") as f:
+            dicts = json.loads(f.read())
+            navPathDic = None
+            for dic in dicts:
+                if dic["id"] == name:
+                    navPathDic = dic
+                    break
+            return NavObjectMapper.pathFromDict(navPathDic)
+    
     
         
 

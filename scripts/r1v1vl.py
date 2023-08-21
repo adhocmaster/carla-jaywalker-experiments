@@ -15,13 +15,28 @@ from lib import MapNames, SimulationMode
     type=int,
     help='Number of ticks the simulator will run'
     )
-def r1v1m2Default(max_ticks):
+@click.option(
+    '-s', '--scenario',
+    metavar='string',
+    default="psi-0002",
+    type=str,
+    help='NavPath Scenario'
+    )
+@click.option(
+    '--stats',
+    metavar='boolean',
+    default=False,
+    type=bool,
+    help='Collect stats'
+    )
+def r1v1m2Default(max_ticks, scenario, stats):
     research = ResearchFactory.createResearch1v1NavPathModel(
         map=MapNames.varied_width_lanes, 
         defaultLogLevel=logging.WARN, 
         settingsId="setting1", 
         simulationMode = SimulationMode.SYNCHRONOUS,
-        stats=False
+        stats=stats,
+        scenario=scenario
          
     )
     research.maxStepsPerCrossing = max_ticks

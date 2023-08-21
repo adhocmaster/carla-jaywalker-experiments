@@ -42,7 +42,8 @@ class Research4v4(SettingBasedResearch):
                  settingsId = "setting1",
                  stats=False,
                  maxStepsPerCrossing=200,
-                 navPathFilePath="settings/nav_path_straight_road.json"
+                 navPathFilePath="data/navpath/nav_path_straight_road.json",
+                 scenario = "psi-0002",
                  ):
 
         self.name = "Research4v4"
@@ -63,6 +64,7 @@ class Research4v4(SettingBasedResearch):
         self.vehicles: List[carla.Vehicle] = []
         self.vehicleAgents: List[BehaviorAgent] = []
 
+        self.scenario = scenario
         self.navPathFilePath = navPathFilePath
         self._navPath = None
 
@@ -93,10 +95,11 @@ class Research4v4(SettingBasedResearch):
     @property
     def navPath(self) -> NavPath:
         if self._navPath is None:
-            navPaths = self.settingsManager.getNavPaths(self.navPathFilePath)
-            self._navPath = random.choice(navPaths)
+            # navPaths = self.settingsManager.getNavPaths(self.navPathFilePath)
+            # self._navPath = random.choice(navPaths)
             
-            self._navPath = navPaths[1] # just for testing
+            # self._navPath = navPaths[1] # just for testing
+            self._navPath = self.settingsManager.getNavPath(self.navPathFilePath, self.scenario)
 
         # print(self._navPath)
         # exit(0)
