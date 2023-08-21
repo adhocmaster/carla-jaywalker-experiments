@@ -57,6 +57,7 @@ class ResearchFactory:
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
                             stats=True,
+                            record=False,
                             scenario = "psi-0002",
                             ) -> Research1v1NavPathModel:
 
@@ -73,6 +74,7 @@ class ResearchFactory:
                          simulationMode=simulationMode, 
                          settingsId=settingsId,
                          stats=stats,
+                         record=record,
                          scenario=scenario
                          )
         
@@ -110,6 +112,7 @@ class ResearchFactory:
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
                             stats=True,
+                            record=False,
                             scenario = "psi-0002"
                             ) -> Research4v4:
 
@@ -126,6 +129,7 @@ class ResearchFactory:
                          simulationMode=simulationMode, 
                          settingsId=settingsId,
                          stats=stats,
+                         record=record,
                          scenario=scenario
                          )
 

@@ -18,6 +18,7 @@ class Research1v1NavPathModel(Research1v1):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 record=False,
                  maxStepsPerCrossing=200,
                  navPathFilePath="data/navpath/nav_path_straight_road.json",
                  scenario = "psi-0002",
@@ -31,6 +32,7 @@ class Research1v1NavPathModel(Research1v1):
                          simulationMode=simulationMode,
                          settingsId=settingsId,
                          stats=stats,
+                         record=record,
                          maxStepsPerCrossing=maxStepsPerCrossing
                          )
         

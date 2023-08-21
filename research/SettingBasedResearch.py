@@ -36,6 +36,7 @@ class SettingBasedResearch(BaseResearch):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 record=False,
                  maxStepsPerCrossing=200):
 
 
@@ -44,7 +45,9 @@ class SettingBasedResearch(BaseResearch):
                          mapName=mapName, 
                          logLevel=logLevel, 
                          outputDir=outputDir,
-                         simulationMode=simulationMode)
+                         simulationMode=simulationMode,
+                         record=record,
+                         )
 
         settings = None
         if mapName == MapNames.circle_t_junctions:

@@ -37,6 +37,7 @@ class Research1v1(SettingBasedResearch):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 record=False,
                  maxStepsPerCrossing=200
                  ):
 
@@ -50,6 +51,7 @@ class Research1v1(SettingBasedResearch):
                          simulationMode=simulationMode,
                          settingsId=settingsId,
                          stats=stats,
+                         record=record,
                          maxStepsPerCrossing=maxStepsPerCrossing
                          )
 

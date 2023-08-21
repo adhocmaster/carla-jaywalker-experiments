@@ -19,7 +19,8 @@ class BaseResearch(ClientUser):
             client: carla.Client, 
             mapName, logLevel, 
             outputDir:str = "logs", 
-            simulationMode = SimulationMode.ASYNCHRONOUS
+            simulationMode = SimulationMode.ASYNCHRONOUS,
+            record=False
         ) -> None:
         super().__init__(client)
 
@@ -32,6 +33,7 @@ class BaseResearch(ClientUser):
         self.logger = LoggerFactory.getBaseLogger(name, defaultLevel=logLevel, file=logPath)
 
         self.simulationMode = simulationMode
+        self.record = record
 
         self.time_delta = None
         self.mapManager = None

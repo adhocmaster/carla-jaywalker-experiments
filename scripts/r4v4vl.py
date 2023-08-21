@@ -16,26 +16,34 @@ from lib import MapNames, SimulationMode
     help='Number of ticks the simulator will run'
     )
 @click.option(
-    '-s', '--scenario',
-    metavar='string',
-    default="psi-0002",
-    type=str,
-    help='NavPath Scenario'
-    )
-@click.option(
     '--stats',
     metavar='boolean',
     default=False,
     type=bool,
     help='Collect stats'
     )
-def r1v1m2Default(max_ticks, scenario, stats):
+@click.option(
+    '-r', '--record',
+    metavar='boolean',
+    default=False,
+    type=bool,
+    help='Collect stats'
+    )
+@click.option(
+    '-s', '--scenario',
+    metavar='string',
+    default="psi-0002",
+    type=str,
+    help='NavPath Scenario'
+    )
+def r1v1m2Default(max_ticks, stats, record, scenario):
     research = ResearchFactory.createResearch4v4(
         map=MapNames.varied_width_lanes, 
         defaultLogLevel=logging.WARN, 
         settingsId="setting1", 
         simulationMode = SimulationMode.SYNCHRONOUS,
         stats=stats,
+        record=record,
         scenario=scenario
         )
     research.maxStepsPerCrossing = max_ticks
