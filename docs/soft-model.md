@@ -28,3 +28,5 @@ In the following video, PSI-0002 Scenario Reconstructed and Retargeted using Sof
 <iframe width="420" height="315"
     src="https://youtube.com/shorts/ygUYhyuXlPE?feature=share">
 </iframe>
+
+<embed type="video/webm" src="https://youtube.com/shorts/ygUYhyuXlPE?feature=share" width="250" height="200" />
