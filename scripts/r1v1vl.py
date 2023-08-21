@@ -33,7 +33,7 @@ def r1v1m2Default(max_ticks, scenario, stats):
     research = ResearchFactory.createResearch1v1NavPathModel(
         map=MapNames.varied_width_lanes, 
         defaultLogLevel=logging.WARN, 
-        settingsId="setting1", 
+        settingsId="setting1-ego-secondright", 
         simulationMode = SimulationMode.SYNCHRONOUS,
         stats=stats,
         scenario=scenario

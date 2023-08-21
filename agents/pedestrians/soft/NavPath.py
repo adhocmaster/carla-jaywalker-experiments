@@ -13,7 +13,7 @@ class NavPathRoadConfiguration:
 
 @dataclass
 class NavPathEgoConfiguration:
-    egoLaneWrtCenter: int
+    egoLaneWrtCenter: int #left is negative, right is positive.
     egoSpeedStart: float
     egoSpeedEnd: float
 
