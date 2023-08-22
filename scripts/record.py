@@ -72,7 +72,7 @@ def main(host, port, duration, record, play, actor, file):
         client.set_timeout(2.0)
 
         if play:
-            playSession(client, file, actor)
+            playSession(client, file, duration, actor)
         elif record:
             recordSession(client, duration)
     except Exception as e:
@@ -99,8 +99,19 @@ def recordSession(client: carla.Client, duration: int):
         client.stop_recorder()
 
 
-def playSession(client, file, actor):
-    client.replay_file(file, 0, 100, 0)
+def playSession(client, file, duration, actor):
+    try:
+        print(client.show_recorder_file_info(file, True))
+        client.replay_file(file, 0, duration, 24)
+        if (duration > 0):
+            time.sleep(duration)
+        else:
+            while True:
+                client.world.wait_for_tick()
+                # time.sleep(0.1)
+    finally:
+        print("Stop playing")
+        client.stop_replayer(False)
 
 if __name__ == '__main__':
     main()
