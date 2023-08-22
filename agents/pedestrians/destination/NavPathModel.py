@@ -147,7 +147,7 @@ class NavPathModel():
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=True, life_time=15.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=False, life_time=15.0)
         self.agent.world.tick()
         # raise Exception("stop here")
 
@@ -374,7 +374,7 @@ class NavPathModel():
             # return self.agent.getOldVelocity()
             self.logger.warn(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
             direction = (nextLoc - self.agent.location).make_unit_vector()
-            return 10 * direction 
+            return 5 * direction # quickly move to the next dest
             # return None
         
         # vehicle may stop
@@ -388,5 +388,5 @@ class NavPathModel():
         speed = dToNext / timeToReachNextNavPoint
         # print("speed", speed)
         direction = (nextLoc - self.agent.location).make_unit_vector()
-        return speed * direction * 1.5
+        return speed * direction * 1.2
     

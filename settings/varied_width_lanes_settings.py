@@ -8,7 +8,7 @@ varied_width_lanes_settings = {
 
         ],
         "walker_settings": [
-            (-127.0, 10, -112.0, 10), # 4-lane
+            (-127.5, 10, -112.0, 10), # 4-lane
             (-101.0, 10, -90, 10), # 3-lane
             (-84.0, 10, -74, 10), # 2-lane
             (-64.0, 10, -54.5, 10), # wide-lane
@@ -35,7 +35,7 @@ varied_width_lanes_settings = {
 
         ],
         "walker_settings": [
-            (-127.0, 10, -112.0, 10), # 4-lane
+            (-127.5, 10, -112.0, 10), # 4-lane
             (-101.0, 10, -90, 10), # 3-lane
         ],
         "spectator_settings": {
