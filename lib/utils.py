@@ -457,13 +457,22 @@ class Utils:
     # region waypoints
     @staticmethod
     def wayPointsSameDirection(waypoint1: carla.Waypoint, waypoint2: carla.Waypoint):
+        """This only works if map has strict opendrive structure
+
+        Args:
+            waypoint1 (carla.Waypoint): _description_
+            waypoint2 (carla.Waypoint): _description_
+
+        Returns:
+            _type_: _description_
+        """
         return waypoint1.lane_id * waypoint2.lane_id > 0
     
     #endregion
 
     #region sidewalks
 
-    def getNearestSidewalk(source: carla.Location, sidewalks: List[carla.LabeledPoint]) -> Optional[carla.LabeledPoint]:
+    def getNearestSidewalk(source: carla.Location, sidewalks: List[carla.LabelledPoint]) -> Optional[carla.LabelledPoint]:
         if len(sidewalks) == 0:
             return None
 
@@ -505,9 +514,9 @@ class Utils:
             Tuple[carla.Location, carla.Location]: left and right sidewalk locations
         """
 
-        sourceLocation = carla.Location(x = waypoint.location.x, y = waypoint.location.y, z=0.05)
+        sourceLocation = carla.Location(x = waypoint.transform.location.x, y = waypoint.transform.location.y, z=0.05)
         rightVector = waypoint.transform.get_right_vector() * rayLength
-        leftVector = -rightVector * rayLength
+        leftVector = -1 * rightVector * rayLength
         
         # rightLocation = carla.Location(x = rightVector.x, y = rightVector.y, z=0.05)
         # leftLocation = carla.Location(x = leftVector.x, y = leftVector.y, z=0.05)
@@ -515,8 +524,8 @@ class Utils:
         rightLocation = sourceLocation + rightVector
         leftLocation = sourceLocation + leftVector
         
-        rightSidewalks = Utils.getSideWalksOnRay(sourceLocation, rightLocation)
-        leftSidewalks = Utils.getSideWalksOnRay(sourceLocation, leftLocation)
+        rightSidewalks = Utils.getSideWalksOnRay(world, sourceLocation, rightLocation)
+        leftSidewalks = Utils.getSideWalksOnRay(world, sourceLocation, leftLocation)
 
         nearestLeftSidewalk = Utils.getNearestSidewalk(sourceLocation, leftSidewalks)
         nearestRightSidewalk = Utils.getNearestSidewalk(sourceLocation, rightSidewalks)

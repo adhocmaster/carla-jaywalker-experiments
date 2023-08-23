@@ -102,7 +102,7 @@ class NavPathModel():
             and (self.intermediatePoints[self.nextIntermediatePointIdx] == self.finalDestination)
             )
 
-    
+    # region initialization
     def initNavigation(self):
 
         # Assume the vehicle is at the right initial position and ped is at the sidewalk.
@@ -142,6 +142,8 @@ class NavPathModel():
                 
         self.nextIntermediatePointIdx = 0
         self.intermediatePoints.append(self.finalDestination)
+
+        self.setWalkersInitialPosition(vehicleConflictWp)
 
         self.initialized = True
 
@@ -223,8 +225,33 @@ class NavPathModel():
             return navLoc
 
 
-                
+    def setWalkersInitialPosition(self, vehicleConflictWp: carla.Waypoint):
+        if len(self.intermediatePoints) == 0:
+            return
+        
+        firstLoc = self.intermediatePoints[0]
+        firstLocWp = self.agent.map.get_waypoint(firstLoc)
 
+        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, firstLocWp)
+
+        sidewalk = leftSideWalk
+        if Utils.wayPointsSameDirection(firstLocWp, vehicleConflictWp):
+            if self.navPath.direction == Direction.LR:
+                sidewalk = leftSideWalk
+            else:
+                sidewalk = rightSidewalk
+        else: # opposite direction
+            if self.navPath.direction == Direction.LR:
+                sidewalk = rightSidewalk
+            else:
+                sidewalk = leftSideWalk
+
+        self.agent.walker.set_location(sidewalk.location)
+
+
+    # endregion
+
+    # region simulation
 
     def getNextDestinationPoint(self):
 
@@ -390,3 +417,4 @@ class NavPathModel():
         direction = (nextLoc - self.agent.location).make_unit_vector()
         return speed * direction * 1.2
     
+    #endregion
