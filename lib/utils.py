@@ -2,7 +2,7 @@ import carla
 import math
 import random
 from shapely.geometry import LineString, Point
-from typing import List, Dict
+from typing import List, Dict, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
@@ -458,5 +458,73 @@ class Utils:
     @staticmethod
     def wayPointsSameDirection(waypoint1: carla.Waypoint, waypoint2: carla.Waypoint):
         return waypoint1.lane_id * waypoint2.lane_id > 0
+    
+    #endregion
+
+    #region sidewalks
+
+    def getNearestSidewalk(source: carla.Location, sidewalks: List[carla.LabeledPoint]) -> Optional[carla.LabeledPoint]:
+        if len(sidewalks) == 0:
+            return None
+
+        nearestSidewalk = sidewalks[0]
+        nearestDistance = source.distance_2d(nearestSidewalk.location)
+
+        for sidewalk in sidewalks:
+            distance = source.distance_2d(sidewalk.location)
+            if distance < nearestDistance:
+                nearestDistance = distance
+                nearestSidewalk = sidewalk
+        
+        return nearestSidewalk
+
+    def getSideWalksOnRay(world: carla.World, source: carla.Location, dest: carla.Location, adjustZ=True) -> List[carla.LabelledPoint]:
+        if adjustZ:
+            source.z = 0.05
+            dest.z = 0.05
+
+        labeledObjects = world.cast_ray(source, dest)
+        # print(labeledObjects)
+        sidewalks = []
+        for lb in labeledObjects:
+            if lb.label == carla.CityObjectLabel.Sidewalks:
+                sidewalks.append(lb)
+        
+        return sidewalks
+
+    
+    @staticmethod
+    def getSideWalks(world: carla.World, waypoint: carla.Waypoint, rayLength: float=20) -> Tuple[carla.Location, carla.Location]:
+        """Returns left and right sidewalk locations if the waypoint. left and rigt are relative to the direction of the waypoint. 
+
+        Args:
+            waypoint (carla.Waypoint): _description_
+            rayLength (float): length of rays to cast on the sides. 
+
+        Returns:
+            Tuple[carla.Location, carla.Location]: left and right sidewalk locations
+        """
+
+        sourceLocation = carla.Location(x = waypoint.location.x, y = waypoint.location.y, z=0.05)
+        rightVector = waypoint.transform.get_right_vector() * rayLength
+        leftVector = -rightVector * rayLength
+        
+        # rightLocation = carla.Location(x = rightVector.x, y = rightVector.y, z=0.05)
+        # leftLocation = carla.Location(x = leftVector.x, y = leftVector.y, z=0.05)
+
+        rightLocation = sourceLocation + rightVector
+        leftLocation = sourceLocation + leftVector
+        
+        rightSidewalks = Utils.getSideWalksOnRay(sourceLocation, rightLocation)
+        leftSidewalks = Utils.getSideWalksOnRay(sourceLocation, leftLocation)
+
+        nearestLeftSidewalk = Utils.getNearestSidewalk(sourceLocation, leftSidewalks)
+        nearestRightSidewalk = Utils.getNearestSidewalk(sourceLocation, rightSidewalks)
+
+        return nearestLeftSidewalk, nearestRightSidewalk
+
+
+        # cast ray on the left and the right
+
     
     # endregion

@@ -129,7 +129,7 @@ class NavPathModel():
         for i, navPoint in enumerate(self.navPath.path):
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            vehicleConflictWp = vehicleWp.next(navPoint.distanceToInitialEgo * 1.5)[0] # add extent
+            vehicleConflictWp = vehicleWp.next(navPoint.distanceToInitialEgo + 10)[0] # 10 meter added so that vehicle has time to get to its desired speed
             # we need to translate wpOnVehicleLane wrt the initial start point on the sidewalk
           
             navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint)
@@ -374,7 +374,7 @@ class NavPathModel():
             # return self.agent.getOldVelocity()
             self.logger.warn(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, currentDToVehicle: {currentDToVehicle}, requiredDToVehicle: {requiredDToVehicle}")
             direction = (nextLoc - self.agent.location).make_unit_vector()
-            return 5 * direction # quickly move to the next dest
+            return 10 * direction # quickly move to the next dest
             # return None
         
         # vehicle may stop

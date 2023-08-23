@@ -552,5 +552,60 @@
             }
         ]
 
+    },
+    {
+        "id": "psi-0028",
+        "roadConfiguration": {
+            "roadWidth": 14,
+            "nEgoDirectionLanes": 2,
+            "nEgoOppositeDirectionLanes": 2
+        },
+        "egoConfiguration": {
+            "egoLaneWrtCenter": 1,
+            "egoSpeedStart": 20,
+            "egoSpeedEnd": 25
+        },
+        "pedConfiguration": {
+            "direction": "LR",
+            "avgSpeed": 1.5,
+            "maxSpeed": 1.5,
+            "minSpeed": 1.5
+        },
+        "path": [
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 15.0,
+                    "distanceToInitialEgo": 15.0
+                },
+                "behavior": {
+                    "speed": 1.5
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "RIGHT",
+                    "distanceToEgo": 1.0,
+                    "distanceToInitialEgo": 15.0
+                },
+                "behavior": {
+                    "speed": 1.5
+                }
+            },
+            {
+                "location": {
+                    "laneId": 0,
+                    "laneSection": "MIDDLE",
+                    "distanceToEgo": -3.0,
+                    "distanceToInitialEgo": 15.0
+                },
+                "behavior": {
+                    "speed": 1.5
+                }
+            }
+        ]
+
     }
 ]
