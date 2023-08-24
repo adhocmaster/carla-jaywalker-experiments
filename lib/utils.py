@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import copy
 
+
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
 blue = carla.Color(47, 210, 231)
@@ -64,10 +65,6 @@ class Utils:
         
         return Utils.getMagnitude(diff)
     
-    @staticmethod 
-    def distanceToVehicle(fromLocation: carla.Location, vehicle: carla.Vehicle):
-        return fromLocation.distance_2d(vehicle.get_location()) - vehicle.bounding_box.extent.x
-
         
     @staticmethod
     def getMagnitude(vector: carla.Vector3D):
