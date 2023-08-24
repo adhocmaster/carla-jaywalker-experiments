@@ -34,6 +34,8 @@ class NavPoint:
         
         # self.ttc = None
 
+        assert location.distanceToEgo != 0
+
         self.location = location
         self.behavior = behavior
         self.overlapOffset = 0.0

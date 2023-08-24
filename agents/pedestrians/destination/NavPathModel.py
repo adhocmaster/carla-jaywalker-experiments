@@ -462,19 +462,26 @@ class NavPathModel():
     def distanceToNavLoc(self, navLoc: carla.Location, vehicle: carla.Vehicle) -> float:
         navPoint = self.intermediatePointsToNavPointMap[navLoc]
         # to measure the distance, we need a projection vehicle's nearest location
-        vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
-        vehicleLocation = VehicleUtils.getNearestLocationOnVehicleAxis(navLoc, vehicle, vehicleWp)
-        vehicleToNav = navLoc - vehicleLocation
-        vehicleWpAtRelativeDistance = vehicleWp.next(navPoint.distanceToEgo)[0] if navPoint.distanceToEgo > 0 else vehicleWp.previous(-navPoint.distanceToEgo)[0]
-        vehicleToAxisNav = vehicleWpAtRelativeDistance.transform.location - vehicleLocation
+        # vehicleLocation = VehicleUtils.getNearestLocationOnVehicleAxis(navLoc, vehicle, vehicleWp)
+        if navPoint.distanceToEgo < 0:
+            vehicleRefLocation = VehicleUtils.getVehicleBackLocation(vehicle)
+            refWp: carla.Waypoint = self.agent.map.get_waypoint(vehicleRefLocation)
+            vehicleWpAtRelativeDistance = refWp.previous(-navPoint.distanceToEgo)[0] 
+        else:
+            vehicleRefLocation = VehicleUtils.getVehicleFrontLocation(vehicle)
+            refWp: carla.Waypoint = self.agent.map.get_waypoint(vehicleRefLocation)
+            vehicleWpAtRelativeDistance = refWp.next(navPoint.distanceToEgo)[0]
+
+        vehicleToNav = navLoc - vehicleRefLocation
+        vehicleToAxisNav = vehicleWpAtRelativeDistance.transform.location - vehicleRefLocation
 
         print("navPoint.distanceToEgo", navPoint.distanceToEgo)
         print("vehicleLocation", vehicle.get_location())
-        print("vehicleLocation nearest", vehicleLocation)
+        print("vehicleRefLocation", vehicleRefLocation)
         print("vehicleWpAtRelativeDistance", vehicleWpAtRelativeDistance.transform.location)
         print("vehicleToNav", vehicleToNav)
         print("vehicleToAxisNav", vehicleToAxisNav)
-        debugLocation = carla.Location(x=vehicleWpAtRelativeDistance.transform.location.x, y=vehicleWpAtRelativeDistance.transform.location.y, z = 2)
+        debugLocation = carla.Location(x=vehicleWpAtRelativeDistance.transform.location.x, y=vehicleWpAtRelativeDistance.transform.location.y, z = 0.5)
         self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(0, 255, 0), life_time=10)
 
     
