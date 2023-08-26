@@ -463,29 +463,30 @@ class NavPathModel():
         navPoint = self.intermediatePointsToNavPointMap[navLoc]
         # to measure the distance, we need a projection vehicle's nearest location
         # vehicleLocation = VehicleUtils.getNearestLocationOnVehicleAxis(navLoc, vehicle, vehicleWp)
-        vehicleRefLocation = self.getVehicleReferenceLocation(navPoint, vehicle)
-        vehicleWpAtDistanceToEgo= self.getVehicleWpAtDistanceToEgo(navPoint, vehicleRefLocation)
+        V_Ref = self.getVehicleReferenceLocation(navPoint, vehicle)
+        V_Z_Wp= self.getVehicleWpAtDistanceToEgo(navPoint.distanceToEgo, V_Ref)
         
         # this assertions make it safe
-        d1 = vehicleWpAtDistanceToEgo.transform.location.distance_2d(vehicleRefLocation)
+        d1 = V_Z_Wp.transform.location.distance_2d(V_Ref)
         # print("navPoint.distanceToEgo", navPoint.distanceToEgo)
         # print("d1", d1)
         assert d1 < abs(navPoint.distanceToEgo) * 1.1
         assert d1 > abs(navPoint.distanceToEgo) * 0.9
         # overkill assertions can be turned off
 
-        vehicleToNav = navLoc - vehicleRefLocation # the vector from the current reference location to the actual nav location
-        vehicleToAxisNavAtDistanceToEgo = vehicleWpAtDistanceToEgo.transform.location - vehicleRefLocation # the vector from current reference location to the point at distanceToEgo on the vehicle axis
-        vehicleToNavProjection = Utils.projectAonB2D(vehicleToNav, vehicleToAxisNavAtDistanceToEgo)
+        V_N = navLoc - V_Ref # the vector from the current reference location to the actual nav location
+        Z = V_Z_Wp.transform.location # relative goal point wrt current vehicle position. We need to move Z to G
+        V_Z = Z - V_Ref # the vector from current reference location to the point at distanceToEgo on the vehicle axis
+        vehicleToNavProjection = Utils.projectAonB2D(V_N, Z)
 
         print("navPoint.distanceToEgo", navPoint.distanceToEgo)
         print("vehicleLocation", vehicle.get_location())
-        print("vehicleRefLocation", vehicleRefLocation)
-        print("vehicleWpAtDistanceToEgo", vehicleWpAtDistanceToEgo.transform.location)
-        print("vehicleToNav", vehicleToNav)
-        print("vehicleToAxisNavAtDistanceToEgo", vehicleToAxisNavAtDistanceToEgo)
+        print("V_Ref:", V_Ref)
+        print("V_Z_Wp", V_Z_Wp.transform.location)
+        print("V_N:", V_N)
+        print("V_Z", V_Z)
         print("vehicleToNavProjection", vehicleToNavProjection)
-        debugLocation = carla.Location(x=vehicleWpAtDistanceToEgo.transform.location.x, y=vehicleWpAtDistanceToEgo.transform.location.y, z = 0.5)
+        debugLocation = carla.Location(x=Z.x, y=Z.y, z = 0.5) # WP location is V_Z's location in world coordinates
         self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(0, 255, 0), life_time=10)
 
         return vehicleToNavProjection
@@ -498,21 +499,21 @@ class NavPathModel():
             vehicleRefLocation = VehicleUtils.getVehicleFrontLocation(vehicle)
         return vehicleRefLocation
     
-    def getVehicleWpAtDistanceToEgo(self, navPoint: NavPoint, vehicleRefLocation: carla.Location) -> carla.Waypoint:
+    def getVehicleWpAtDistanceToEgo(self, distanceToEgo: float, vehicleRefLocation: carla.Location) -> carla.Waypoint:
         """Based on the current vehicleRefLocation, it returns the waypoint of the vehicle at navPoint.distanceToEgo
 
         Args:
-            navPoint (NavPoint): _description_
+            distanceToEgo (float): distanceToEgo of the NavPoint
             vehicleRefLocation (carla.Location): _description_
 
         Returns:
             carla.Waypoint: _description_
         """
         refWp: carla.Waypoint = self.agent.map.get_waypoint(vehicleRefLocation)
-        if navPoint.distanceToEgo < 0:
-            return refWp.previous(-navPoint.distanceToEgo)[0] 
+        if distanceToEgo < 0:
+            return refWp.previous(-distanceToEgo)[0] 
         else:
-            return refWp.next(navPoint.distanceToEgo)[0]
+            return refWp.next(distanceToEgo)[0]
         
 
     
