@@ -420,7 +420,7 @@ class NavPathModel():
 
         vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
 
-        self.distanceToNavLoc(nextLoc, vehicle)
+        self.vehicleDistanceToNavLocOnVehicleAxis(nextLoc, vehicle)
         
 
         locToVehicle = VehicleUtils.distanceToVehicle(nextLoc, vehicle, vehicleWp)
@@ -459,30 +459,61 @@ class NavPathModel():
         return VehicleUtils.isVehicleBehindLocation(navLoc, vehicle, vehicleWp)
     
 
-    def distanceToNavLoc(self, navLoc: carla.Location, vehicle: carla.Vehicle) -> float:
+    def vehicleDistanceToNavLocOnVehicleAxis(self, navLoc: carla.Location, vehicle: carla.Vehicle) -> float:
         navPoint = self.intermediatePointsToNavPointMap[navLoc]
         # to measure the distance, we need a projection vehicle's nearest location
         # vehicleLocation = VehicleUtils.getNearestLocationOnVehicleAxis(navLoc, vehicle, vehicleWp)
-        if navPoint.distanceToEgo < 0:
-            vehicleRefLocation = VehicleUtils.getVehicleBackLocation(vehicle)
-            refWp: carla.Waypoint = self.agent.map.get_waypoint(vehicleRefLocation)
-            vehicleWpAtRelativeDistance = refWp.previous(-navPoint.distanceToEgo)[0] 
-        else:
-            vehicleRefLocation = VehicleUtils.getVehicleFrontLocation(vehicle)
-            refWp: carla.Waypoint = self.agent.map.get_waypoint(vehicleRefLocation)
-            vehicleWpAtRelativeDistance = refWp.next(navPoint.distanceToEgo)[0]
+        vehicleRefLocation = self.getVehicleReferenceLocation(navPoint, vehicle)
+        vehicleWpAtDistanceToEgo= self.getVehicleWpAtDistanceToEgo(navPoint, vehicleRefLocation)
+        
+        # this assertions make it safe
+        d1 = vehicleWpAtDistanceToEgo.transform.location.distance_2d(vehicleRefLocation)
+        # print("navPoint.distanceToEgo", navPoint.distanceToEgo)
+        # print("d1", d1)
+        assert d1 < abs(navPoint.distanceToEgo) * 1.1
+        assert d1 > abs(navPoint.distanceToEgo) * 0.9
+        # overkill assertions can be turned off
 
-        vehicleToNav = navLoc - vehicleRefLocation
-        vehicleToAxisNav = vehicleWpAtRelativeDistance.transform.location - vehicleRefLocation
+        vehicleToNav = navLoc - vehicleRefLocation # the vector from the current reference location to the actual nav location
+        vehicleToAxisNavAtDistanceToEgo = vehicleWpAtDistanceToEgo.transform.location - vehicleRefLocation # the vector from current reference location to the point at distanceToEgo on the vehicle axis
+        vehicleToNavProjection = Utils.projectAonB2D(vehicleToNav, vehicleToAxisNavAtDistanceToEgo)
 
         print("navPoint.distanceToEgo", navPoint.distanceToEgo)
         print("vehicleLocation", vehicle.get_location())
         print("vehicleRefLocation", vehicleRefLocation)
-        print("vehicleWpAtRelativeDistance", vehicleWpAtRelativeDistance.transform.location)
+        print("vehicleWpAtDistanceToEgo", vehicleWpAtDistanceToEgo.transform.location)
         print("vehicleToNav", vehicleToNav)
-        print("vehicleToAxisNav", vehicleToAxisNav)
-        debugLocation = carla.Location(x=vehicleWpAtRelativeDistance.transform.location.x, y=vehicleWpAtRelativeDistance.transform.location.y, z = 0.5)
+        print("vehicleToAxisNavAtDistanceToEgo", vehicleToAxisNavAtDistanceToEgo)
+        print("vehicleToNavProjection", vehicleToNavProjection)
+        debugLocation = carla.Location(x=vehicleWpAtDistanceToEgo.transform.location.x, y=vehicleWpAtDistanceToEgo.transform.location.y, z = 0.5)
         self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(0, 255, 0), life_time=10)
+
+        return vehicleToNavProjection
+
+    
+    def getVehicleReferenceLocation(self, navPoint: NavPoint, vehicle: carla.Vehicle) -> carla.Location:
+        if navPoint.distanceToEgo < 0:
+            vehicleRefLocation = VehicleUtils.getVehicleBackLocation(vehicle)
+        else:
+            vehicleRefLocation = VehicleUtils.getVehicleFrontLocation(vehicle)
+        return vehicleRefLocation
+    
+    def getVehicleWpAtDistanceToEgo(self, navPoint: NavPoint, vehicleRefLocation: carla.Location) -> carla.Waypoint:
+        """Based on the current vehicleRefLocation, it returns the waypoint of the vehicle at navPoint.distanceToEgo
+
+        Args:
+            navPoint (NavPoint): _description_
+            vehicleRefLocation (carla.Location): _description_
+
+        Returns:
+            carla.Waypoint: _description_
+        """
+        refWp: carla.Waypoint = self.agent.map.get_waypoint(vehicleRefLocation)
+        if navPoint.distanceToEgo < 0:
+            return refWp.previous(-navPoint.distanceToEgo)[0] 
+        else:
+            return refWp.next(navPoint.distanceToEgo)[0]
+        
 
     
     #endregion

@@ -116,6 +116,7 @@ class Utils:
 
     @staticmethod
     def projectAonB2D(a: carla.Vector3D, b: carla.Vector3D) -> float:
+        b = carla.Vector3D(x=b.x, y=b.y, z=0) # otherwise the length will be wrong
         return (a.dot_2d(b) / b.length())
 
 
