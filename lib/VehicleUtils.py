@@ -107,19 +107,19 @@ class VehicleUtils:
         return vehicleLocation
     
     
-    def isVehicleBehindLocation(navLoc: carla.Location, vehicle: carla.Vehicle, vehicleWp: carla.Waypoint) -> bool:
+    def isVehicleBehindLocation(fromLoc: carla.Location, vehicle: carla.Vehicle, vehicleWp: carla.Waypoint) -> bool:
         """Checks if the vehicle is behind the location
 
         Args:
-            navLoc (carla.Location): _description_
+            fromLoc (carla.Location): _description_
             vehicle (carla.Vehicle): _description_
 
         Returns:
             bool: _description_
         """
         vehicleDirection = vehicleWp.transform.get_forward_vector()
-        vehicleToNavLoc = navLoc - vehicle.get_location() # todo add front location to check
-        # vehicleToNavLoc = navLoc - vehicle.get_location()
+        vehicleToNavLoc = fromLoc - vehicle.get_location() # todo add front location to check
+        # vehicleToNavLoc = fromLoc - vehicle.get_location()
         angle = abs(Utils.angleBetweenVectors(vehicleDirection, vehicleToNavLoc))
         # print("angle", math.degrees(angle))
         if angle >= math.pi / 2:

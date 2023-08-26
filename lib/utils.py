@@ -115,9 +115,16 @@ class Utils:
         return np.arccos(np.clip(np.dot(d1, d2), -1.0, 1.0))
 
     @staticmethod
-    def projectAonB2D(a: carla.Vector3D, b: carla.Vector3D) -> float:
+    def projectAonB2DScalar(a: carla.Vector3D, b: carla.Vector3D) -> float:
         b = carla.Vector3D(x=b.x, y=b.y, z=0) # otherwise the length will be wrong
         return (a.dot_2d(b) / b.length())
+
+    @staticmethod
+    def projectAonB2D(a: carla.Vector3D, b: carla.Vector3D) -> float:
+        scalar = Utils.projectAonB2DScalar(a, b)
+        bDirection = carla.Vector3D(x=b.x, y=b.y, z=0).make_unit_vector() # otherwise the length will be wrong
+        return bDirection * scalar
+
 
 
     @staticmethod

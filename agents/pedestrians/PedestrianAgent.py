@@ -327,16 +327,16 @@ class PedestrianAgent(InfoAgent):
 
             return False
 
-        self.logger.warn(f"current distance to sidewalk is {distance}")
+        self.logger.debug(f"current distance to sidewalk is {distance}")
         distance -= self.getOldSpeed() * self.time_delta
-        self.logger.warn(f"after tick distance to sidewalk is {distance}")
+        self.logger.debug(f"after tick distance to sidewalk is {distance}")
 
         # walkerSpeed = self.getOldSpeed()
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
         # if distance < 0.2 and distance > 0.1:
         if distance < 0.7:
-            self.logger.warn(f"after tick distance to sidewalk is {distance}. Can jump")
+            self.logger.debug(f"after tick distance to sidewalk is {distance}. Can jump")
             return True
         return False
 

@@ -117,21 +117,24 @@ class NavPathModel():
 
         vehicle = self.agent.actorManager.egoVehicle
         
-        vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
-        vehicleRightVector = vehicleWp.transform.get_right_vector()
-        vehicleLeftVector = -1 * vehicleRightVector
-        
-
+        V_Ref_Front = VehicleUtils.getVehicleFrontLocation(vehicle)
+        V_Ref_Back = VehicleUtils.getVehicleBackLocation(vehicle)
+        V_Ref_Front_Wp = self.agent.map.get_waypoint(V_Ref_Front)
+        V_Ref_Back_Wp = self.agent.map.get_waypoint(V_Ref_Back)   
 
         self.intermediatePoints = []
         
         # get nav points which 
+        vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
+
         prevNavPoint = None
         for i, navPoint in enumerate(self.navPath.path):
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            vehicleConflictWp = vehicleWp.next(navPoint.distanceToInitialEgo + 10)[0] # 10 meter added so that vehicle has time to get to its desired speed
-            # we need to translate wpOnVehicleLane wrt the initial start point on the sidewalk
+            if navPoint.distanceToEgo < 0:
+                vehicleConflictWp = V_Ref_Back_Wp.next(navPoint.distanceToInitialEgo + vehicleLag)[0] 
+            else:
+                vehicleConflictWp = V_Ref_Front_Wp.next(navPoint.distanceToInitialEgo + vehicleLag)[0]
           
             navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint)
 
@@ -383,15 +386,11 @@ class NavPathModel():
             return None
         
         vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
-        vehicleTravelD = self.getEgoTravelDistance()
+        vehicleTravelD = self.vehicleDistanceToNavLocOnVehicleAxis(nextLoc, vehicle)
 
         if vehicleTravelD < 0:
             
-            vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
-            locToVehicle = VehicleUtils.distanceToVehicle(nextLoc, vehicle, vehicleWp)
-            nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
-            # return self.agent.getOldVelocity()
-            self.logger.warn(f"vehicleTravelD is negative, it already crossed the threshold: {vehicleTravelD}, locToVehicle: {locToVehicle}, requiredDToVehicle: {nextNavPoint.distanceToEgo}")
+            self.logger.warn(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible.")
             direction = (nextLoc - self.agent.location).make_unit_vector()
             return 10 * direction # quickly move to the next dest
             # return None
@@ -409,57 +408,56 @@ class NavPathModel():
         direction = (nextLoc - self.agent.location).make_unit_vector()
         return speed * direction * 1.2
     
-    def getEgoTravelDistance(self) -> Optional[carla.Vector3D]:
-        vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
+    # def getEgoTravelDistance(self) -> Optional[carla.Vector3D]:
+    #     vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
         
-        nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
-        nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
+    #     nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
+    #     nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
 
-        # debugLocation = carla.Location(x=vehicle.get_location().x, y=vehicle.get_location().y, z=vehicle.get_location().z + 1.0)
-        # self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(255, 0, 0), life_time=10)
+    #     # debugLocation = carla.Location(x=vehicle.get_location().x, y=vehicle.get_location().y, z=vehicle.get_location().z + 1.0)
+    #     # self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(255, 0, 0), life_time=10)
 
-        vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
+    #     vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
 
-        self.vehicleDistanceToNavLocOnVehicleAxis(nextLoc, vehicle)
+    #     vehicleTravelD = self.vehicleDistanceToNavLocOnVehicleAxis(nextLoc, vehicle)
         
 
-        locToVehicle = VehicleUtils.distanceToVehicle(nextLoc, vehicle, vehicleWp)
-        print("locToVehicle before adjustment", locToVehicle)
-        assert locToVehicle is not None
+    #     locToVehicle = VehicleUtils.distanceToVehicle(nextLoc, vehicle, vehicleWp)
+    #     print("locToVehicle before adjustment", locToVehicle)
+    #     assert locToVehicle is not None
 
-        if nextNavPoint.distanceToEgo < 0: # negative required distance
-            # we need to make sure that when we reach this point, vehicle is past us
-            if not self.isVehicleBehindNavLoc(nextLoc, vehicle): # tthis is not correct as we are checking against the agent's location. We need to check against the navpoint location.
-                locToVehicle = -locToVehicle
-        else: # positive required distance
-            if not self.isVehicleBehindNavLoc(nextLoc, vehicle): # it really does not matter if the vehicle is oncoming or not.
-                self.agent.logger.warning(f"vehicle is not oncoming for positive nav pointt. stopping nav path model")
-                return None
+    #     if nextNavPoint.distanceToEgo < 0: # negative required distance
+    #         # we need to make sure that when we reach this point, vehicle is past us
+    #         if not self.isVehicleBehindNavLoc(nextLoc, vehicle): # tthis is not correct as we are checking against the agent's location. We need to check against the navpoint location.
+    #             locToVehicle = -locToVehicle
+    #     else: # positive required distance
+    #         if not self.isVehicleBehindNavLoc(nextLoc, vehicle): # it really does not matter if the vehicle is oncoming or not.
+    #             self.agent.logger.warning(f"vehicle is not oncoming for positive nav pointt. stopping nav path model")
+    #             return None
             
-        requiredDToVehicle = nextNavPoint.distanceToEgo
-        vehicleTravelD = locToVehicle - requiredDToVehicle
-        # print(vehicleTravelD)
-        # raise Exception(f"stop here vehicleTravelD {vehicleTravelD}, requiredDToVehicle {requiredDToVehicle}, locToVehicle {locToVehicle}")
-        print(f"stop here vehicleTravelD {vehicleTravelD}, requiredDToVehicle {requiredDToVehicle}, locToVehicle {locToVehicle}")
-        print(f"current nav index {self.nextIntermediatePointIdx}")
+    #     requiredDToVehicle = nextNavPoint.distanceToEgo
+    #     vehicleTravelD = locToVehicle - requiredDToVehicle
+    #     # print(vehicleTravelD)
+    #     # raise Exception(f"stop here vehicleTravelD {vehicleTravelD}, requiredDToVehicle {requiredDToVehicle}, locToVehicle {locToVehicle}")
+    #     print(f"stop here vehicleTravelD {vehicleTravelD}, requiredDToVehicle {requiredDToVehicle}, locToVehicle {locToVehicle}")
+    #     print(f"current nav index {self.nextIntermediatePointIdx}")
     
-        return vehicleTravelD
+    #     return vehicleTravelD
     
-    def isVehicleBehindNavLoc(self, navLoc: carla.Location, vehicle: carla.Vehicle) -> bool:
-        """Checks if the vehicle is behind the nav location
+    
+
+    def vehicleDistanceToNavLocOnVehicleAxis(self, navLoc: carla.Location, vehicle: carla.Vehicle) -> float:
+        """Distance is positive when vehicle's distance is greater than distanceToEgo and vehicle is moving towards the distanceToEgo. 
+        
+        It's a complicated method as distanceToEgo can be positive or negative. Basically it will return a negative distance if vehicle overshoots.
 
         Args:
             navLoc (carla.Location): _description_
             vehicle (carla.Vehicle): _description_
 
         Returns:
-            bool: _description_
+            float: _description_
         """
-        vehicleWp: carla.Waypoint = self.agent.map.get_waypoint(vehicle.get_location())
-        return VehicleUtils.isVehicleBehindLocation(navLoc, vehicle, vehicleWp)
-    
-
-    def vehicleDistanceToNavLocOnVehicleAxis(self, navLoc: carla.Location, vehicle: carla.Vehicle) -> float:
         navPoint = self.intermediatePointsToNavPointMap[navLoc]
         # to measure the distance, we need a projection vehicle's nearest location
         # vehicleLocation = VehicleUtils.getNearestLocationOnVehicleAxis(navLoc, vehicle, vehicleWp)
@@ -474,22 +472,41 @@ class NavPathModel():
         assert d1 > abs(navPoint.distanceToEgo) * 0.9
         # overkill assertions can be turned off
 
-        V_N = navLoc - V_Ref # the vector from the current reference location to the actual nav location
         Z = V_Z_Wp.transform.location # relative goal point wrt current vehicle position. We need to move Z to G
+        # G = Utils.projectAonB2D(navLoc, Z)
+        # V_G = G - V_Ref
+        V_N = navLoc - V_Ref # the vector from the current reference location to the actual nav location
         V_Z = Z - V_Ref # the vector from current reference location to the point at distanceToEgo on the vehicle axis
-        vehicleToNavProjection = Utils.projectAonB2D(V_N, Z)
+        V_G = Utils.projectAonB2D(V_N, V_Z)
+        G = V_Ref + V_G 
+        V_ZG = G - Z
 
-        print("navPoint.distanceToEgo", navPoint.distanceToEgo)
-        print("vehicleLocation", vehicle.get_location())
-        print("V_Ref:", V_Ref)
-        print("V_Z_Wp", V_Z_Wp.transform.location)
-        print("V_N:", V_N)
-        print("V_Z", V_Z)
-        print("vehicleToNavProjection", vehicleToNavProjection)
         debugLocation = carla.Location(x=Z.x, y=Z.y, z = 0.5) # WP location is V_Z's location in world coordinates
         self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(0, 255, 0), life_time=10)
 
-        return vehicleToNavProjection
+        distanceToTravel = V_ZG.length()
+        # Check overshoot
+        if navPoint.distanceToEgo < 0 and V_G.dot(V_Z) > 0:
+            distanceToTravel = - distanceToTravel
+        elif navPoint.distanceToEgo > 0 and V_G.dot(V_Z) < 0:
+            distanceToTravel = - distanceToTravel
+
+        if distanceToTravel < 0:
+            self.agent.logger.warning(f"vehicle has already crossed the nav point. distanceToTravel {distanceToTravel}, navPoint.distanceToEgo {navPoint.distanceToEgo}")
+
+            self.agent.logger.debug("navPoint.distanceToEgo", navPoint.distanceToEgo)
+            self.agent.logger.debug("vehicleLocation", vehicle.get_location())
+            self.agent.logger.debug("V_Ref:", V_Ref)
+            self.agent.logger.debug("V_Z", V_Z)
+            self.agent.logger.debug("V_N:", V_N)
+            self.agent.logger.debug("V_G", V_G)
+            self.agent.logger.debug("Z", Z)
+            self.agent.logger.debug("N:", navLoc)
+            self.agent.logger.debug("G", G)
+            self.agent.logger.debug("V_ZG", V_ZG)
+            self.agent.logger.debug("V_ZG.length", V_ZG.length())
+
+        return distanceToTravel
 
     
     def getVehicleReferenceLocation(self, navPoint: NavPoint, vehicle: carla.Vehicle) -> carla.Location:

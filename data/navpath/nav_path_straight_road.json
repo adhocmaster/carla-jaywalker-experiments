@@ -672,7 +672,7 @@
         },
         "egoConfiguration": {
             "egoLaneWrtCenter": 3,
-            "egoSpeedStart": 10,
+            "egoSpeedStart": 8,
             "egoSpeedEnd": 5
         },
         "pedConfiguration": {
@@ -695,10 +695,21 @@
             },
             {
                 "location": {
-                    "laneId": 1,
+                    "laneId": -1,
+                    "laneSection": "RIGHT",
+                    "distanceToEgo": 0.2,
+                    "distanceToInitialEgo": 1.0
+                },
+                "behavior": {
+                    "speed": 2
+                }
+            },
+            {
+                "location": {
+                    "laneId": 0,
                     "laneSection": "RIGHT",
                     "distanceToEgo": 1.0,
-                    "distanceToInitialEgo": 2.0
+                    "distanceToInitialEgo": 3.0
                 },
                 "behavior": {
                     "speed": 2.5
@@ -706,13 +717,13 @@
             },
             {
                 "location": {
-                    "laneId": 0,
+                    "laneId": 1,
                     "laneSection": "RIGHT",
                     "distanceToEgo": 2.0,
-                    "distanceToInitialEgo": 3.0
+                    "distanceToInitialEgo": 4.0
                 },
                 "behavior": {
-                    "speed": 3
+                    "speed": 2.5
                 }
             }
         ]
