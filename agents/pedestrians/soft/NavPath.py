@@ -86,6 +86,9 @@ class NavPath:
     def egoLaneWrtCenter(self):
         return self.egoConfiguration.egoLaneWrtCenter
     
+    def setEgoLaneWrtCenter(self, egoLaneWrtCenter: int):
+        self.egoConfiguration.egoLaneWrtCenter = egoLaneWrtCenter
+    
     
     @property
     def egoSpeedStart(self):

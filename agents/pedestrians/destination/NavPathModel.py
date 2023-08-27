@@ -112,13 +112,16 @@ class NavPathModel():
         This method has flaw when lane numbering changes.
         """
         vehicle = self.agent.actorManager.egoVehicle
-        V_Ref_Front = VehicleUtils.getVehicleFrontLocation(vehicle)
-        V_Ref_Front_Wp = self.agent.map.get_waypoint(V_Ref_Front)
-        newLaneId = V_Ref_Front_Wp.lane_id
-        if newLaneId != self.vehicleLaneId:
-            self.logger.warn(f"vehicle lane has changed from {self.vehicleLaneId} to {newLaneId}. reinitializing nav path model")
-            self.rePlaceNavpointsFromIdx(self.nextIntermediatePointIdx)
+        if VehicleUtils.hasVehicleCompletelyChangedLane(self.vehicleLaneId, vehicle):
+
+            V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
+            newLaneId = V_Ref_Front_Wp.lane_id
+            self.navPath.setEgoLaneWrtCenter(abs(newLaneId))
+            self.logger.warn(f"vehicle lane has changed from {self.vehicleLaneId} to {newLaneId}. reinitializing nav path model and updating egoWrtCenter.")
+
+            self.rePlaceNavpointsFromIdx(self.nextIntermediatePointIdx + 1)
         pass
+
 
 
     def rePlaceNavpointsFromIdx(self, idx: int):
@@ -143,8 +146,9 @@ class NavPathModel():
                 continue
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
-            if navPoint.distanceToEgo < 0:
+            if navPoint.distanceToEgo < 0 and navPoint.distanceToInitialEgo < 0:
                 vehicleConflictWp = V_Ref_Back_Wp.next(navPoint.distanceToInitialEgo + self.vehicleLag)[0] 
+                # vehicleConflictWp = V_Ref_Front_Wp.next(navPoint.distanceToInitialEgo + self.vehicleLag)[0] # initial location is always from the front.
             else:
                 vehicleConflictWp = V_Ref_Front_Wp.next(navPoint.distanceToInitialEgo + self.vehicleLag)[0]
           
@@ -164,7 +168,7 @@ class NavPathModel():
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=False, life_time=15.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=True, life_time=15.0)
         self.agent.world.tick()
         # raise Exception("stop here")
 
@@ -202,7 +206,7 @@ class NavPathModel():
         nearestWP = vehicleConflictWp
         if navPoint.isOnEgosLeft():
             laneOffset = -navPoint.laneId 
-            # print(laneOffset)
+            print("laneOffset", laneOffset)
             for i in range(laneOffset):
                 if (Utils.wayPointsSameDirection(nearestWP, vehicleConflictWp)):
                     nearestWP = nearestWP.get_left_lane()
@@ -254,6 +258,10 @@ class NavPathModel():
                     navLoc += vehicleRightVector * navWP.lane_width * navPoint.overlapOffset
                 else:
                     navLoc += vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
+
+            print("vehicleConflictWp", vehicleConflictWp)
+            print("navWP", navWP)
+            print("navLoc", navLoc)
 
             return navLoc
 

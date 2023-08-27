@@ -148,3 +148,20 @@ class VehicleUtils:
 
         # return fromLocation.distance_2d(vehicle.bounding_box.location) - vehicle.bounding_box.extent.x
         return fromLocation.distance_2d(vehicleLocation)
+    
+    @staticmethod
+    def hasVehicleCompletelyChangedLane(previousLaneId: int, vehicle: carla.Vehicle) -> bool:
+        """Vehicle has completedly changed lane when both the front and the back has changed lanes
+
+        Args:
+            previousLaneId (int): _description_
+            vehicle (carla.Vehicle): _description_
+
+        Returns:
+            bool: _description_
+        """
+        
+        V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
+        V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
+        return (V_Ref_Front_Wp.lane_id == V_Ref_Back_Wp.lane_id) and (V_Ref_Front_Wp.lane_id != previousLaneId)
+

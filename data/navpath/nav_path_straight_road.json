@@ -738,8 +738,8 @@
         },
         "egoConfiguration": {
             "egoLaneWrtCenter": 1,
-            "egoSpeedStart": 10,
-            "egoSpeedEnd": 10
+            "egoSpeedStart": 15,
+            "egoSpeedEnd": 20
         },
         "pedConfiguration": {
             "direction": "LR",
@@ -785,7 +785,7 @@
                 "location": {
                     "laneId": 0,
                     "laneSection": "LEFT",
-                    "distanceToEgo": 2.0,
+                    "distanceToEgo": -1,
                     "distanceToInitialEgo": 20
                 },
                 "behavior": {
