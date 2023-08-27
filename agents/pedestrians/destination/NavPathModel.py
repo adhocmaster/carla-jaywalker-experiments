@@ -63,6 +63,7 @@ class NavPathModel():
         #     print("nav idx:", idx)
         #     print(navPoint)
         #     print(id(navPoint.behaviorTags))
+
         # raise Exception("stop here")
         self.vehicleLaneId = None # need this one to retranslate remaining nav points
         self.vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
