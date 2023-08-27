@@ -695,10 +695,10 @@
             },
             {
                 "location": {
-                    "laneId": -1,
-                    "laneSection": "RIGHT",
-                    "distanceToEgo": 0.2,
-                    "distanceToInitialEgo": 1.0
+                    "laneId": 0,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 0.5,
+                    "distanceToInitialEgo": 2.0
                 },
                 "behavior": {
                     "speed": 2
@@ -724,6 +724,72 @@
                 },
                 "behavior": {
                     "speed": 2.5
+                }
+            }
+        ]
+
+    },
+    {
+        "id": "psi-0041",
+        "roadConfiguration": {
+            "roadWidth": 14,
+            "nEgoDirectionLanes": 2,
+            "nEgoOppositeDirectionLanes": 2
+        },
+        "egoConfiguration": {
+            "egoLaneWrtCenter": 1,
+            "egoSpeedStart": 10,
+            "egoSpeedEnd": 10
+        },
+        "pedConfiguration": {
+            "direction": "LR",
+            "avgSpeed": 0.5,
+            "maxSpeed": 1.5,
+            "minSpeed": 0
+        },
+        "path": [
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "RIGHT",
+                    "distanceToEgo": 20.0,
+                    "distanceToInitialEgo": 20
+                },
+                "behavior": {
+                    "speed": 0.1
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 10,
+                    "distanceToInitialEgo": 20
+                },
+                "behavior": {
+                    "speed": 0.5
+                }
+            },
+            {
+                "location": {
+                    "laneId": -1,
+                    "laneSection": "MIDDLE",
+                    "distanceToEgo": 1.0,
+                    "distanceToInitialEgo": 20
+                },
+                "behavior": {
+                    "speed": 1
+                }
+            },
+            {
+                "location": {
+                    "laneId": 0,
+                    "laneSection": "LEFT",
+                    "distanceToEgo": 2.0,
+                    "distanceToInitialEgo": 20
+                },
+                "behavior": {
+                    "speed": 1.5
                 }
             }
         ]

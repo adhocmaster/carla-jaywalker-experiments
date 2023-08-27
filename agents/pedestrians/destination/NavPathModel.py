@@ -280,7 +280,7 @@ class NavPathModel():
         """
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
         navPoint = self.intermediatePointsToNavPointMap[nextDest]
-        self.logger.debug(f"has reached nav point {navPoint}")
+        self.logger.warn(f"has reached nav point {navPoint}")
         for behaviorType in navPoint.behaviorTags:
             # print(navPoint)
             self.logger.warn(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
@@ -388,6 +388,7 @@ class NavPathModel():
         vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
         vehicleTravelD = self.vehicleDistanceToNavLocOnVehicleAxis(nextLoc, vehicle)
 
+
         if vehicleTravelD < 0:
             
             self.logger.warn(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible.")
@@ -400,10 +401,12 @@ class NavPathModel():
         if vehicleSpeed < 0.1:
             return None
         timeToReachNextNavPoint = vehicleTravelD / vehicleSpeed
-        # print("timeToReachNextNavPoint", timeToReachNextNavPoint)
         dToNext = self.agent.location.distance_2d(nextLoc)
-        # print("dToNext", dToNext)
         speed = dToNext / timeToReachNextNavPoint
+        # print("vehicleTravelD", vehicleTravelD)
+        # print("timeToReachNextNavPoint", timeToReachNextNavPoint)
+        # print("nextLoc", nextLoc)
+        # print("dToNext", dToNext)
         # print("speed", speed)
         direction = (nextLoc - self.agent.location).make_unit_vector()
         return speed * direction * 1.2
@@ -466,8 +469,8 @@ class NavPathModel():
         
         # this assertions make it safe
         d1 = V_Z_Wp.transform.location.distance_2d(V_Ref)
-        # print("navPoint.distanceToEgo", navPoint.distanceToEgo)
-        # print("d1", d1)
+        print("navPoint.distanceToEgo", navPoint.distanceToEgo)
+        print("d1", d1)
         assert d1 < abs(navPoint.distanceToEgo) * 1.1
         assert d1 > abs(navPoint.distanceToEgo) * 0.9
         # overkill assertions can be turned off

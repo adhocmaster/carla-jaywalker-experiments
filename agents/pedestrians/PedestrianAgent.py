@@ -467,6 +467,10 @@ class PedestrianAgent(InfoAgent):
         
 
         desVector = destination - self.location
+        desVector.z = 0
+
+        # print("destination", destination)
+        # print("distance to next destination", desVector.length())
 
         if desVector.length() < tolerance:
             return True

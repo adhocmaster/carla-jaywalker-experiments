@@ -52,4 +52,29 @@ varied_width_lanes_settings = {
             "z": 1.5,
         }
     },
+
+    "setting1-ego-lc-right": {
+        "ego_settings": [
+            (-118.0, 60.9, -115.1, 0.8), # 4-lane
+            (-97.8, 60.9, -97.0, 0.8), # 3-lane
+
+        ],
+        "walker_settings": [
+            (-127.5, 10, -112.0, 10), # 4-lane
+            (-101.0, 10, -90, 10), # 3-lane
+        ],
+        "spectator_settings": {
+            "x": -90.2,
+            "y": 30,
+            "z": 50,
+            "pitch": -90,
+            "yaw": -90,
+        },
+        "visualization_force_location": {
+            
+            "x": -105.2,
+            "y": 30,
+            "z": 1.5,
+        }
+    },
 }
