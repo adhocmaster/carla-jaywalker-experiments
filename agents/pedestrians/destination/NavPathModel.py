@@ -237,7 +237,6 @@ class NavPathModel():
             if navWP is None:
                 raise Exception(f"nearestWP is None for navPoint {navPoint}")
             
-            overlapMigitationOffset = 0.0
             if prevNavPoint is not None:
                 if navPoint.isAtTheSameLocation(prevNavPoint):
                     # we need to add some offset

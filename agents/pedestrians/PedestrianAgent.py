@@ -84,8 +84,13 @@ class PedestrianAgent(InfoAgent):
     def internalFactors(self) -> InternalFactors:
         return self._localPlanner.internalFactors
     
+    @property
+    def egoVehicle(self) -> carla.Vehicle:
+        return self.actorManager.egoVehicle
+    
     def setEgoVehicle(self, vehicle: carla.Vehicle):
         self.actorManager.setEgoVehicle(vehicle)
+
     
     def setNavPath(self, navPath: NavPath):
         self.navPath = navPath
@@ -116,10 +121,10 @@ class PedestrianAgent(InfoAgent):
         # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
         # TODO assuming vehicle driving in agent's nearest lane 
         # TODO Assuming pedestrian will cross at desired speed.
-        TTC = self.actorManager.pedPredictedTTCNearestEgo()
+        # TTC = self.actorManager.pedPredictedTTCNearestEgo()
         TG = self.actorManager.pedTGNearestEgo()
         
-        self.logger.info(f"Ego predicted TTC = {TTC} seconds")
+        # self.logger.info(f"Ego predicted TTC = {TTC} seconds")
         self.logger.info(f"Ego absolute TG (ignoring conflict point) = {TG} seconds")
 
         if TG is None: # Vehicle already crossed

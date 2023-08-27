@@ -2,6 +2,7 @@
 import carla
 import math
 from typing import Dict, List
+from lib.InteractionUtils import InteractionUtils
 from lib.LoggerFactory import LoggerFactory
 from lib.utils import Utils
 import logging
@@ -127,15 +128,17 @@ class ActorManager:
         return False
     
     def isOncoming(self, otherActor: carla.Actor) -> bool:
-        otherVelo = otherActor.get_velocity()
-        if otherVelo.length() < 0.0001:
-            return False
+        # otherVelo = otherActor.get_velocity()
+        # if otherVelo.length() < 0.0001:
+        #     return False
         
-        locationVec = self.actor.get_location() - otherActor.get_location()
-        if abs(Utils.angleBetweenVectors(locationVec, otherVelo)) > math.pi / 3:
-            return False
+        # locationVec = self.actor.get_location() - otherActor.get_location()
+        # # if abs(Utils.angleBetweenVectors(locationVec, otherVelo)) > math.pi / 3:
+        # #     return False
         
-        return True
+        # # return True
+        # return otherVelo.dot(locationVec) > 0
+        return InteractionUtils.isOncoming(self.actor, otherActor)
         
     
     def getOncomingVehicles(self):

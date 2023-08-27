@@ -16,3 +16,4 @@ from .ActorClass import ActorClass
 from .EpisodeTrajectoryRecorder import EpisodeTrajectoryRecorder
 from .VehicleUtils import VehicleUtils
 from .ForceFunctions import ForceFunctions
+from .InteractionUtils import InteractionUtils

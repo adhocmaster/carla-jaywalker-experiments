@@ -818,8 +818,8 @@
                 "location": {
                     "laneId": -2,
                     "laneSection": "LEFT",
-                    "distanceToEgo": 20.0,
-                    "distanceToInitialEgo": 40
+                    "distanceToEgo": 35.0,
+                    "distanceToInitialEgo": 30
                 },
                 "behavior": {
                     "speed": 2.5
@@ -830,7 +830,7 @@
                     "laneId": -1,
                     "laneSection": "LEFT",
                     "distanceToEgo": 25,
-                    "distanceToInitialEgo": 40
+                    "distanceToInitialEgo": 30
                 },
                 "behavior": {
                     "speed": 0
@@ -841,7 +841,7 @@
                     "laneId": -1,
                     "laneSection": "LEFT",
                     "distanceToEgo": 4.0,
-                    "distanceToInitialEgo": 39
+                    "distanceToInitialEgo": 28
                 },
                 "behavior": {
                     "speed": 0.5
@@ -852,7 +852,7 @@
                     "laneId": -1,
                     "laneSection": "LEFT",
                     "distanceToEgo": -2.0,
-                    "distanceToInitialEgo": 38
+                    "distanceToInitialEgo": 26
                 },
                 "behavior": {
                     "speed": 0.5
