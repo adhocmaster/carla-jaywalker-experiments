@@ -2,6 +2,7 @@
 import math
 from typing import Dict, Optional
 import carla
+from lib.InteractionUtils import InteractionUtils
 from lib.LoggerFactory import LoggerFactory
 from shapely.geometry import Polygon, LineString
 from agents.pedestrians.planner.DynamicBehaviorModelFactory import DynamicBehaviorModelFactory
@@ -111,7 +112,7 @@ class NavPathModel():
         """In case of a change in vehicle driving lane or lane-width, we translate the remaining navLocs
         This method has flaw when lane numbering changes.
         """
-        vehicle = self.agent.actorManager.egoVehicle
+        vehicle = self.agent.egoVehicle
         if VehicleUtils.hasVehicleCompletelyChangedLane(self.vehicleLaneId, vehicle):
 
             V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
@@ -127,7 +128,7 @@ class NavPathModel():
     def rePlaceNavpointsFromIdx(self, idx: int):
         """Replaces the nav points from idx to the end of the nav points list"""
 
-        vehicle = self.agent.actorManager.egoVehicle
+        vehicle = self.agent.egoVehicle
         
         V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
         V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
@@ -269,7 +270,7 @@ class NavPathModel():
         if len(self.intermediatePoints) == 0:
             return
         
-        vehicle = self.agent.actorManager.egoVehicle
+        vehicle = self.agent.egoVehicle
         
         firstNavPoint = self.navPath.path[0]
 
@@ -432,16 +433,17 @@ class NavPathModel():
             self.agent.logger.warning(f"no intermediate location. stopping nav path model")
             return None
         
-        vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
+        vehicle = self.agent.egoVehicle # this is not correct, we need the ego
         vehicleTravelD = self.vehicleDistanceToNavLocOnVehicleAxis(nextLoc, vehicle)
 
 
         if vehicleTravelD < 0:
             
-            self.logger.warn(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible.")
-            direction = (nextLoc - self.agent.location).make_unit_vector()
-            return 10 * direction # quickly move to the next dest
-            # return None
+            self.logger.warn(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible if the vehicle is still oncoming.")
+            if InteractionUtils.isOncoming(self.agent.walker, vehicle):
+                direction = (nextLoc - self.agent.location).make_unit_vector()
+                return 10 * direction # quickly move to the next dest
+            return None
         
         # vehicle may stop
         vehicleSpeed = vehicle.get_velocity().length()
@@ -459,7 +461,7 @@ class NavPathModel():
         return speed * direction * 1.2
     
     # def getEgoTravelDistance(self) -> Optional[carla.Vector3D]:
-    #     vehicle = self.agent.actorManager.egoVehicle # this is not correct, we need the ego
+    #     vehicle = self.agent.egoVehicle # this is not correct, we need the ego
         
     #     nextLoc = self.intermediatePoints[self.nextIntermediatePointIdx]
     #     nextNavPoint = self.navPath.path[self.nextIntermediatePointIdx]
