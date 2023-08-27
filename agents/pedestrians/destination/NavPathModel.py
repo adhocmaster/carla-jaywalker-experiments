@@ -63,6 +63,8 @@ class NavPathModel():
         #     print(navPoint)
         #     print(id(navPoint.behaviorTags))
         # raise Exception("stop here")
+        self.vehicleLaneId = None # need this one to retranslate remaining nav points
+        self.vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
         self.initNavigation()
 
     def getFinalDestination(self):
@@ -104,37 +106,47 @@ class NavPathModel():
             )
 
     # region initialization
-    def initNavigation(self):
 
-        # Assume the vehicle is at the right initial position and ped is at the sidewalk.
-        # print("initalizing navigation path")
+    def reinitializeIfNeeded(self):
+        """In case of a change in vehicle driving lane or lane-width, we translate the remaining navLocs
+        This method has flaw when lane numbering changes.
+        """
+        vehicle = self.agent.actorManager.egoVehicle
+        V_Ref_Front = VehicleUtils.getVehicleFrontLocation(vehicle)
+        V_Ref_Front_Wp = self.agent.map.get_waypoint(V_Ref_Front)
+        newLaneId = V_Ref_Front_Wp.lane_id
+        if newLaneId != self.vehicleLaneId:
+            self.logger.warn(f"vehicle lane has changed from {self.vehicleLaneId} to {newLaneId}. reinitializing nav path model")
+            self.rePlaceNavpointsFromIdx(self.nextIntermediatePointIdx)
+        pass
 
-        if self.initialized:
-            return
-        
-        if not self.__canStart():
-            return
+
+    def rePlaceNavpointsFromIdx(self, idx: int):
+        """Replaces the nav points from idx to the end of the nav points list"""
 
         vehicle = self.agent.actorManager.egoVehicle
         
-        V_Ref_Front = VehicleUtils.getVehicleFrontLocation(vehicle)
-        V_Ref_Back = VehicleUtils.getVehicleBackLocation(vehicle)
-        V_Ref_Front_Wp = self.agent.map.get_waypoint(V_Ref_Front)
-        V_Ref_Back_Wp = self.agent.map.get_waypoint(V_Ref_Back)   
+        V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
+        V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
 
-        self.intermediatePoints = []
+        self.vehicleLaneId = V_Ref_Front_Wp.lane_id
+
+        if idx == 0:
+            self.intermediatePoints = []
+        else:
+            self.intermediatePoints = self.intermediatePoints[:idx] # discarding old ones
         
-        # get nav points which 
-        vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
 
         prevNavPoint = None
         for i, navPoint in enumerate(self.navPath.path):
+            if i < idx:
+                continue
             # translate navPoints
             # 1. find the waypoint that is navPoint.distanceToEgo infront/back
             if navPoint.distanceToEgo < 0:
-                vehicleConflictWp = V_Ref_Back_Wp.next(navPoint.distanceToInitialEgo + vehicleLag)[0] 
+                vehicleConflictWp = V_Ref_Back_Wp.next(navPoint.distanceToInitialEgo + self.vehicleLag)[0] 
             else:
-                vehicleConflictWp = V_Ref_Front_Wp.next(navPoint.distanceToInitialEgo + vehicleLag)[0]
+                vehicleConflictWp = V_Ref_Front_Wp.next(navPoint.distanceToInitialEgo + self.vehicleLag)[0]
           
             navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint)
 
@@ -144,18 +156,35 @@ class NavPathModel():
             prevNavPoint = navPoint
         
                 
-        self.nextIntermediatePointIdx = 0
+        self.nextIntermediatePointIdx = idx
         self.intermediatePoints.append(self.finalDestination)
 
-        self.setWalkersInitialPosition(vehicleConflictWp)
+        # self.setWalkersInitialPosition(vehicleConflictWp)
 
-        self.initialized = True
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
             self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=False, life_time=15.0)
         self.agent.world.tick()
         # raise Exception("stop here")
+
+
+    def initNavigation(self):
+
+        # Assume the vehicle is at the right initial position and ped is at the sidewalk.
+        # print("initalizing navigation path")
+
+        if self.initialized:
+            self.reinitializeIfNeeded() 
+            return
+        
+        if not self.__canStart():
+            return
+
+
+        self.rePlaceNavpointsFromIdx(0)
+        self.setWalkersInitialPosition()
+        self.initialized = True
 
     
     def getNavWaypoint(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint) -> Optional[carla.Waypoint]:
@@ -229,9 +258,20 @@ class NavPathModel():
             return navLoc
 
 
-    def setWalkersInitialPosition(self, vehicleConflictWp: carla.Waypoint):
+    def setWalkersInitialPosition(self):
         if len(self.intermediatePoints) == 0:
             return
+        
+        vehicle = self.agent.actorManager.egoVehicle
+        
+        firstNavPoint = self.navPath.path[0]
+
+        if firstNavPoint.distanceToEgo < 0:
+            V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
+            vehicleConflictWp = V_Ref_Back_Wp.next(firstNavPoint.distanceToInitialEgo + self.vehicleLag)[0] 
+        else:
+            V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
+            vehicleConflictWp = V_Ref_Front_Wp.next(firstNavPoint.distanceToInitialEgo + self.vehicleLag)[0]
         
         firstLoc = self.intermediatePoints[0]
         firstLocWp = self.agent.map.get_waypoint(firstLoc)
@@ -469,8 +509,8 @@ class NavPathModel():
         
         # this assertions make it safe
         d1 = V_Z_Wp.transform.location.distance_2d(V_Ref)
-        print("navPoint.distanceToEgo", navPoint.distanceToEgo)
-        print("d1", d1)
+        # print("navPoint.distanceToEgo", navPoint.distanceToEgo)
+        # print("d1", d1)
         assert d1 < abs(navPoint.distanceToEgo) * 1.1
         assert d1 > abs(navPoint.distanceToEgo) * 0.9
         # overkill assertions can be turned off

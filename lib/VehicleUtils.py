@@ -85,6 +85,15 @@ class VehicleUtils:
         globalFront = vehicle.get_transform().transform(localFront)
         return globalFront
     
+    @staticmethod
+    def getVehicleFrontWp(vehicle: carla.Vehicle) -> carla.Waypoint:
+        return vehicle.get_world().get_map().get_waypoint(VehicleUtils.getVehicleFrontLocation(vehicle))
+    
+    @staticmethod
+    def getVehicleBackWp(vehicle: carla.Vehicle) -> carla.Waypoint:
+        return vehicle.get_world().get_map().get_waypoint(VehicleUtils.getVehicleBackLocation(vehicle))
+
+    
     def getNearestLocationOnVehicleAxis(fromLocation: carla.Location, vehicle: carla.Vehicle, vehicleWp: carla.Waypoint) -> carla.Location:
         """Gets the front or back location of the vehicle
 
