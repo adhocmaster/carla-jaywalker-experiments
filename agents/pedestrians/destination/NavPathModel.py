@@ -515,13 +515,6 @@ class NavPathModel():
         V_Ref = self.getVehicleReferenceLocation(navPoint, vehicle)
         V_Z_Wp= self.getVehicleWpAtDistanceToEgo(navPoint.distanceToEgo, V_Ref)
         
-        # this assertions make it safe
-        d1 = V_Z_Wp.transform.location.distance_2d(V_Ref)
-        # print("navPoint.distanceToEgo", navPoint.distanceToEgo)
-        # print("d1", d1)
-        assert d1 < abs(navPoint.distanceToEgo) * 1.1
-        assert d1 > abs(navPoint.distanceToEgo) * 0.9
-        # overkill assertions can be turned off
 
         Z = V_Z_Wp.transform.location # relative goal point wrt current vehicle position. We need to move Z to G
         # G = Utils.projectAonB2D(navLoc, Z)
@@ -531,6 +524,16 @@ class NavPathModel():
         V_G = Utils.projectAonB2D(V_N, V_Z)
         G = V_Ref + V_G 
         V_ZG = G - Z
+
+        # this assertions make it safe
+        d1 = Z.distance_2d(V_Ref)
+        # print("V_Ref", V_Ref)
+        # print("Z", Z)
+        # print("navPoint.distanceToEgo", navPoint.distanceToEgo)
+        # print("d1", d1)
+        assert d1 < abs(navPoint.distanceToEgo) * 1.1 + 1.5 # during the lane change, d1 can grow quite large as Z can be on the old lane and vehicle ref is moving out of the lane.
+        assert d1 > abs(navPoint.distanceToEgo) * 0.9 # when the vehicle rotates it can shrink less than the width!
+        # overkill assertions can be turned off
 
         debugLocation = carla.Location(x=Z.x, y=Z.y, z = 0.5) # WP location is V_Z's location in world coordinates
         self.agent.visualizer.drawPoint(debugLocation, size=0.1, color=(0, 255, 0), life_time=10)
