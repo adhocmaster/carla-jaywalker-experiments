@@ -207,7 +207,7 @@ class NavPathModel():
         nearestWP = vehicleConflictWp
         if navPoint.isOnEgosLeft():
             laneOffset = -navPoint.laneId 
-            print("laneOffset", laneOffset)
+            # print("laneOffset", laneOffset)
             for i in range(laneOffset):
                 if (Utils.wayPointsSameDirection(nearestWP, vehicleConflictWp)):
                     nearestWP = nearestWP.get_left_lane()
@@ -259,9 +259,9 @@ class NavPathModel():
                 else:
                     navLoc += vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
 
-            print("vehicleConflictWp", vehicleConflictWp)
-            print("navWP", navWP)
-            print("navLoc", navLoc)
+            # print("vehicleConflictWp", vehicleConflictWp)
+            # print("navWP", navWP)
+            # print("navLoc", navLoc)
 
             return navLoc
 

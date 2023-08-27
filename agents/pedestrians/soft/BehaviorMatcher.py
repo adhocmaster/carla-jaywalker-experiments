@@ -6,6 +6,13 @@ from agents.pedestrians.soft.Side import Side
 
 class BehaviorMatcher:
 
+    def __init__(self, greedy=True):
+        """_summary_
+
+        Args:
+            greedy (bool, optional): If greedy behaviors will be tagged to start in previous nav points. If not greedy, behavior will be exactly tagged in the navpoint showing it. Both has their useage. Defaults to True.
+        """
+
     def tagNavPoints(self, navPath: NavPath):
         for idx, _ in enumerate(navPath.path):
             self.tagNavPoint(idx, navPath)

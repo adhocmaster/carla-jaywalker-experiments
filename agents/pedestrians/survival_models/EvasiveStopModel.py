@@ -52,11 +52,11 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         # if TTC is not None and TTC < 1.5:
         #     return True
 
-        if not InteractionUtils.isOncoming(self.agent.walker, self.agent.egoVehicle):
-            return False
 
         TG = self.agent.getAvailableTimeGapWithEgo()
         # print(f"canfreeze TG: {TG}")
+        if not InteractionUtils.isOncoming(self.agent.walker, self.agent.egoVehicle):
+            return False
         if TG is not None and TG < 1:
             return True
         
