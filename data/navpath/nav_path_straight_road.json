@@ -686,7 +686,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "LEFT",
-                    "distanceToEgo": -1.0,
+                    "distanceToEgo": -0.1,
                     "distanceToInitialEgo": -1.0
                 },
                 "behavior": {
@@ -833,7 +833,7 @@
                     "distanceToInitialEgo": 30
                 },
                 "behavior": {
-                    "speed": 0
+                    "speed": 0.3
                 }
             },
             {
