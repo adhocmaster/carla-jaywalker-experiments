@@ -4,14 +4,53 @@ from agents.pedestrians.soft.NavPath import NavPath
 from agents.pedestrians.soft.Side import Side
 
 
+class BehaviorMatcherParams:
+    def __init__(self):
+        self._evasiveRetreat = {}
+        self._evasiveFlinch = {}
+        self._evasiveStop = {}
+        self._evasiveSlowdownAndStop = {}
+        self._evasiveSpeedup = {}
+        self._evasiveSlowdown = {}
+    
+    @property
+    def evasiveStop(self):
+        defaultConfig = {
+            "maxSpeed": 0.1
+        }
+        defaultConfig.update(self._evasiveStop)
+        return defaultConfig
+    
+    @property
+    def evasiveFlinch(self):
+        defaultConfig = {
+            "maxSpeedNext": 0.1,
+            "yDistancePrevNext": 0.5,
+            "maxStepsPrevNext": 1
+        }
+        defaultConfig.update(self._evasiveFlinch)
+        return defaultConfig
+
+    @property
+    def evasiveRetreat(self):
+        defaultConfig = {
+            "minStepNext": 1,
+            "yDistancePrevNext": 0.5,
+        }
+        defaultConfig.update(self._evasiveRetreat)
+        return defaultConfig
+
+
 class BehaviorMatcher:
 
-    def __init__(self, greedy=True):
+    def __init__(self, params: BehaviorMatcherParams = None):
         """_summary_
 
         Args:
             greedy (bool, optional): If greedy behaviors will be tagged to start in previous nav points. If not greedy, behavior will be exactly tagged in the navpoint showing it. Both has their useage. Defaults to True.
         """
+        if params is None:
+            self.params = BehaviorMatcherParams()
 
     def tagNavPoints(self, navPath: NavPath):
         for idx, _ in enumerate(navPath.path):
@@ -43,6 +82,17 @@ class BehaviorMatcher:
             navPoint.addBehaviorTag(BehaviorType.EVASIVE_SLOWDOWN)
 
     def showsEvasiveRetreat(self, idx:int, navPath: NavPath):
+        """TODO
+        1. y displacement threshold
+        2. current one has to be on the same lane as the vehicle
+
+        Args:
+            idx (int): _description_
+            navPath (NavPath): _description_
+
+        Returns:
+            _type_: _description_
+        """
         navPoint = navPath.path[idx]
         if navPoint.isBehindEgo():
             return
@@ -66,6 +116,12 @@ class BehaviorMatcher:
 
 
     def showsEvasiveFlinch(self, idx:int, navPath: NavPath):
+        # TODO:
+        # 1. prev and next same lane and lane section
+        # 2. speed threshold
+        # 3. within 0.5 meters y axis.
+        # 4. cur and next same within 1 step 
+        # 5. We should search for suitable prev and next within the thresholds first.
         navPoint = navPath.path[idx]
         if navPoint.isBehindEgo():
             return
@@ -85,7 +141,7 @@ class BehaviorMatcher:
         navPoint = navPath.path[idx]
         if navPoint.isBehindEgo():
             return
-        if navPoint.speed <= 0.1: # need improvement
+        if navPoint.speed <= self.params.evasiveStop["maxSpeed"]: # need improvement
             return True
     
         # if idx == len(navPath.path) - 1:
@@ -151,7 +207,10 @@ class BehaviorMatcher:
         
 
     def showsEvasiveSpeedup(self, idx:int, navPath: NavPath):
-        """Next nav point has to be in front of ego and on the other side of the current
+        """
+        1. Next nav point has to be in front of ego 
+        2. Next nav must be on the vehicle lane
+        3. The direction from the current and the next is the same as the pedestrian's crossing direction.
 
         Args:
             idx (int): _description_
@@ -170,14 +229,15 @@ class BehaviorMatcher:
         nextNavPoint = navPath.path[idx + 1]
         if nextNavPoint.isBehindEgo():
             return False
-        if navPoint.speed < nextNavPoint.speed: # we need to consider the direction, too.
+        if navPoint.speed < nextNavPoint.speed: 
+            # TODO we need to consider the direction, too.
             # if navPoint is on the left of the ego, the next point has to be on the right
             if navPoint.isOnEgosLeft():
-                if navPoint.getOtherSide(nextNavPoint) == Side.RIGHT:
+                if navPoint.getOtherSide(nextNavPoint) == Side.RIGHT: # TODO or center
                     return True
             # if navPoint is on the right of the ego, the next point has to be on the left
             if navPoint.isOnEgosRight():
-                if navPoint.getOtherSide(nextNavPoint) == Side.LEFT:
+                if navPoint.getOtherSide(nextNavPoint) == Side.LEFT: # TODO or center
                     return True
             
         return False
