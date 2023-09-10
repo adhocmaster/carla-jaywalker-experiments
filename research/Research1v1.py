@@ -394,6 +394,7 @@ class Research1v1(SettingBasedResearch):
 
         pass
     
+    
     def collectStats(self, world_snapshot):
         if not self.stats:
             return
