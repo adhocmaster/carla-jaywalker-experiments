@@ -77,7 +77,7 @@ class SettingsManager(ClientUser):
     #     return self.locationToVehicleSpawnPoint(location)
 
     
-    def getVehicleSettings(self):
+    def getVehicleSettings(self) -> List[SourceDestinationPair]:
         self._assertCurrentSetting()
 
         if self._vehicleSettings is None:

@@ -25,7 +25,7 @@ from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
 
 from agents.navigation.behavior_agent import BehaviorAgent
-from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRecorder, ActorClass
+from lib import Simulator, EpisodeSimulator, SimulationMode, ActorClass
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames

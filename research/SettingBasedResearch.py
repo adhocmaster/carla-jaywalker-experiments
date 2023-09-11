@@ -19,7 +19,7 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
-from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRecorder, ActorClass
+from lib import Simulator, EpisodeSimulator, SimulationMode, ActorClass
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
@@ -47,6 +47,7 @@ class SettingBasedResearch(BaseResearch):
                          outputDir=outputDir,
                          simulationMode=simulationMode,
                          record=record,
+                         stats=stats
                          )
 
         settings = None
@@ -65,9 +66,6 @@ class SettingBasedResearch(BaseResearch):
         self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
-        self.episodeNumber = 0
-        self.episodeTimeStep = 0
-        self.stats = stats
         self.maxStepsPerCrossing = maxStepsPerCrossing
         self.settingsId = settingsId
     

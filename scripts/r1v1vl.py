@@ -11,7 +11,7 @@ from lib import MapNames, SimulationMode
 @click.option(
     '--max_ticks',
     metavar='number',
-    default=1000,
+    default=500,
     type=int,
     help='Number of ticks the simulator will run'
     )
@@ -40,7 +40,7 @@ def r1v1m2Default(max_ticks, stats, record, scenario):
     research = ResearchFactory.createResearch1v1NavPathModel(
         map=MapNames.varied_width_lanes, 
         defaultLogLevel=logging.WARN, 
-        settingsId="setting1-ego-lc-right", 
+        settingsId="setting1-ego-rightmost", 
         simulationMode = SimulationMode.SYNCHRONOUS,
         stats=stats,
         record=record,

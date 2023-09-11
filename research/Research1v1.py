@@ -1,5 +1,6 @@
 from genericpath import sameopenfile
 from turtle import distance
+from typing import Dict
 import carla
 import logging
 import random
@@ -21,8 +22,9 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
-from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRecorder, ActorClass
+from lib import Simulator, EpisodeSimulator, SimulationMode, ActorClass
 from lib import Utils
+from analysis.EpisodeTrajectoryRecorder import EpisodeTrajectoryRecorder
 import pandas as pd
 from lib.MapManager import MapNames
 from agents.pedestrians.soft import NavPointLocation, NavPointBehavior, LaneSection, Direction, NavPath
@@ -68,7 +70,8 @@ class Research1v1(SettingBasedResearch):
         # self.optionalFactors = [Factors.EVASIVE_RETREAT, Factors.DRUNKEN_WALKER, Factors.FREEZING_FACTOR]
 
 #        self.optionalFactors = [Factors.EVASIVE_RETREAT, Factors.FREEZING_FACTOR]
-
+        # self.optionalFactors = [Factors.EVASIVE_RETREAT, Factors.FREEZING_FACTOR, Factors.CROSSING_ON_COMING_VEHICLE]
+        # self.dataCollector = DataCollector() # todo, create the meta
         self.setup()
 
     #region getters
@@ -83,6 +86,7 @@ class Research1v1(SettingBasedResearch):
 
     def getWalkerAgent(self):
         return self.walkerAgent
+    
 
     #endregion
 
@@ -126,7 +130,7 @@ class Research1v1(SettingBasedResearch):
         self.vehicleDestination = self.vehicleSetting.destination
 
         self.statDataframe = pd.DataFrame()
-        self.initStatDict()
+        self.initStats()
 
     
     def reset(self):
@@ -143,6 +147,8 @@ class Research1v1(SettingBasedResearch):
         self.episodeTimeStep = 0
         self.createDynamicAgents()
         self.setupSimulator(episodic=True)
+                
+        self.initStats()
 
         self.logger.warn(f"started episode {self.episodeNumber}")
 
@@ -151,7 +157,7 @@ class Research1v1(SettingBasedResearch):
     #region actor generation
 
     @property
-    def walkerSetting(self):
+    def walkerSetting(self) -> SourceDestinationPair:
         return self._walkerSetting
 
     def getWalkerSetting(self, reverse=False):
@@ -165,7 +171,7 @@ class Research1v1(SettingBasedResearch):
 
         return self._walkerSetting
 
-    def getVehicleSetting(self):
+    def getVehicleSetting(self) -> SourceDestinationPair:
         vehicleSetting = self.settingsManager.getVehicleSettings()
         vehicleSetting = vehicleSetting[0]
         return vehicleSetting
@@ -252,17 +258,17 @@ class Research1v1(SettingBasedResearch):
         onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
         terminalSignalers = [self.walkerAgent.isFinished]
 
+        onEnders = [self.onEnd]
         if episodic:
             # this is only to be used from gym environments. It does not call onEnd as we may reset and run
             self.simulator = EpisodeSimulator(
                 self.client, 
                 terminalSignalers=terminalSignalers, 
                 onTickers=onTickers, 
-                onEnders=[], 
+                onEnders=onEnders, 
                 simulationMode=self.simulationMode
             )
         else:
-            onEnders = [self.onEnd]
             onTickers.append(self.restart)
             self.simulator = Simulator(
                 self.client, 
@@ -308,7 +314,9 @@ class Research1v1(SettingBasedResearch):
     #endregion
 
 
-    def restart(self, world_snapshot):
+    def restart(self):
+        """Used by non-episodic simulator only
+        """
 
         killCurrentEpisode = False
         
@@ -326,7 +334,7 @@ class Research1v1(SettingBasedResearch):
 
             self.recreateDynamicAgents()
             # 3. update statDataframe
-            self.updateStatDataframe()
+            self.initStats()
 
     
     
@@ -339,7 +347,7 @@ class Research1v1(SettingBasedResearch):
 
         self.episodeTimeStep += 1
 
-        self.collectStats(world_snapshot)
+        self.collectStats()
 
         self.walkerAgent.onTickStart(world_snapshot)
 
@@ -358,138 +366,11 @@ class Research1v1(SettingBasedResearch):
     
     
     #region stats
-
-    def updateStatDataframe(self):
-        if not self.stats:
-            return
-        # 1. make a dataframe from self.statDict
-        df = pd.DataFrame.from_dict(self.statDict)
-        # 2. merge it with the statDataframe
-        self.statDataframe = pd.concat([self.statDataframe, df], ignore_index=True)
-        # 3. clear self.statDict
-        self.initStatDict()
-
-
-    def initStatDict(self):
-
-        if not self.stats:
-            return
-
-        self.statDict = {
-            "episode": [], 
-            "timestep": [],
-            "v_x": [], 
-            "v_y": [], 
-            "v_speed": [], 
-            # "v_direction": [], 
-            "w_x": [], 
-            "w_y": [], 
-            "w_speed": [], 
-            "w_state": []
-            # "w_direction": []
-        }
-
-        self.episodeTrajectoryRecorders = {}
-
-
-        pass
-    
-    
-    def collectStats(self, world_snapshot):
-        if not self.stats:
-            return
-
-        self.statDict["episode"].append(self.episodeNumber)
-        self.statDict["timestep"].append(self.episodeTimeStep)
-        self.statDict["v_x"].append(self.vehicle.get_location().x)
-        self.statDict["v_y"].append(self.vehicle.get_location().y)
-        self.statDict["v_speed"].append(self.vehicle.get_velocity().length())
-        # self.statDict["v_direction"].append(self.episodeNumber)
-        self.statDict["w_x"].append(self.walkerAgent.location.x)
-        self.statDict["w_y"].append(self.walkerAgent.location.y)
-
-        if self.walkerAgent.isMovingTowardsDestination():
-            self.statDict["w_speed"].append(self.walkerAgent.speed)
-        else:
-            self.statDict["w_speed"].append(-self.walkerAgent.speed)
-        # self.statDict["w_direction"].append(self.episodeNumber)
-        self.statDict["w_state"].append(self.walkerAgent.state.value)
-
-
-        self.initEpisodeRecorderIfNeeded()
-        self.recordTrajectoryTimeStep()
-
-        pass
-
-    def initEpisodeRecorderIfNeeded(self):
-        if self.episodeNumber not in self.episodeTrajectoryRecorders:
-            self.episodeTrajectoryRecorders[self.episodeNumber] = EpisodeTrajectoryRecorder(
-                self.episodeNumber,
-                {}, # TODO road configuration
-                fps = 1 / self.time_delta,
-                startFrame=self.episodeTimeStep
-            )
-
-
-    def recordTrajectoryTimeStep(self):
-        # self.logger.warn("recordTrajectoryTimeStep")
-        recorder = self.episodeTrajectoryRecorders[self.episodeNumber]
-        self.addActorsToRecorder(recorder)
-        recorder.collectStats(self.episodeTimeStep)
-
+  
     def addActorsToRecorder(self, recorder: EpisodeTrajectoryRecorder):
-        recorder.addactor(self.walker, ActorClass.pedestrian, self.episodeTimeStep)
-        recorder.addactor(self.vehicle, ActorClass.vehicle, self.episodeTimeStep)
-
-
-    def saveStats(self):
-        if not self.stats:
-            return
-
-        self.saveTrajectories()
-
-
-        dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
-        statsPath = os.path.join(self.outputDir, f"{dateStr}-trajectories.csv")
-        # df = pd.DataFrame.from_dict(self.statDict)
-        # df.to_csv(statsPath, index=False)
-
-        if len(self.statDataframe) == 0:
-            self.logger.warn("Empty stats. It means no episode was completed in this run")
-            return
-        self.statDataframe.to_csv(statsPath, index=False)
-        pass
-
-
-    def saveTrajectories(self):
-
-        dfs = []
-        meta = [{
-            "crossingAxisRotation" : self.getWalkerCrossingAxisRotation(),
-            "walkerSource": (self.walkerSetting.source.x, self.walkerSetting.source.y),
-            "walkerDestination" : (self.walkerSetting.destination.x, self.walkerSetting.destination.y)
-        }]
-        for recorder in self.episodeTrajectoryRecorders.values():
-            episodeDf = recorder.getAsDataFrame()
-            dfs.append(episodeDf)
-
-            meta.append(recorder.getMeta())
-
-        simDf = pd.concat(dfs, ignore_index=True)
-
-        dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
-        statsPath = os.path.join(self.outputDir, f"{dateStr}-tracks.csv")
-        self.logger.warn(f"Saving tracks to {statsPath}")
-        simDf.to_csv(statsPath, index=False)
-
-        metaPath = os.path.join(self.outputDir, f"{dateStr}-meta.json")
-        
-        with open(metaPath, "w") as outfile:
-            outfile.write(json.dumps(meta))
-
-
-        # meta
-
+        recorder.addActor(self.walker, ActorClass.pedestrian, self.episodeTimeStep, self.getWalkerSetting().toDict())
+        recorder.addPedestrian(self.walkerAgent, self.episodeTimeStep, self.getWalkerSetting().toDict())
+        recorder.addActor(self.vehicle, ActorClass.vehicle, self.episodeTimeStep, self.getVehicleSetting().toDict())
 
     
     #endregion
