@@ -258,17 +258,17 @@ class Research1v1(SettingBasedResearch):
         onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
         terminalSignalers = [self.walkerAgent.isFinished]
 
-        onEnders = [self.onEnd]
         if episodic:
             # this is only to be used from gym environments. It does not call onEnd as we may reset and run
             self.simulator = EpisodeSimulator(
                 self.client, 
                 terminalSignalers=terminalSignalers, 
                 onTickers=onTickers, 
-                onEnders=onEnders, 
+                onEnders=[], 
                 simulationMode=self.simulationMode
             )
         else:
+            onEnders = [self.onEnd]
             onTickers.append(self.restart)
             self.simulator = Simulator(
                 self.client, 
@@ -368,9 +368,8 @@ class Research1v1(SettingBasedResearch):
     #region stats
   
     def addActorsToRecorder(self, recorder: EpisodeTrajectoryRecorder):
-        recorder.addActor(self.walker, ActorClass.pedestrian, self.episodeTimeStep, self.getWalkerSetting().toDict())
         recorder.addPedestrian(self.walkerAgent, self.episodeTimeStep, self.getWalkerSetting().toDict())
-        recorder.addActor(self.vehicle, ActorClass.vehicle, self.episodeTimeStep, self.getVehicleSetting().toDict())
+        recorder.addVehicle(self.vehicleAgent, self.episodeTimeStep, self.getVehicleSetting().toDict())
 
     
     #endregion

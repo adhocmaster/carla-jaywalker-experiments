@@ -7,7 +7,8 @@ X = Tuple[float, float]
 Y = float
 Heading = float
 Frame = int
-Record = Tuple[Frame, X, Y, Heading]
+State = str
+Record = Tuple[Frame, X, Y, Heading, State]
 
 
 class Trajectory:
@@ -27,13 +28,13 @@ class Trajectory:
         self.points:List[Record] = []
     
 
-    def recordPosition(self, currentFrame: int):
+    def recordPosition(self, currentFrame: int, state: State):
         if self.actor.is_alive == False:
             return
         x = self.actor.get_location().x
         y = self.actor.get_location().y
         heading = self.actor.get_transform().rotation.yaw
-        self.points.append((currentFrame, x, y, heading))
+        self.points.append((currentFrame, x, y, heading, state))
     
     def getPoints(self) -> List[Record]:
         return self.points

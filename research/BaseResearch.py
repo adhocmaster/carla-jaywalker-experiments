@@ -44,6 +44,7 @@ class BaseResearch(ClientUser):
         self.record = record
         self.render = render
         self.stats = stats
+        self.episodeTrajectoryRecorders = {}
         
         self.episodeNumber = 0
         self.episodeTimeStep = 0
@@ -301,9 +302,6 @@ class BaseResearch(ClientUser):
 
         if not self.stats:
             return
-
-        self.episodeTrajectoryRecorders = {}
-
 
         pass
     

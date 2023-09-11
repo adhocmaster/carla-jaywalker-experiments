@@ -165,12 +165,10 @@ class NavPathModel():
         self.nextIntermediatePointIdx = idx
         self.intermediatePoints.append(self.finalDestination)
 
-        # self.setWalkersInitialPosition(vehicleConflictWp)
-
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=True, life_time=15.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=False, life_time=15.0)
         self.agent.world.tick()
         # raise Exception("stop here")
 
@@ -190,6 +188,7 @@ class NavPathModel():
 
         self.rePlaceNavpointsFromIdx(0)
         self.setWalkersInitialPosition()
+        # self.setWalkerFinalDestination() # has issues
         self.initialized = True
 
     
@@ -299,6 +298,43 @@ class NavPathModel():
             else:
                 sidewalk = leftSideWalk
 
+        self.agent.walker.set_location(sidewalk.location)
+
+    def setWalkerFinalDestination(self):
+        if len(self.intermediatePoints) < 2: # last one is the final destination which we need to fix
+            return
+        
+        vehicle = self.agent.egoVehicle
+        lastNavPoint = self.navPath.path[-1]
+
+        if lastNavPoint.distanceToEgo < 0:
+            V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
+            vehicleConflictWp = V_Ref_Back_Wp.next(lastNavPoint.distanceToInitialEgo + self.vehicleLag)[0] 
+        else:
+            V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
+            vehicleConflictWp = V_Ref_Front_Wp.next(lastNavPoint.distanceToInitialEgo + self.vehicleLag)[0]
+
+        lastLoc = self.intermediatePoints[-2]
+        print(lastLoc, self.intermediatePoints[0])
+        lastLocWp = self.agent.map.get_waypoint(lastLoc)
+
+        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, lastLocWp)
+
+        sidewalk = leftSideWalk
+        if Utils.wayPointsSameDirection(lastLocWp, vehicleConflictWp):
+            if self.navPath.direction == Direction.LR:
+                sidewalk = leftSideWalk
+            else:
+                sidewalk = rightSidewalk
+        else: # opposite direction
+            if self.navPath.direction == Direction.LR:
+                sidewalk = rightSidewalk
+            else:
+                sidewalk = leftSideWalk
+
+        self.intermediatePoints[-1] = sidewalk.location
+        self.setFinalDestination(sidewalk.location)
+        self.agent.setDestination(sidewalk.location)
         self.agent.walker.set_location(sidewalk.location)
 
 

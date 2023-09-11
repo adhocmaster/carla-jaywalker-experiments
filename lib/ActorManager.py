@@ -1,7 +1,7 @@
 
 import carla
 import math
-from typing import Dict, List
+from typing import Dict, List, Optional
 from lib.InteractionUtils import InteractionUtils
 from lib.LoggerFactory import LoggerFactory
 from lib.utils import Utils
@@ -95,11 +95,11 @@ class ActorManager:
         pass
         # raise Exception("Not implemented yet")
 
-    def getCurrentDistance(self, otherActor):
-        return self._currentActorDistances[otherActor.id]
+    def getCurrentDistance(self, otherActor) -> Optional[float]:
+        return self._currentActorDistances[otherActor.id] if otherActor.id in self._currentActorDistances else None
 
-    def getPreviousDistance(self, otherActor):
-        return self._previousActorDistances[otherActor.id]
+    def getPreviousDistance(self, otherActor) -> Optional[float]:
+        return self._previousActorDistances[otherActor.id] if otherActor.id in self._previousActorDistances else None
 
     # region Oncoming
     def isOncomingOld(self, otherActor):
@@ -154,7 +154,7 @@ class ActorManager:
         self._tickCache["oncomingVehicles"] = oncomingVs
         return self._tickCache["oncomingVehicles"]
     
-    def calculateNearestOnComingVehicle(self):
+    def calculateNearestOnComingVehicle(self) -> Optional[carla.Vehicle]:
 
         if "nearestOnComingVehicle" in self._tickCache:
             return self._tickCache["nearestOnComingVehicle"]
@@ -165,6 +165,8 @@ class ActorManager:
         minVehicle = None
         for vehicle in oncomingVs:
             currentDistance = self.getCurrentDistance(vehicle)
+            if currentDistance is None:
+                continue
             if currentDistance < minD:
                 minD = currentDistance
                 minVehicle = vehicle
