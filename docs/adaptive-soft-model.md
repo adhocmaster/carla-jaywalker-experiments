@@ -1,4 +1,4 @@
-# Soft Pedestrian Modeling
+# Adaptive Pedestrian Agent Modeling for Scenario-based Testing of Autonomous Vehicles through Behavior Transfer/Re-targeting
 
 Given a pedestrian crossing video, we want to generate scenarios that shows similar pedestrian behavior with contextual variations. We can achieve this by retargeting the behavior of pedestrians against:
 1. Number of lanes in the road
@@ -14,10 +14,13 @@ In this video, the pedestrian walks along the left lane for a while, and starts 
 ## Approach
 1. We extract minimal information (interesting points) from a real-world scenario (video/trajectory data) that can be reconstructed in different contexts. 
 
-2. In the reconstruction process, we introduce social-force/rule-based models to produce behaviors at the interesting points.
+2. In the reconstruction process, we introduce social-force/rule-based models to produce maneuvers at the interesting points. Check [Behavior Models](./adaptive-soft-model-behavior.md) for more information.
 
+# Implementation Details
 
-![soft-model-architecture](./images/soft-model-architecture.JPG)
+This section discusses the simulation process. For detailed information of microscopic behavior maneuvers, Check [Behavior Models](./adaptive-soft-model-behavior.md) for more information.
+
+![soft-model-architecture](./images/soft-model-architecture.PNG)
 
 ## Demo
 
@@ -46,3 +49,4 @@ Based on whether the NavPoint is relatively located in front of the vehicle or b
 ![NavPoint Realization Front](./images/navpoint-realization-infront.PNG)
 
 ![NavPoint Realization Back](./images/navpoint-realization-behind.PNG)
+

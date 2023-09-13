@@ -1,14 +1,20 @@
 from abc import abstractmethod
+from datetime import date
+import json
 import math
 import logging
 import random
 import numpy as np
 from typing import Tuple
+
+import pandas as pd
 from agents.navigation.behavior_agent import BehaviorAgent
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
 import carla
 import os
+from analysis.EpisodeTrajectoryRecorder import EpisodeTrajectoryRecorder
 from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, NotImplementedInterface, SimulationMode
+from lib.ActorClass import ActorClass
 from settings.SourceDestinationPair import SourceDestinationPair
 # from lib.SimulationMode import SimulationMode
 
@@ -21,7 +27,9 @@ class BaseResearch(ClientUser):
             outputDir:str = "logs", 
             simulationMode = SimulationMode.ASYNCHRONOUS,
             record=False, 
-            render=True
+            render=True,
+            stats=False,
+            ignoreStatsSteps=0,
         ) -> None:
         super().__init__(client)
 
@@ -36,6 +44,12 @@ class BaseResearch(ClientUser):
         self.simulationMode = simulationMode
         self.record = record
         self.render = render
+        self.stats = stats
+        self.ignoreStatsSteps = ignoreStatsSteps
+        self.episodeTrajectoryRecorders = {}
+        
+        self.episodeNumber = 0
+        self.episodeTimeStep = 0
 
         self.time_delta = None
         self.mapManager = None
@@ -53,9 +67,12 @@ class BaseResearch(ClientUser):
         self.mapManager = MapManager(self.client)
         self.mapManager.load(self.mapName, forceReload=True)
 
-    def reset(self):
+    def reset(self, seed=1):
         # self.client.reload_world(False)
         self.mapManager.reload()
+        print(f"resetting world with seed {seed}")
+        random.seed(seed)
+        np.random.seed(seed)
 
 
     def initWorldSettings(self):
@@ -110,8 +127,8 @@ class BaseResearch(ClientUser):
         settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
         
         # settings.substepping = False # set it to true for faster execution. It has no effect on synchronous mode
-        settings.substepping = False # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
-        settings.max_substeps = 10
+        settings.substepping = True # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
+        settings.max_substeps = 2
         settings.max_substep_delta_time = self.time_delta / settings.max_substeps
         # print("applying settings", settings)
         self.world.apply_settings(settings)
@@ -135,8 +152,7 @@ class BaseResearch(ClientUser):
         raise NotImplementedInterface("setupSimulator")
     
 
-    # utility methods
-    
+    # region actor utility methods
     
     def createVehicle(
             self, 
@@ -264,6 +280,8 @@ class BaseResearch(ClientUser):
             self.logger.info(f"vehicle {vehicle.id} reached destination")
             vehicle.apply_control(carla.VehicleControl())
             return
+        
+        # print(f"vehicle speed {vehicle.get_velocity().length() * 3.6} km/h")
 
         
         control = vehicleAgent.run_step()
@@ -280,3 +298,87 @@ class BaseResearch(ClientUser):
         self.pedFactory.reset()
         self.logger.info('\ndestroying  vehicles')
         self.vehicleFactory.reset()
+
+    
+    # endregion
+
+    # region stats
+
+
+    def initStats(self):
+
+        if not self.stats:
+            return
+
+        pass
+    
+    
+    def collectStats(self):
+        if not self.stats or self.episodeTimeStep < self.ignoreStatsSteps:
+            return
+
+        self.initEpisodeRecorderIfNeeded()
+        self.recordTrajectoryTimeStep()
+
+        pass
+
+    def initEpisodeRecorderIfNeeded(self):
+        if self.episodeNumber not in self.episodeTrajectoryRecorders:
+            self.episodeTrajectoryRecorders[self.episodeNumber] = EpisodeTrajectoryRecorder(
+                self.episodeNumber,
+                self.world.get_snapshot(),
+                {}, # TODO road configuration
+                fps = 1 / self.time_delta,
+                startFrame=self.episodeTimeStep
+            )
+
+
+    def recordTrajectoryTimeStep(self):
+        # self.logger.warn("recordTrajectoryTimeStep")
+        recorder = self.episodeTrajectoryRecorders[self.episodeNumber]
+        self.addActorsToRecorder(recorder)
+        recorder.collectStats(self.episodeTimeStep)
+
+    @abstractmethod
+    def addActorsToRecorder(self, recorder: EpisodeTrajectoryRecorder):
+        # recorder.addActor(self.walker, ActorClass.pedestrian, self.episodeTimeStep, self.getWalkerSetting().toDict())
+        # recorder.addPedestrian(self.walkerAgent, self.episodeTimeStep, self.getWalkerSetting().toDict())
+        # recorder.addActor(self.vehicle, ActorClass.vehicle, self.episodeTimeStep, self.getVehicleSetting().toDict())
+        raise NotImplementedInterface("addActorsToRecorder")
+
+
+    def saveStats(self):
+        if not self.stats:
+            return
+
+        self.saveTrajectories()
+
+        pass
+
+
+    def saveTrajectories(self):
+
+        dfs = []
+        meta = []
+        for recorder in self.episodeTrajectoryRecorders.values():
+            episodeDf = recorder.getAsDataFrame()
+            dfs.append(episodeDf)
+
+            meta.append(recorder.getMeta())
+
+        simDf = pd.concat(dfs, ignore_index=True)
+
+        dateStr = date.today().strftime("%Y-%m-%d")
+        statsPath = os.path.join(self.outputDir, f"{self.name}-{dateStr}-tracks.csv")
+        self.logger.warn(f"Saving tracks to {statsPath}")
+        simDf.to_csv(statsPath, index=False)
+
+        metaPath = os.path.join(self.outputDir, f"{self.name}-{dateStr}-meta.json")
+        
+        with open(metaPath, "w") as outfile:
+            # print(meta)
+            outfile.write(json.dumps(meta, indent=2))
+
+
+    
+    #endregion

@@ -11,3 +11,9 @@ class SourceDestinationPair:
             f"source: {self.source} "
             f"destination: {self.destination}"
         )
+    
+    def toDict(self):
+        return {
+            "source": (self.source.x, self.source.y),
+            "destination": (self.destination.x, self.destination.y)
+        }

@@ -26,7 +26,8 @@ class ResearchFactory:
                             map=MapNames.circle_t_junctions,
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
-                            stats=True
+                            stats=True,
+                            ignoreStatsSteps=0,
                             ) -> Research1v1:
 
         print(f"research chosen : R1v1 with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
@@ -41,7 +42,8 @@ class ResearchFactory:
                          outputDir=output_dir,
                          simulationMode=simulationMode, 
                          settingsId=settingsId,
-                         stats=stats
+                         stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          )
 
         return research
@@ -57,6 +59,7 @@ class ResearchFactory:
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
                             stats=True,
+                            ignoreStatsSteps=0,
                             record=False,
                             scenario = "psi-0002",
                             ) -> Research1v1NavPathModel:
@@ -74,6 +77,7 @@ class ResearchFactory:
                          simulationMode=simulationMode, 
                          settingsId=settingsId,
                          stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          record=record,
                          scenario=scenario
                          )
@@ -112,6 +116,7 @@ class ResearchFactory:
                             simulationMode = SimulationMode.ASYNCHRONOUS,
                             settingsId = "setting1",
                             stats=True,
+                            ignoreStatsSteps=0,
                             record=False,
                             scenario = "psi-0002"
                             ) -> Research4v4:
@@ -129,6 +134,7 @@ class ResearchFactory:
                          simulationMode=simulationMode, 
                          settingsId=settingsId,
                          stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          record=record,
                          scenario=scenario
                          )

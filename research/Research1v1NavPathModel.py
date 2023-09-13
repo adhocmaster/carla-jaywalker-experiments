@@ -19,6 +19,7 @@ class Research1v1NavPathModel(Research1v1):
                  settingsId = "setting1",
                  stats=False,
                  record=False,
+                 ignoreStatsSteps=0,
                  maxStepsPerCrossing=200,
                  navPathFilePath="data/navpath/nav_path_straight_road.json",
                  scenario = "psi-0002",
@@ -32,6 +33,7 @@ class Research1v1NavPathModel(Research1v1):
                          simulationMode=simulationMode,
                          settingsId=settingsId,
                          stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          record=record,
                          maxStepsPerCrossing=maxStepsPerCrossing
                          )
@@ -78,7 +80,8 @@ class Research1v1NavPathModel(Research1v1):
     
     def createVehicle(self, randomizeSpawnPoint=False):
         
-        meanSpeed = (self.navPath.egoConfiguration.egoSpeedStart + self.navPath.egoConfiguration.egoSpeedEnd) / 2
-        sd = 0.1
-        maxSpeed = np.random.normal(meanSpeed, sd) 
+        # meanSpeed = (self.navPath.egoConfiguration.egoSpeedStart + self.navPath.egoConfiguration.egoSpeedEnd) / 2
+        # sd = 0.1
+        # maxSpeed = np.random.normal(meanSpeed, sd) 
+        maxSpeed = np.random.uniform(self.navPath.egoConfiguration.egoSpeedStart, self.navPath.egoConfiguration.egoSpeedEnd)
         self.vehicle, self.vehicleAgent = super(Research1v1, self).createVehicle(self.getVehicleSetting(), maxSpeed=maxSpeed, randomizeSpawnPoint=randomizeSpawnPoint)

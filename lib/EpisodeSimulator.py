@@ -50,6 +50,7 @@ class EpisodeSimulator(Simulator):
             bool: True if episode successfully ends, False otherwise.
 
         """
+        self.logger.warn(f"simulator id: {id(self)}")
 
         try:
             for i in range(maxTicks):

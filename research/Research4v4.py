@@ -25,7 +25,7 @@ from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
 
 from agents.navigation.behavior_agent import BehaviorAgent
-from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRecorder, ActorClass
+from lib import Simulator, EpisodeSimulator, SimulationMode, ActorClass
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
@@ -41,6 +41,7 @@ class Research4v4(SettingBasedResearch):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 ignoreStatsSteps=0,
                  maxStepsPerCrossing=200,
                  navPathFilePath="data/navpath/nav_path_straight_road.json",
                  scenario = "psi-0002",
@@ -56,6 +57,7 @@ class Research4v4(SettingBasedResearch):
                          simulationMode=simulationMode,
                          settingsId=settingsId,
                          stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          maxStepsPerCrossing=maxStepsPerCrossing
                          )
         

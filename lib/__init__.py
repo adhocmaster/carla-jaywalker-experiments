@@ -13,7 +13,6 @@ from .ActorManager import ActorManager
 from .ObstacleManager import ObstacleManager
 from .LoggerFactory import LoggerFactory
 from .ActorClass import ActorClass
-from .EpisodeTrajectoryRecorder import EpisodeTrajectoryRecorder
 from .VehicleUtils import VehicleUtils
 from .ForceFunctions import ForceFunctions
 from .InteractionUtils import InteractionUtils

@@ -190,6 +190,14 @@ class NavPoint:
             return myStepsToTheRightLane + otherStepsToTheLeftLane + middleLaneSteps - 1
     
     def isAtTheSameLocation(self, other: 'NavPoint') -> bool:
+        """TODO check y axis, too.
+
+        Args:
+            other (NavPoint): _description_
+
+        Returns:
+            bool: _description_
+        """
         if self.laneId == other.laneId:
             if self.laneSection == other.laneSection:
                 return True

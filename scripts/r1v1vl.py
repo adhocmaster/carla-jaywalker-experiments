@@ -11,7 +11,7 @@ from lib import MapNames, SimulationMode
 @click.option(
     '--max_ticks',
     metavar='number',
-    default=1000,
+    default=500,
     type=int,
     help='Number of ticks the simulator will run'
     )
@@ -36,21 +36,38 @@ from lib import MapNames, SimulationMode
     type=str,
     help='NavPath Scenario'
     )
-def r1v1m2Default(max_ticks, stats, record, scenario):
+@click.option(
+    '-e', '--episodes',
+    metavar='int',
+    default=1,
+    type=int,
+    help='Number of episodes to run'
+    )
+@click.option(
+    '-seed', '--seed',
+    metavar='int',
+    default=39,
+    type=int,
+    help='random seed'
+    )
+def r1v1m2Default(max_ticks, stats, record, scenario, episodes, seed):
     research = ResearchFactory.createResearch1v1NavPathModel(
         map=MapNames.varied_width_lanes, 
         defaultLogLevel=logging.WARN, 
-        settingsId="setting1-ego-lc-right", 
+        settingsId="setting1-ego-rightmost-psi-0002", 
         simulationMode = SimulationMode.SYNCHRONOUS,
         stats=stats,
+        ignoreStatsSteps=100,
         record=record,
         scenario=scenario
          
     )
     research.maxStepsPerCrossing = max_ticks
     # research.run(maxTicks=max_ticks)
-    research.reset()
-    research.simulator.loop(maxTicks=max_ticks)
+    for i in range(episodes):
+        research.reset(seed + i)
+        research.simulator.loop(maxTicks=max_ticks)
+    research.onEnd() # make sure to call this to save stats
 
 
 if __name__ == '__main__':

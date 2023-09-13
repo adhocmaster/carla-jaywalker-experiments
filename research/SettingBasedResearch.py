@@ -19,7 +19,7 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
-from lib import Simulator, EpisodeSimulator, SimulationMode, EpisodeTrajectoryRecorder, ActorClass
+from lib import Simulator, EpisodeSimulator, SimulationMode, ActorClass
 from lib import Utils
 import pandas as pd
 from lib.MapManager import MapNames
@@ -36,6 +36,7 @@ class SettingBasedResearch(BaseResearch):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 ignoreStatsSteps=0,
                  record=False,
                  maxStepsPerCrossing=200):
 
@@ -47,6 +48,8 @@ class SettingBasedResearch(BaseResearch):
                          outputDir=outputDir,
                          simulationMode=simulationMode,
                          record=record,
+                         stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          )
 
         settings = None
@@ -65,9 +68,6 @@ class SettingBasedResearch(BaseResearch):
         self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
-        self.episodeNumber = 0
-        self.episodeTimeStep = 0
-        self.stats = stats
         self.maxStepsPerCrossing = maxStepsPerCrossing
         self.settingsId = settingsId
     
@@ -89,8 +89,8 @@ class SettingBasedResearch(BaseResearch):
         if spectatorSettings is not None:
             self.mapManager.setSpectator(spectatorSettings)
 
-    def reset(self):
-        super().reset()
+    def reset(self, seed=1):
+        super().reset(seed)
         spectatorSettings = self.settingsManager.getSpectatorSettings()
         if spectatorSettings is not None:
             self.mapManager.setSpectator(spectatorSettings)

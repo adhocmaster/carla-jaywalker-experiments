@@ -143,6 +143,7 @@ class NavPathModel():
         
 
         prevNavPoint = None
+        prevNavLoc = None
         for i, navPoint in enumerate(self.navPath.path):
             if i < idx:
                 continue
@@ -154,23 +155,22 @@ class NavPathModel():
             else:
                 vehicleConflictWp = V_Ref_Front_Wp.next(navPoint.distanceToInitialEgo + self.vehicleLag)[0]
           
-            navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint)
+            navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint, prevNavLoc)
 
             # print("navLoc", navLoc)
             self.intermediatePoints.append(navLoc)
             self.intermediatePointsToNavPointMap[navLoc] = navPoint
             prevNavPoint = navPoint
+            prevNavLoc = navLoc
         
                 
         self.nextIntermediatePointIdx = idx
         self.intermediatePoints.append(self.finalDestination)
 
-        # self.setWalkersInitialPosition(vehicleConflictWp)
-
 
         if self.debug:
             # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
-            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=True, life_time=15.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.075, z=0.25, color=(0, 255, 255), coords=False, life_time=15.0)
         self.agent.world.tick()
         # raise Exception("stop here")
 
@@ -190,6 +190,7 @@ class NavPathModel():
 
         self.rePlaceNavpointsFromIdx(0)
         self.setWalkersInitialPosition()
+        # self.setWalkerFinalDestination() # has issues
         self.initialized = True
 
     
@@ -230,7 +231,7 @@ class NavPathModel():
 
         return nearestWP
     
-    def getNavPointLocation(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint, prevNavPoint: Optional[NavPoint]) -> carla.Location:
+    def getNavPointLocation(self, navPoint: NavPoint, vehicleConflictWp: carla.Waypoint, prevNavPoint: Optional[NavPoint], prevLoc: Optional[carla.Location]) -> carla.Location:
             vehicleRightVector = vehicleConflictWp.transform.get_right_vector()
             vehicleLeftVector = -1 * vehicleRightVector
             # print("vehicleRightVector", vehicleRightVector)
@@ -239,26 +240,43 @@ class NavPathModel():
             if navWP is None:
                 raise Exception(f"nearestWP is None for navPoint {navPoint}")
             
+            
             if prevNavPoint is not None:
                 if navPoint.isAtTheSameLocation(prevNavPoint):
-                    # we need to add some offset
-                    # if self.navPath.direction == Direction.LR:
+                    # we need to compute new location based on prevNavPoint Location, not the mid location
                     navPoint.overlapOffset = 0.05 + prevNavPoint.overlapOffset
+                    if self.navPath.direction == Direction.LR:
+                        navLoc = prevLoc + vehicleRightVector * navWP.lane_width * navPoint.overlapOffset
+                    else:
+                        navLoc = prevLoc + vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
+                    # print(prevLoc, navLoc)
+                    # exit(0)
+                    return navLoc
             
             # print("navPoint.overlapOffset", navPoint.overlapOffset)
             # this is also broken
+            noise = np.random.uniform(0.8, 1.2) # added for variability
             midLoc = navWP.transform.location
             navLoc = midLoc
+            sectionWidth = 0.33
+
             if navPoint.laneSection == LaneSection.LEFT:
-                navLoc += vehicleLeftVector * navWP.lane_width * 0.33 
+                navLoc = midLoc + vehicleLeftVector * navWP.lane_width * sectionWidth * noise
             elif navPoint.laneSection == LaneSection.RIGHT:
-                navLoc += vehicleRightVector * navWP.lane_width * 0.33 
-            
-            if navPoint.overlapOffset > 0:
-                if self.navPath.direction == Direction.LR:
-                    navLoc += vehicleRightVector * navWP.lane_width * navPoint.overlapOffset
+                navLoc = midLoc + vehicleRightVector * navWP.lane_width * sectionWidth * noise
+            else:
+                # mid noise
+                if np.random.choice([True, False]):
+                    navLoc = midLoc + vehicleLeftVector * navWP.lane_width * (sectionWidth / 2) * np.random.uniform(0, 0.5)
                 else:
-                    navLoc += vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
+                    navLoc = midLoc + vehicleRightVector * navWP.lane_width * (sectionWidth / 2) * np.random.uniform(0, 0.5)
+            
+            # this is not needed anymore
+            # if navPoint.overlapOffset > 0:
+            #     if self.navPath.direction == Direction.LR:
+            #         navLoc += vehicleRightVector * navWP.lane_width * navPoint.overlapOffset
+            #     else:
+            #         navLoc += vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
 
             # print("vehicleConflictWp", vehicleConflictWp)
             # print("navWP", navWP)
@@ -301,6 +319,43 @@ class NavPathModel():
 
         self.agent.walker.set_location(sidewalk.location)
 
+    def setWalkerFinalDestination(self):
+        if len(self.intermediatePoints) < 2: # last one is the final destination which we need to fix
+            return
+        
+        vehicle = self.agent.egoVehicle
+        lastNavPoint = self.navPath.path[-1]
+
+        if lastNavPoint.distanceToEgo < 0:
+            V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
+            vehicleConflictWp = V_Ref_Back_Wp.next(lastNavPoint.distanceToInitialEgo + self.vehicleLag)[0] 
+        else:
+            V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
+            vehicleConflictWp = V_Ref_Front_Wp.next(lastNavPoint.distanceToInitialEgo + self.vehicleLag)[0]
+
+        lastLoc = self.intermediatePoints[-2]
+        print(lastLoc, self.intermediatePoints[0])
+        lastLocWp = self.agent.map.get_waypoint(lastLoc)
+
+        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, lastLocWp)
+
+        sidewalk = leftSideWalk
+        if Utils.wayPointsSameDirection(lastLocWp, vehicleConflictWp):
+            if self.navPath.direction == Direction.LR:
+                sidewalk = leftSideWalk
+            else:
+                sidewalk = rightSidewalk
+        else: # opposite direction
+            if self.navPath.direction == Direction.LR:
+                sidewalk = rightSidewalk
+            else:
+                sidewalk = leftSideWalk
+
+        self.intermediatePoints[-1] = sidewalk.location
+        self.setFinalDestination(sidewalk.location)
+        self.agent.setDestination(sidewalk.location)
+        self.agent.walker.set_location(sidewalk.location)
+
 
     # endregion
 
@@ -329,10 +384,10 @@ class NavPathModel():
         """
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
         navPoint = self.intermediatePointsToNavPointMap[nextDest]
-        self.logger.warn(f"has reached nav point {navPoint}")
+        self.logger.info(f"has reached nav point {navPoint}")
         for behaviorType in navPoint.behaviorTags:
             # print(navPoint)
-            self.logger.warn(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
+            self.logger.info(f"Tick {self.agent.currentEpisodeTick} : reached nav point {self.nextIntermediatePointIdx}. activating behavior {behaviorType}")
             # self.agent.visualizer.drawPoint(nextDest, color=(0, 0, 255), life_time=10.0)
             self.dynamicBehaviorModelFactory.addBehavior(self.agent, behaviorType)
 
@@ -360,15 +415,21 @@ class NavPathModel():
         prevDest = self.intermediatePoints[self.nextIntermediatePointIdx - 1]
         nextDest = self.intermediatePoints[self.nextIntermediatePointIdx]
 
-        # print("prevDest", prevDest)
-        # print("nextDest", nextDest)
-        destDirection = (nextDest - prevDest).make_unit_vector() # might be 0 if both nav points are at the same location
-        destinationVec = nextDest - prevDest
 
         if self.distanceToNextDestination() < 0.25: # 0.25 meters close
             self.activateBehaviorModels()
             return True
         
+        destinationVec = nextDest - prevDest
+        if destinationVec.length() < 0.1:
+            print("destinationVec", destinationVec.length())
+            print("prevDest", prevDest)
+            print("nextDest", nextDest)
+            print("nextIntermediatePointIdx", self.nextIntermediatePointIdx)
+            print("next inter dest", len(self.intermediatePoints))
+            print("intermediate points", self.intermediatePoints)
+            print("nav points", self.navPath.path)
+        destDirection = (nextDest - prevDest).make_unit_vector() # might be 0 if both nav points are at the same location
         # overshoot check
         overshoot = (self.agent.location - prevDest).dot(destDirection) - destinationVec.length()
         if overshoot > -0.25:
@@ -440,7 +501,7 @@ class NavPathModel():
 
         if vehicleTravelD < 0:
             
-            self.logger.warn(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible if the vehicle is still oncoming.")
+            self.logger.info(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible if the vehicle is still oncoming.")
             if InteractionUtils.isOncoming(self.agent.walker, vehicle):
                 direction = (nextLoc - self.agent.location).make_unit_vector()
                 return 10 * direction # quickly move to the next dest
@@ -548,7 +609,7 @@ class NavPathModel():
             distanceToTravel = - distanceToTravel
 
         if distanceToTravel < 0:
-            self.agent.logger.warning(f"vehicle has already crossed the nav point. distanceToTravel {distanceToTravel}, navPoint.distanceToEgo {navPoint.distanceToEgo}")
+            self.agent.logger.info(f"vehicle has already crossed the nav point. distanceToTravel {distanceToTravel}, navPoint.distanceToEgo {navPoint.distanceToEgo}")
 
             self.agent.logger.debug("navPoint.distanceToEgo", navPoint.distanceToEgo)
             self.agent.logger.debug("vehicleLocation", vehicle.get_location())

@@ -9,7 +9,7 @@
         "egoConfiguration": {
             "egoLaneWrtCenter": 1,
             "egoSpeedStart": 10,
-            "egoSpeedEnd": 20
+            "egoSpeedEnd": 30
         },
         "pedConfiguration": {
             "direction": "LR",
@@ -48,18 +48,18 @@
                     "distanceToInitialEgo": 25.0
                 },
                 "behavior": {
-                    "speed": 0.1
+                    "speed": 0.3
                 }
             },
             {
                 "location": {
                     "laneId": 0,
                     "laneSection": "LEFT",
-                    "distanceToEgo": 24.0,
+                    "distanceToEgo": -2.0,
                     "distanceToInitialEgo": 24.0
                 },
                 "behavior": {
-                    "speed": 1
+                    "speed": 0.5
                 }
             }
         ]
@@ -208,8 +208,8 @@
         },
         "egoConfiguration": {
             "egoLaneWrtCenter": 1,
-            "egoSpeedStart": 20,
-            "egoSpeedEnd": 10
+            "egoSpeedStart": 7,
+            "egoSpeedEnd": 15
         },
         "pedConfiguration": {
             "direction": "LR",
@@ -222,7 +222,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "LEFT",
-                    "distanceToEgo": 20.0,
+                    "distanceToEgo": 15.0,
                     "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
@@ -233,7 +233,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "MIDDLE",
-                    "distanceToEgo": 18.0,
+                    "distanceToEgo": 10.0,
                     "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
@@ -244,7 +244,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "MIDDLE",
-                    "distanceToEgo": 15.0,
+                    "distanceToEgo": 8.0,
                     "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
@@ -255,7 +255,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "MIDDLE",
-                    "distanceToEgo": 10.0,
+                    "distanceToEgo": 5.0,
                     "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
