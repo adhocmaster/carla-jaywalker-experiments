@@ -29,6 +29,7 @@ class BaseResearch(ClientUser):
             record=False, 
             render=True,
             stats=False,
+            ignoreStatsSteps=0,
         ) -> None:
         super().__init__(client)
 
@@ -44,6 +45,7 @@ class BaseResearch(ClientUser):
         self.record = record
         self.render = render
         self.stats = stats
+        self.ignoreStatsSteps = ignoreStatsSteps
         self.episodeTrajectoryRecorders = {}
         
         self.episodeNumber = 0
@@ -122,8 +124,8 @@ class BaseResearch(ClientUser):
         settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
         
         # settings.substepping = False # set it to true for faster execution. It has no effect on synchronous mode
-        settings.substepping = False # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
-        settings.max_substeps = 10
+        settings.substepping = True # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
+        settings.max_substeps = 2
         settings.max_substep_delta_time = self.time_delta / settings.max_substeps
         # print("applying settings", settings)
         self.world.apply_settings(settings)
@@ -275,6 +277,8 @@ class BaseResearch(ClientUser):
             self.logger.info(f"vehicle {vehicle.id} reached destination")
             vehicle.apply_control(carla.VehicleControl())
             return
+        
+        print(f"vehicle speed {vehicle.get_velocity().length() * 3.6} km/h")
 
         
         control = vehicleAgent.run_step()
@@ -307,7 +311,7 @@ class BaseResearch(ClientUser):
     
     
     def collectStats(self):
-        if not self.stats:
+        if not self.stats or self.episodeTimeStep < self.ignoreStatsSteps:
             return
 
         self.initEpisodeRecorderIfNeeded()
@@ -361,12 +365,12 @@ class BaseResearch(ClientUser):
 
         simDf = pd.concat(dfs, ignore_index=True)
 
-        dateStr = date.today().strftime("%Y-%m-%d-%H-%M")
-        statsPath = os.path.join(self.outputDir, f"{dateStr}-tracks.csv")
+        dateStr = date.today().strftime("%Y-%m-%d")
+        statsPath = os.path.join(self.outputDir, f"{self.name}-{dateStr}-tracks.csv")
         self.logger.warn(f"Saving tracks to {statsPath}")
         simDf.to_csv(statsPath, index=False)
 
-        metaPath = os.path.join(self.outputDir, f"{dateStr}-meta.json")
+        metaPath = os.path.join(self.outputDir, f"{self.name}-{dateStr}-meta.json")
         
         with open(metaPath, "w") as outfile:
             # print(meta)

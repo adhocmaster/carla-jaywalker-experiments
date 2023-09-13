@@ -11,7 +11,7 @@ from lib import MapNames, SimulationMode
 @click.option(
     '--max_ticks',
     metavar='number',
-    default=250,
+    default=500,
     type=int,
     help='Number of ticks the simulator will run'
     )
@@ -39,7 +39,7 @@ from lib import MapNames, SimulationMode
 @click.option(
     '-e', '--episodes',
     metavar='int',
-    default=3,
+    default=1,
     type=int,
     help='Number of episodes to run'
     )
@@ -50,6 +50,7 @@ def r1v1m2Default(max_ticks, stats, record, scenario, episodes):
         settingsId="setting1-ego-rightmost-psi-0002", 
         simulationMode = SimulationMode.SYNCHRONOUS,
         stats=stats,
+        ignoreStatsSteps=100,
         record=record,
         scenario=scenario
          

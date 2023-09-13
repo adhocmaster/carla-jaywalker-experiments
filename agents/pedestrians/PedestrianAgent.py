@@ -376,6 +376,8 @@ class PedestrianAgent(InfoAgent):
             # issue with velocity is when it's close to 0 nothing works.
             
             # desiredDirection = self._localPlanner.desiredDirection
+            
+            StateTransitionManager.changeAgentState(self.name, self, PedState.CLIMBING_SIDEWALK)
 
             sidewalkDirection = self.getDirectionToSidewalkAhead()
 

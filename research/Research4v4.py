@@ -41,6 +41,7 @@ class Research4v4(SettingBasedResearch):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 ignoreStatsSteps=0,
                  maxStepsPerCrossing=200,
                  navPathFilePath="data/navpath/nav_path_straight_road.json",
                  scenario = "psi-0002",
@@ -56,6 +57,7 @@ class Research4v4(SettingBasedResearch):
                          simulationMode=simulationMode,
                          settingsId=settingsId,
                          stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          maxStepsPerCrossing=maxStepsPerCrossing
                          )
         

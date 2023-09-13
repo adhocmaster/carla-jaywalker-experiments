@@ -37,7 +37,8 @@ def get_speed(vehicle):
     """
     vel = vehicle.get_velocity()
 
-    return 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2) # why the fuck 3.6? carla gives our velocity in m/s
+    speedMpS = vel.length()
+    return 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2) # its MPH
 
 def get_trafficlight_trigger_location(traffic_light):
     """

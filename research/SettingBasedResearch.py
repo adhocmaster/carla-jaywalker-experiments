@@ -36,6 +36,7 @@ class SettingBasedResearch(BaseResearch):
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  settingsId = "setting1",
                  stats=False,
+                 ignoreStatsSteps=0,
                  record=False,
                  maxStepsPerCrossing=200):
 
@@ -47,7 +48,8 @@ class SettingBasedResearch(BaseResearch):
                          outputDir=outputDir,
                          simulationMode=simulationMode,
                          record=record,
-                         stats=stats
+                         stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
                          )
 
         settings = None
