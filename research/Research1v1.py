@@ -135,7 +135,7 @@ class Research1v1(SettingBasedResearch):
         self.initStats()
 
     
-    def reset(self):
+    def reset(self, seed=1):
         """Only used for episodic simulator
         """
         self.logger.info(f"Resetting environment")
@@ -143,7 +143,7 @@ class Research1v1(SettingBasedResearch):
         # self.vehicleFactory.reset()
         self.destoryActors()
 
-        super().reset()
+        super().reset(seed)
 
         self.episodeNumber += 1
         self.episodeTimeStep = 0

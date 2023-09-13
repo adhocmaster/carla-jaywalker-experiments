@@ -67,9 +67,12 @@ class BaseResearch(ClientUser):
         self.mapManager = MapManager(self.client)
         self.mapManager.load(self.mapName, forceReload=True)
 
-    def reset(self):
+    def reset(self, seed=1):
         # self.client.reload_world(False)
         self.mapManager.reload()
+        print(f"resetting world with seed {seed}")
+        random.seed(seed)
+        np.random.seed(seed)
 
 
     def initWorldSettings(self):
@@ -278,7 +281,7 @@ class BaseResearch(ClientUser):
             vehicle.apply_control(carla.VehicleControl())
             return
         
-        print(f"vehicle speed {vehicle.get_velocity().length() * 3.6} km/h")
+        # print(f"vehicle speed {vehicle.get_velocity().length() * 3.6} km/h")
 
         
         control = vehicleAgent.run_step()
