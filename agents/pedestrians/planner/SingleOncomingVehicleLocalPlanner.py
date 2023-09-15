@@ -110,8 +110,9 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         #     control = self.getNewControl()
 
         if self.agent.isFrozen():
-            self.logger.info(f"Pedestrian is frozen.")
-            return self.getStopControl()
+            self.logger.debug(f"Pedestrian is frozen.")
+            # return self.getStopControl()
+            return self.getNewControl()
 
         if self.agent.isFinished():
             self.logger.warn(f"Finished. no new control")

@@ -274,6 +274,9 @@ class PedestrianPlanner:
         for model in self.models:
             force = model.calculateForce()
             self.logger.debug(f"Force from {model.name} {force}")
+            # if self.agent.isFrozen():
+            #     self.logger.warn(f"Force from {model.name} {force}")
+
             
             if force is not None:
                 self.modelForces[model.name] = force

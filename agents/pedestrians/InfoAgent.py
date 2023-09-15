@@ -54,6 +54,10 @@ class InfoAgent:
     @property
     def walker(self):
         return self._walker
+    
+    @property
+    def timeDelta(self):
+        return Utils.getTimeDelta(self.world)
         
     @property
     def control(self):
