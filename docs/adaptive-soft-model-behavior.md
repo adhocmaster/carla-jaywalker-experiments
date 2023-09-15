@@ -2,7 +2,8 @@
 ![NavPoint Realization](./images/stop-speed-up-slow-down.PNG)
 ![NavPoint Realization](./images/flinch-retreat.PNG)
 ## Behavior Primitives
-1. **Evasive Stop**: It represents a complete stop inside a road while crossing. %This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved.
+1. **Evasive Stop**: It represents a complete stop inside a road while crossing. %This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. Refer to [Evasive Stop](./evasive-stop.md) for current model.
+
 2. **Evasive Flinch**: It is similar to an Evasive Stop with an additional backward movement pattern that happens involuntarily and within a fraction of a second. %In this case, the pedestrian moves back a little bit into another lane as a physical instinct. This behavior creates a dangerous situation in the lane the pedestrian enters. In this case, the pedestrian moves back a little bit into another lane as a physical instinct. This behavior creates a dangerous situation in the lane the pedestrian enters.
 3. **Evasive Retreat**: In this one, the pedestrian voluntarily moves back until they are safe from an approaching vehicle which can take a few seconds.
 4. **Evasive Speedup**: This primitive modifies the pedestrian's trajectory to a higher speed to evade the approaching vehicle. 

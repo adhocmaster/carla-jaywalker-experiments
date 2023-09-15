@@ -1,4 +1,5 @@
 import numpy as np
+import carla
 from agents.pedestrians.ForceModel import ForceModel
 from agents.pedestrians.PedState import PedState
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
@@ -62,7 +63,7 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
             self._actuationTimeElapsed = 0.0
             self._lastTick = self.agent.currentEpisodeTick
         
-        if self._actuationTimeElapsed >= self._maxActuationTime:
+        if self._actuationTimeElapsed > self._maxActuationTime:
             # hugeForce = -1 * (self._startVelocity / 0.001) # force will cause back and forth velocity
             return -1 * (self.agent.velocity / self.agent.timeDelta) # force will cause back and forth velocity
             # return None
@@ -72,7 +73,11 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         # a linear easing function
         # return self._startVelocity * (1 - self._actuationTimeElapsed / self._maxActuationTime)
         # return -1 * (self._startVelocity / self._maxActuationTime)
-        return -1 * (self._startVelocity / self._maxActuationTime)
+        # return -1 * (self._startVelocity / self._maxActuationTime)
+        newV = self.stepV()
+        # newV = curV + force * timedelta
+        force = (newV - self.agent.velocity) / self.agent.timeDelta
+        return force
         
     def canHardStop(self) -> bool:
         if not self.agent.isFrozen():
@@ -111,3 +116,6 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         if self.canfreeze():
             return False
         return True
+    
+    def stepV(self) -> carla.Vector3D:
+        return self._startVelocity * (1 - self._actuationTimeElapsed / self._maxActuationTime)
