@@ -33,21 +33,4 @@ In the following video, PSI-0002 Scenario Reconstructed and Retargeted using Sof
 [![Watch the video](./images/psi-0002-reconstructed.JPG)](https://youtube.com/shorts/ygUYhyuXlPE?feature=share)
 
 
-## NavPath Placement (NavPoint Realization)
-
-1. Before the episode, NavPoints are translated into the world coordinate system based on the Ego vehicle's position in the world space. They are put a bit further so that the vehicle can catch up with it's desired velocity.
-2. When the pedestrian reaches the NavPoint, they are distanceToEgo far away from the Ego on the Ego's reference line (Ego coordinate system). We do it by estimating the travel time of the vehicle and adjusting pedestrian speed accordingly.
-
-
-Here goes the technical solution
-
-![NavPoint Realization](./images/navpoint-realization.PNG)
-
-Based on whether the NavPoint is relatively located in front of the vehicle or behind the vehicle, the calculations change a little bit.
-
-
-
-![NavPoint Realization Front](./images/navpoint-realization-infront.PNG)
-
-![NavPoint Realization Back](./images/navpoint-realization-behind.PNG)
 

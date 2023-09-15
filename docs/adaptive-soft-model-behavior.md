@@ -29,3 +29,6 @@ Identifying behavior primitives in trajectories is our active research topic. Th
     - is on the same side as the current.
     - lower speed than the current.
     - has no future NavPoints in front of the ego.
+
+### Issues with the Behavior Matcher
+1. **Conflicting Behaviors:** A NavPoint can have multiple Behavior Primitive candidates. For instance, a pedestrian might momentarily stop and then begin retreating. In such cases, the Behavior Matcher tags the NavPoint with Evasive Retreat only. However, based on real-world scenarios it may also make sense to choose Stop over Retreat, so ordering is exposed as a parameter of the Behavior Matcher. The default priority is as follows (higher mentioned earlier): *Retreat > Flinch > Stop > Speedup > Slowdown*.
