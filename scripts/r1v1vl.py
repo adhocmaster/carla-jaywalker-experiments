@@ -54,7 +54,8 @@ def r1v1m2Default(max_ticks, stats, record, scenario, episodes, seed):
     research = ResearchFactory.createResearch1v1NavPathModel(
         map=MapNames.varied_width_lanes, 
         defaultLogLevel=logging.WARN, 
-        settingsId="setting1-ego-rightmost-psi-0002", 
+        settingsId="setting1-ego-lc-right-psi-0002", 
+        # settingsId="setting1-ego-rightmost-psi-0002", 
         simulationMode = SimulationMode.SYNCHRONOUS,
         stats=stats,
         ignoreStatsSteps=100,
