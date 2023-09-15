@@ -26,3 +26,5 @@ $t_{max}$ = maximum actuation time
 $\vec{V}_{start}$ = starting velocity of the pedestrian
 
 $\vec{V}_{current}$ = current velocity of the pedestrian
+
+The maximum actuation time is uniformly sampled from [0.5, 1.5]

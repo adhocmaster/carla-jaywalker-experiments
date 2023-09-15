@@ -25,7 +25,7 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         )
 
         self._startVelocity = None
-        self._maxActuationTime = None # seconds
+        self._maxActuationTime = np.random.uniform(0.15, 1.5)
         self._actuationTimeElapsed = None # seconds
         self._lastTick = None
 
@@ -37,7 +37,6 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
     
     def _reset(self):
         self._startVelocity = None
-        self._maxActuationTime = None # seconds
         self._actuationTimeElapsed = None # seconds
         self._lastTick = None
 
@@ -59,7 +58,6 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         # TODO make a easing function
         if self._startVelocity is None:
             self._startVelocity = self.agent.velocity # TODO this is a bit incorrect 
-            self._maxActuationTime = np.random.uniform(0.15, 0.5)
             self._actuationTimeElapsed = 0.0
             self._lastTick = self.agent.currentEpisodeTick
         
