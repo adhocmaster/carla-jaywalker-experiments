@@ -222,7 +222,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "LEFT",
-                    "distanceToEgo": 15.0,
+                    "distanceToEgo": 13.0,
                     "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
@@ -244,7 +244,7 @@
                 "location": {
                     "laneId": -1,
                     "laneSection": "MIDDLE",
-                    "distanceToEgo": 8.0,
+                    "distanceToEgo": 7.0,
                     "distanceToInitialEgo": 20.0
                 },
                 "behavior": {
@@ -267,7 +267,7 @@
                     "laneId": -1,
                     "laneSection": "RIGHT",
                     "distanceToEgo": 5.0,
-                    "distanceToInitialEgo": 20.0
+                    "distanceToInitialEgo": 19.5
                 },
                 "behavior": {
                     "speed": 0.1

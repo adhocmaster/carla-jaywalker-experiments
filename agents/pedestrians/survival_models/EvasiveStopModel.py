@@ -85,7 +85,7 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         return self._actuationTimeElapsed >= self._maxActuationTime
 
     
-    def canfreeze(self):
+    def canfreeze(self, TGThreshold=0.5):
         """Can freeze only works if the TTC is less than 1.5 seconds
 
         Returns:
@@ -101,17 +101,19 @@ class EvasiveStopModel(SurvivalModel, StateTransitionModel):
         # print(f"canfreeze TG: {TG}")
         if not InteractionUtils.isOncoming(self.agent.walker, self.agent.egoVehicle):
             return False
-        if TG is not None and TG < 1:
+        if TG is not None and TG < TGThreshold:
             return True
         
         return False
 
 
     def canUnfreeze(self):
+        if not InteractionUtils.isOncoming(self.agent.walker, self.agent.egoVehicle): # TODO this is a bit incorrect and will unfreeze when in conflict with other vehicles.
+            return True
         distance = self.agent.distanceFromEgo()
         if distance < 0.5:
             return False
-        if self.canfreeze():
+        if self.canfreeze(TGThreshold=0.5):
             return False
         return True
     

@@ -474,7 +474,7 @@ class NavPathModel():
 
         # if very close to the next destination, invert the force
         
-        force = requiredChangeInVelocity / 0.01 #instant change
+        force = requiredChangeInVelocity / 0.05 #instant change
 
         # if self.distanceToNextDestination() < 0.5:
         #     force = -1 * force
@@ -501,11 +501,11 @@ class NavPathModel():
 
         if vehicleTravelD < 0:
             
+            direction = (nextLoc - self.agent.location).make_unit_vector()
             self.logger.info(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible if the vehicle is still oncoming.")
             if InteractionUtils.isOncoming(self.agent.walker, vehicle):
-                direction = (nextLoc - self.agent.location).make_unit_vector()
                 return 10 * direction # quickly move to the next dest
-            return None
+            return self.navPath.pedConfiguration.maxSpeed * direction
         
         # vehicle may stop
         vehicleSpeed = vehicle.get_velocity().length()
@@ -520,7 +520,8 @@ class NavPathModel():
         # print("dToNext", dToNext)
         # print("speed", speed)
         direction = (nextLoc - self.agent.location).make_unit_vector()
-        return speed * direction * 1.2
+        speed = min(speed, self.navPath.pedConfiguration.minSpeed)
+        return speed * direction * 1.1
     
     # def getEgoTravelDistance(self) -> Optional[carla.Vector3D]:
     #     vehicle = self.agent.egoVehicle # this is not correct, we need the ego
