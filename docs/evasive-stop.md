@@ -7,9 +7,9 @@ Current model is a piecewise force function of maximum actuation time and starti
 $$ \vec{F}_{stop} = 
     \begin{cases} 
       \frac{(\vec{V}_{start} * (1 - \frac{t_{elasped}}{t_{max}}) - \vec{V}_{current})}{t_{delta}} 
-            & t_{elasped} <= t_{max} \\
+             & \mid t_{elasped} <= t_{max} \\
       -(\frac{\vec{V}_{current}}{t_{delta}})
-            & t_{elasped} > t_{max} \\
+            & \mid t_{elasped} > t_{max} \\
     \end{cases}
     \\
 $$

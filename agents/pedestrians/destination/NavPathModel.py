@@ -502,8 +502,9 @@ class NavPathModel():
         if vehicleTravelD < 0:
             
             direction = (nextLoc - self.agent.location).make_unit_vector()
-            self.logger.info(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible if the vehicle is still oncoming.")
+            self.logger.warn(f"vehicleTravelD is negative {vehicleTravelD}, Trying to reach next locatiton as fast as possible if the vehicle is still oncoming.")
             if InteractionUtils.isOncoming(self.agent.walker, vehicle):
+                self.logger.warn(f"Fast forward to next")
                 return 10 * direction # quickly move to the next dest
             return self.navPath.pedConfiguration.maxSpeed * direction
         
@@ -520,7 +521,7 @@ class NavPathModel():
         # print("dToNext", dToNext)
         # print("speed", speed)
         direction = (nextLoc - self.agent.location).make_unit_vector()
-        speed = min(speed, self.navPath.pedConfiguration.minSpeed)
+        speed = max(speed, self.navPath.pedConfiguration.minSpeed)
         return speed * direction * 1.1
     
     # def getEgoTravelDistance(self) -> Optional[carla.Vector3D]:
