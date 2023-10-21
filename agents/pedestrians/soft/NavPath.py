@@ -29,6 +29,7 @@ class NavPath:
     def __init__(
             self, 
             id: any,
+            groupId: any,
             roadConfiguration: NavPathRoadConfiguration,
             egoConfiguration: NavPathEgoConfiguration,
             pedConfiguration: NavPathPedestrianConfiguration,
@@ -36,6 +37,7 @@ class NavPath:
             ):
         
         self.id = id
+        self.groupId = groupId
         self.roadConfiguration = roadConfiguration
         self.egoConfiguration = egoConfiguration
         self.pedConfiguration = pedConfiguration

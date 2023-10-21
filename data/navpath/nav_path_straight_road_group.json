@@ -1,0 +1,74 @@
+[
+    {
+        "id": "psi-0048",
+        "roadConfiguration": {
+            "roadWidth": 8,
+            "nEgoDirectionLanes": 2,
+            "nEgoOppositeDirectionLanes": 0
+        },
+        "egoConfiguration": {
+            "egoLaneWrtCenter": 1,
+            "egoSpeedStart": 24,
+            "egoSpeedEnd": 16
+        },
+        "pedestrians": [
+            {
+                "pedConfiguration": {
+                    "direction": "LR",
+                    "avgSpeed": 1,
+                    "maxSpeed": 1.5,
+                    "minSpeed": 0
+                },
+                "path": [
+                    {
+                        "location": {
+                            "laneId": 0,
+                            "laneSection": "LEFT",
+                            "distanceToEgo": 30.0,
+                            "distanceToInitialEgo": 30.0
+                        },
+                        "behavior": {
+                            "speed": 0.5
+                        }
+                    },
+                    {
+                        "location": {
+                            "laneId": 0,
+                            "laneSection": "LEFT",
+                            "distanceToEgo": 25.0,
+                            "distanceToInitialEgo": 32.0
+                        },
+                        "behavior": {
+                            "speed": 0.5
+                        }
+                    },
+                    {
+                        "location": {
+                            "laneId": -1,
+                            "laneSection": "RIGHT",
+                            "distanceToEgo": 20.0,
+                            "distanceToInitialEgo": 34.0
+                        },
+                        "behavior": {
+                            "speed": 1.0
+                        }
+                    },
+                    {
+                        "location": {
+                            "laneId": -1,
+                            "laneSection": "LEFT",
+                            "distanceToEgo": 10.0,
+                            "distanceToInitialEgo": 36.0
+                        },
+                        "behavior": {
+                            "speed": 1.0
+                        }
+                    }
+                ]
+        
+            }
+            
+        ]
+    }
+        
+]

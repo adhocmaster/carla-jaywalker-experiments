@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Union, Tuple
 from dacite import from_dict, Config
 
 from agents.pedestrians.soft.NavPath import NavPath, NavPathPedestrianConfiguration, NavPathRoadConfiguration, NavPathEgoConfiguration
@@ -14,10 +14,13 @@ class NavObjectMapper:
         Args:
             pathsDics (_type_): a list of NavPaths in dictionary form
         """
-        return [NavObjectMapper.pathFromDict(pathDic) for pathDic in pathsDics]
+        navPaths = []
+        for pathDic in pathsDics:
+            navPaths.extend(NavObjectMapper.pathFromDict(pathDic))
+        return navPaths
 
     @staticmethod
-    def pathFromDict(pathDic) -> NavPath:
+    def pathFromDict(pathDic) -> List[NavPath]:
         """_summary_
 
         Args:
@@ -28,16 +31,45 @@ class NavObjectMapper:
         # print(pathDic['egoConfiguration'])
         egoConfiguration = from_dict(data_class=NavPathEgoConfiguration, data=pathDic['egoConfiguration'])
         # print(pathDic['pedConfiguration'])
-        pedConfiguration = from_dict(data_class=NavPathPedestrianConfiguration, data=pathDic['pedConfiguration'], config=Config(cast=[Enum]))
-        path = [NavObjectMapper.pointFromDict(pointDic) for pointDic in pathDic['path']]
 
-        return NavPath(
-            id = pathDic['id'],
-            roadConfiguration=roadConfiguration,
-            egoConfiguration=egoConfiguration,
-            pedConfiguration=pedConfiguration,
-            path=path
-        )
+        # branch if it's a group or individual
+        navPaths = []
+        if "pedestrians" in pathDic:
+            for idx, pedDic in enumerate(pathDic['pedestrians']):
+                pedConfiguration, path = NavObjectMapper.extractPedestrian(pedDic)
+                navPaths.append(NavPath(
+                    id = f"{pathDic['id']}-{idx}",
+                    groupId = pathDic['id'],
+                    roadConfiguration=roadConfiguration,
+                    egoConfiguration=egoConfiguration,
+                    pedConfiguration=pedConfiguration,
+                    path=path
+                ))
+        else:
+            pedConfiguration, path = NavObjectMapper.extractPedestrian(pathDic)
+            navPaths.append(NavPath(
+                id = pathDic['id'],
+                groupId = None,
+                roadConfiguration=roadConfiguration,
+                egoConfiguration=egoConfiguration,
+                pedConfiguration=pedConfiguration,
+                path=path
+            ))
+        
+        print(navPaths)
+        return navPaths
+    
+    @staticmethod
+    def extractPedestrian(pedDic) -> Tuple[NavPathPedestrianConfiguration, List[NavPoint]]:
+        """_summary_
+
+        Args:
+            pedDic (_type_): dictionary for a single pedestrian
+        """
+        pedConfiguration = from_dict(data_class=NavPathPedestrianConfiguration, data=pedDic['pedConfiguration'], config=Config(cast=[Enum]))
+        path = [NavObjectMapper.pointFromDict(pointDic) for pointDic in pedDic['path']]
+
+        return (pedConfiguration, path)
     
     @staticmethod
     def pointFromDict(pointDic) -> NavPoint:
