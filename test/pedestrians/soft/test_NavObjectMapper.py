@@ -20,7 +20,7 @@ def test_jsonToNavPaths(navPathJSON):
     # print("navPathJSON", navPathJSON)
     dicts = json.loads(navPathJSON)
     navPaths = NavObjectMapper.pathsFromDicts(dicts)
-    print(navPaths)
+    # print(navPaths)
     assert len(navPaths) > 0
     firstPah = navPaths[0]
     assert firstPah.id == "psi-0002"
@@ -37,6 +37,8 @@ def test_jsonToNavPaths(navPathJSON):
 
 
 def test_groupNavPaths(navPathJSONGroup):
-    dicts = json.loads(navPathJSON)
+    dicts = json.loads(navPathJSONGroup)
     navPaths = NavObjectMapper.pathsFromDicts(dicts)
     print(navPaths)
+    # assert False
+    
