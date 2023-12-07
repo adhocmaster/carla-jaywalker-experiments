@@ -51,7 +51,7 @@ class Research1v1NavPathModel(Research1v1):
             # self._navPath = random.choice(navPaths)
             # self._navPath = navPaths[4] # just for testing
             
-            self._navPath = self.settingsManager.getNavPath(self.navPathFilePath, self.scenario)
+            self._navPath = self.settingsManager.getNavPath(self.navPathFilePath, self.scenario)[0]
 
         return self._navPath
     
