@@ -14,7 +14,7 @@
         "pedestrians": [
             {
                 "pedConfiguration": {
-                    "direction": "LR",
+                    "direction": "RL",
                     "avgSpeed": 1,
                     "maxSpeed": 1.5,
                     "minSpeed": 0
@@ -66,7 +66,64 @@
                     }
                 ]
         
+            },
+            
+            {
+                "pedConfiguration": {
+                    "direction": "LR",
+                    "avgSpeed": 1,
+                    "maxSpeed": 1.5,
+                    "minSpeed": 0
+                },
+                "path": [
+                    {
+                        "location": {
+                            "laneId": 0,
+                            "laneSection": "MIDDLE",
+                            "distanceToEgo": 30.0,
+                            "distanceToInitialEgo": 30.0
+                        },
+                        "behavior": {
+                            "speed": 0.5
+                        }
+                    },
+                    {
+                        "location": {
+                            "laneId": 0,
+                            "laneSection": "RIGHT",
+                            "distanceToEgo": 25.0,
+                            "distanceToInitialEgo": 32.0
+                        },
+                        "behavior": {
+                            "speed": 0.5
+                        }
+                    },
+                    {
+                        "location": {
+                            "laneId": 1,
+                            "laneSection": "LEFT",
+                            "distanceToEgo": 20.0,
+                            "distanceToInitialEgo": 34.0
+                        },
+                        "behavior": {
+                            "speed": 1.0
+                        }
+                    },
+                    {
+                        "location": {
+                            "laneId": 1,
+                            "laneSection": "RIGHT",
+                            "distanceToEgo": 10.0,
+                            "distanceToInitialEgo": 36.0
+                        },
+                        "behavior": {
+                            "speed": 1.0
+                        }
+                    }
+                ]
+        
             }
+            
             
         ]
     }

@@ -47,7 +47,13 @@ class NavPath:
 
     
     def __str__(self) -> str:
-        return f"NavPath {self.id}"
+        return f"""NavPath: {self.id}
+            groupId: {self.groupId}
+            roadConfiguration: {self.roadConfiguration}
+            egoConfiguration: {self.egoConfiguration}
+            pedConfiguration: {self.pedConfiguration}
+            path: {self.path}
+        """
 
     @property
     def roadWidth(self):

@@ -56,7 +56,7 @@ class NavObjectMapper:
                 path=path
             ))
         
-        print(navPaths)
+        # print(navPaths)
         return navPaths
     
     @staticmethod
