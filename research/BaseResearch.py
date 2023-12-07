@@ -198,7 +198,7 @@ class BaseResearch(ClientUser):
 
         return vehicle, vehicleAgent
     
-    def createWalker(self, walkerSetting: SourceDestinationPair) -> Tuple[carla.Walker, PedestrianAgent]:
+    def createWalker(self, walkerSetting: SourceDestinationPair, behaviorFactors = None) -> Tuple[carla.Walker, PedestrianAgent]:
 
         walkerSpawnPoint = carla.Transform(location = walkerSetting.source)
         
@@ -220,8 +220,9 @@ class BaseResearch(ClientUser):
         # self.world.wait_for_tick() # otherwise we can get wrong agent location!
         self.tickOrWaitBeforeSimulation()
 
-
-        walkerAgent = self.pedFactory.createAgent(walker=walker, logLevel=self.logLevel, optionalFactors=[], config=None)
+        if behaviorFactors is None:
+            behaviorFactors = []
+        walkerAgent = self.pedFactory.createAgent(walker=walker, logLevel=self.logLevel, optionalFactors=behaviorFactors, config=None)
 
         walkerDestination = walkerSetting.destination
         walkerAgent.setDestination(walkerDestination)

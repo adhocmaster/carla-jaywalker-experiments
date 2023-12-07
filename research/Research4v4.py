@@ -101,7 +101,7 @@ class Research4v4(SettingBasedResearch):
             # self._navPath = random.choice(navPaths)
             
             # self._navPath = navPaths[1] # just for testing
-            self._navPath = self.settingsManager.getNavPath(self.navPathFilePath, self.scenario)
+            self._navPath = self.settingsManager.getNavPath(self.navPathFilePath, self.scenario)[0]
 
         # print(self._navPath)
         # exit(0)

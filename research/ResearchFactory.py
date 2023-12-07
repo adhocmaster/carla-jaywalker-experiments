@@ -8,6 +8,7 @@ from research.Research1v1NavPathModel import Research1v1NavPathModel
 from research.Research4v4 import Research4v4
 # from research.SimulationMode import SimulationMode
 from research.ResearchCogMod import ResearchCogMod
+from research.ResearchNv1NavPathModel import ResearchNv1NavPathModel
 
 class ResearchFactory:
     def __init__(self, host="127.0.0.1", port=2000, output_dir="logs", map=MapNames.circle_t_junctions) -> None:
@@ -71,6 +72,43 @@ class ResearchFactory:
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
         research = Research1v1NavPathModel(client, 
+                         mapName=map, 
+                         logLevel=defaultLogLevel, 
+                         outputDir=output_dir,
+                         simulationMode=simulationMode, 
+                         settingsId=settingsId,
+                         stats=stats,
+                         ignoreStatsSteps=ignoreStatsSteps,
+                         record=record,
+                         scenario=scenario
+                         )
+        
+
+
+        return research
+    
+    @staticmethod
+    def createResearchNv1NavPathModel(
+                            host="127.0.0.1", 
+                            port=2000, 
+                            defaultLogLevel=logging.INFO, 
+                            output_dir="logs", 
+                            map=MapNames.varied_width_lanes,
+                            simulationMode = SimulationMode.ASYNCHRONOUS,
+                            settingsId = "setting1",
+                            stats=True,
+                            ignoreStatsSteps=0,
+                            record=False,
+                            scenario = "psi-0002",
+                            ) -> ResearchNv1NavPathModel:
+
+        print(f"research chosen : R1v1 with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
+        port = int(port)
+        name = "ResearchNv1NavPathModel"
+        logPath = os.path.join(output_dir, f"{name}.log")
+        logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
+        client = Utils.createClient(logger, host, port)
+        research = ResearchNv1NavPathModel(client, 
                          mapName=map, 
                          logLevel=defaultLogLevel, 
                          outputDir=output_dir,

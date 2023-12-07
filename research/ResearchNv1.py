@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from genericpath import sameopenfile
 from turtle import distance
 from typing import Dict
@@ -8,12 +9,14 @@ import os
 import numpy as np
 import json
 from datetime import date
+from typing import *
 
 from agents.pedestrians.soft import Direction, LaneSection, NavPath, NavPoint
 from research.SettingBasedResearch import SettingBasedResearch
 from settings.SourceDestinationPair import SourceDestinationPair
 
 from .BaseResearch import BaseResearch
+from .ResearchActors import WalkerActor
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings.town02_settings import town02_settings
 from settings.town03_settings import town03_settings
@@ -29,7 +32,7 @@ import pandas as pd
 from lib.MapManager import MapNames
 from agents.pedestrians.soft import NavPointLocation, NavPointBehavior, LaneSection, Direction, NavPath
 
-class Research1v1(SettingBasedResearch):
+class ResearchNv1(SettingBasedResearch):
     
     def __init__(self, 
                  client: carla.Client, 
@@ -80,14 +83,13 @@ class Research1v1(SettingBasedResearch):
     def getVehicle(self):
         return self.vehicle
 
-    def getWalker(self):
-        return self.walker
-
     def getVehicleAgent(self):
         return self.vehicleAgent
+    
+    def getWalkers(self) -> List[WalkerActor]:
+        return self.walkerActors
+    
 
-    def getWalkerAgent(self):
-        return self.walkerAgent
     
 
     #endregion
@@ -118,10 +120,7 @@ class Research1v1(SettingBasedResearch):
 
         super().setup()
 
-        self.walker = None
-        self.walkerAgent = None
-        self._walkerSetting = None
-        # self.walkerSetting = self.getWalkerSetting()
+        self.walkerActors: List[WalkerActor] = []
 
     
 
@@ -158,39 +157,29 @@ class Research1v1(SettingBasedResearch):
     
     #region actor generation
 
-    @property
-    def walkerSetting(self) -> SourceDestinationPair:
-        return self._walkerSetting
-
-    def getWalkerSetting(self, reverse=False):
-        if self._walkerSetting is None:
-            walkerSettings = self.settingsManager.getWalkerSettings()
-            walkerSetting = walkerSettings[0]
-            if reverse:
-                walkerSetting = self.settingsManager.reverseWalkerSetting(walkerSetting)
-            
-            self._walkerSetting = walkerSetting
-
-        return self._walkerSetting
-
     def getVehicleSetting(self) -> SourceDestinationPair:
         vehicleSetting = self.settingsManager.getVehicleSettings()
         vehicleSetting = vehicleSetting[0]
         return vehicleSetting
-
-    def createWalker(self, reverse=False, behaviorFactors = None):
-        
-        self.walker, self.walkerAgent = super().createWalker(self.getWalkerSetting(reverse=reverse), behaviorFactors=behaviorFactors)
-
+    
+    @abstractmethod
+    def createWalkers(self):
+        raise NotImplementedError("createWalkers not implemented")
         pass
 
 
-    def getWalkerCrossingAxisRotation(self):
+    @abstractmethod
+    def resetWalkers(self):
+        raise NotImplementedError("resetWalkers not implemented")
+        pass
+
+
+    # def getWalkerCrossingAxisRotation(self):
         
-        wp = self.map.get_waypoint(self.walkerSetting.source)
-        wpTransform = wp.transform
-        # walkerXAxisDirection = wpTransform.get_forward_vector()
-        return wpTransform.rotation.yaw
+    #     wp = self.map.get_waypoint(self.walkerSetting.source)
+    #     wpTransform = wp.transform
+    #     # walkerXAxisDirection = wpTransform.get_forward_vector()
+    #     return wpTransform.rotation.yaw
 
     
     def createVehicle(self, randomizeSpawnPoint=False):
@@ -209,6 +198,7 @@ class Research1v1(SettingBasedResearch):
 
     def resetWalker(self, sameOrigin=True):
         self.logger.warn(f"Resetting Walker")
+        raise NotImplementedError("Use resetWalkers instead")
         self.walkerAgent.setEgoVehicle(self.vehicle)
 
         if sameOrigin == True:
@@ -230,10 +220,11 @@ class Research1v1(SettingBasedResearch):
         self.createVehicle()
         
         self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
-        self.createWalker(behaviorFactors=self.optionalFactors)
+        self.createWalkers()
         pass
 
     def recreateDynamicAgents(self):
+        raise NotImplementedError("recreateDynamicAgents not implemented")
         # 1. recreated vehicle
         self.recreateVehicle()
         self.tickOrWaitBeforeSimulation() # otherwise we can get wrong vehicle location!
@@ -258,7 +249,8 @@ class Research1v1(SettingBasedResearch):
         # self.episodeNumber = 1 # updated when resetted
 
         onTickers = [self.visualizer.onTick, self.onTick] # onTick must be called before restart
-        terminalSignalers = [self.walkerAgent.isFinished]
+        # terminalSignalers = [self.walkerAgent.isFinished]
+        terminalSignalers = [walkerActor.agent.isFinished for walkerActor in self.walkerActors] # TODO, improve it so that all has to finish.
 
         if episodic:
             # this is only to be used from gym environments. It does not call onEnd as we may reset and run
@@ -353,7 +345,9 @@ class Research1v1(SettingBasedResearch):
 
         self.walkerAgent.onTickStart(world_snapshot)
 
-        self.updateWalker(world_snapshot, self.walkerAgent, self.walker)
+        for walkerActor in self.walkerActors:
+            self.updateWalker(world_snapshot, walkerActor.agent, walkerActor.carlaActor)
+
         self.updateVehicle(world_snapshot, self.vehicleAgent, self.vehicle)
 
         # draw waypoints upto walker

@@ -508,7 +508,7 @@ class Utils:
 
     
     @staticmethod
-    def getSideWalks(world: carla.World, waypoint: carla.Waypoint, rayLength: float=20) -> Tuple[carla.Location, carla.Location]:
+    def getSideWalks(world: carla.World, waypoint: carla.Waypoint, rayLength: float=20) -> Tuple[carla.LabelledPoint, carla.LabelledPoint]:
         """Returns left and right sidewalk locations if the waypoint. left and rigt are relative to the direction of the waypoint. 
 
         Args:
