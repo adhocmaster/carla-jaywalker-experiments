@@ -69,7 +69,9 @@ class NavPathModel():
         # raise Exception("stop here")
         self.vehicleLaneId = None # need this one to retranslate remaining nav points
         self.vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
-        self.initNavigation(startFromSidewalk, endInSidewalk)
+        self.startFromSidewalk = startFromSidewalk
+        self.endInSidewalk = endInSidewalk
+        self.initNavigation()
 
     def getFinalDestination(self):
         return self.finalDestination
@@ -177,7 +179,7 @@ class NavPathModel():
         # raise Exception("stop here")
 
 
-    def initNavigation(self, startFromSidewalk:bool = True, endInSidewalk: bool=True):
+    def initNavigation(self):
 
         # Assume the vehicle is at the right initial position and ped is at the sidewalk.
         # print("initalizing navigation path")
@@ -189,12 +191,13 @@ class NavPathModel():
         if not self.__canStart():
             return
 
-        self.logger.warn("NavPathModel will adjust the source and the destination to match the endpoints of the path")
 
         self.rePlaceNavpointsFromIdx(0)
-        if startFromSidewalk:
+        if self.startFromSidewalk:
+            self.logger.warn("NavPathModel will adjust the source to match the endpoints of the path")
             self.setWalkersInitialPosition()
-        if endInSidewalk:
+        if self.endInSidewalk:
+            self.logger.warn("NavPathModel will adjust the destination to match the endpoints of the path")
             self.setWalkerFinalDestination() # has issues
         self.initialized = True
 

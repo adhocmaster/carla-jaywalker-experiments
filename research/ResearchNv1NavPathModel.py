@@ -62,7 +62,7 @@ class ResearchNv1NavPathModel(ResearchNv1):
         walker, walkerAgent = super().createWalker(walkerSettings)
 
         walkerAgent.setEgoVehicle(self.vehicle)
-        walkerAgent.setNavPath(navPath)
+        walkerAgent.setNavPath(navPath, startFromSidewalk=False, endInSidewalk=True)
 
         self.walkerActors.append(
             WalkerActor(

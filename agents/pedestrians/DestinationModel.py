@@ -77,7 +77,10 @@ class DestinationModel(ForceModel):
 
         return self._nextDestination
     
-    def addNavPathModel(self, navPath: NavPath):
+    def addNavPathModel(self, navPath: NavPath, startFromSidewalk:bool = True, endInSidewalk: bool=True):
+        # may have issues if already have a navPathModel
+        if self.navPathModel is not None:
+            raise Error(f"navPathModel already exists for {self.name}")
         # print("addNavPathModel")
         self.navPathModel = NavPathModel(
             agent = self.agent,
@@ -87,7 +90,9 @@ class DestinationModel(ForceModel):
             navPath=navPath,
             areaPolygon = None,
             goalLine = None,
-            debug=self.debug
+            debug=self.debug,
+            startFromSidewalk=startFromSidewalk,
+            endInSidewalk=endInSidewalk
         )
 
         self.crosswalkModel = None

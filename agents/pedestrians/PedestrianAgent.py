@@ -92,9 +92,9 @@ class PedestrianAgent(InfoAgent):
         self.actorManager.setEgoVehicle(vehicle)
 
     
-    def setNavPath(self, navPath: NavPath):
+    def setNavPath(self, navPath: NavPath, startFromSidewalk:bool = True, endInSidewalk: bool=True):
         self.navPath = navPath
-        self._localPlanner.getDestinationModel().addNavPathModel(self.navPath)
+        self._localPlanner.getDestinationModel().addNavPathModel(self.navPath, startFromSidewalk=startFromSidewalk, endInSidewalk=endInSidewalk)
   
     def getAvailableTimeGapWithClosestVehicle(self):
         # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
