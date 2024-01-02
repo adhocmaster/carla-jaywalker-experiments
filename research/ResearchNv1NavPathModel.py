@@ -45,6 +45,8 @@ class ResearchNv1NavPathModel(ResearchNv1):
 
         self.scenario = scenario
         self.navPathFilePath = navPathFilePath
+
+        self.vehicleLagForInitialization = 10.0
         pass
         
     @property
@@ -62,7 +64,7 @@ class ResearchNv1NavPathModel(ResearchNv1):
         walker, walkerAgent = super().createWalker(walkerSettings)
 
         walkerAgent.setEgoVehicle(self.vehicle)
-        walkerAgent.setNavPath(navPath, startFromSidewalk=False, endInSidewalk=True)
+        walkerAgent.setNavPath(navPath, startFromSidewalk=False, endInSidewalk=True, vehicleLagForInitialization=self.vehicleLagForInitialization)
 
         self.walkerActors.append(
             WalkerActor(
@@ -82,7 +84,7 @@ class ResearchNv1NavPathModel(ResearchNv1):
     def createWalkerSettings(self, navPath: NavPath) -> SourceDestinationPair:
         vehicleSettings = self.getVehicleSetting()
         vehicleWp = self.map.get_waypoint(vehicleSettings.source, project_to_road=True, lane_type=carla.LaneType.Driving)
-        futureVWPs = vehicleWp.next(navPath.path[0].distanceToInitialEgo)
+        futureVWPs = vehicleWp.next(navPath.path[0].distanceToInitialEgo + self.vehicleLagForInitialization)
         if len(futureVWPs) > 1:
             raise Exception("More than one possible waypoint for pedestrian spawn point")
         

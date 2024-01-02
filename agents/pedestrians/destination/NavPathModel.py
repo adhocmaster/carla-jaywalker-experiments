@@ -32,6 +32,7 @@ class NavPathModel():
             debug=True,
             startFromSidewalk: bool = True,
             endInSidewalk: bool = True,
+            vehicleLagForInitialization = 10 # to let the vehicle pick up speed
         ):
         self.internalFactors = internalFactors
 
@@ -68,7 +69,7 @@ class NavPathModel():
 
         # raise Exception("stop here")
         self.vehicleLaneId = None # need this one to retranslate remaining nav points
-        self.vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
+        self.vehicleLag = vehicleLagForInitialization # we add a lag in distance to let the vehicle pick up the speed.
         self.startFromSidewalk = startFromSidewalk
         self.endInSidewalk = endInSidewalk
         self.initNavigation()
@@ -161,13 +162,12 @@ class NavPathModel():
           
             navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint, prevNavLoc)
 
-            # print("navLoc", navLoc)
+            print("navLoc", navLoc)
             self.intermediatePoints.append(navLoc)
             self.intermediatePointsToNavPointMap[navLoc] = navPoint
             prevNavPoint = navPoint
             prevNavLoc = navLoc
         
-                
         self.nextIntermediatePointIdx = idx
         self.intermediatePoints.append(self.finalDestination)
 

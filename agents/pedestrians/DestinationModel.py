@@ -77,7 +77,7 @@ class DestinationModel(ForceModel):
 
         return self._nextDestination
     
-    def addNavPathModel(self, navPath: NavPath, startFromSidewalk:bool = True, endInSidewalk: bool=True):
+    def addNavPathModel(self, navPath: NavPath, startFromSidewalk:bool = True, endInSidewalk: bool=True, vehicleLagForInitialization: float = 10):
         # may have issues if already have a navPathModel
         if self.navPathModel is not None:
             raise Error(f"navPathModel already exists for {self.name}")
@@ -92,7 +92,8 @@ class DestinationModel(ForceModel):
             goalLine = None,
             debug=self.debug,
             startFromSidewalk=startFromSidewalk,
-            endInSidewalk=endInSidewalk
+            endInSidewalk=endInSidewalk,
+            vehicleLagForInitialization=vehicleLagForInitialization
         )
 
         self.crosswalkModel = None
