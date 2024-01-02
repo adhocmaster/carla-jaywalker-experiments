@@ -29,7 +29,9 @@ class NavPathModel():
             navPath: NavPath,
             areaPolygon: Polygon=None, 
             goalLine: LineString=None,
-            debug=True
+            debug=True,
+            startFromSidewalk: bool = True,
+            endInSidewalk: bool = True,
         ):
         self.internalFactors = internalFactors
 
@@ -67,7 +69,7 @@ class NavPathModel():
         # raise Exception("stop here")
         self.vehicleLaneId = None # need this one to retranslate remaining nav points
         self.vehicleLag = 10 # we add a lag in distance to let the vehicle pick up the speed.
-        self.initNavigation()
+        self.initNavigation(startFromSidewalk, endInSidewalk)
 
     def getFinalDestination(self):
         return self.finalDestination
@@ -175,7 +177,7 @@ class NavPathModel():
         # raise Exception("stop here")
 
 
-    def initNavigation(self):
+    def initNavigation(self, startFromSidewalk:bool = True, endInSidewalk: bool=True):
 
         # Assume the vehicle is at the right initial position and ped is at the sidewalk.
         # print("initalizing navigation path")
@@ -190,8 +192,10 @@ class NavPathModel():
         self.logger.warn("NavPathModel will adjust the source and the destination to match the endpoints of the path")
 
         self.rePlaceNavpointsFromIdx(0)
-        self.setWalkersInitialPosition()
-        self.setWalkerFinalDestination() # has issues
+        if startFromSidewalk:
+            self.setWalkersInitialPosition()
+        if endInSidewalk:
+            self.setWalkerFinalDestination() # has issues
         self.initialized = True
 
     
@@ -349,7 +353,7 @@ class NavPathModel():
      
 
         self.intermediatePoints[-1] = destination
-        self.setFinalDestination(destination)
+        # self.setFinalDestination(destination) # the agent should take care of setting it.
         self.agent.setDestination(destination)
         # TODO some initial estimations may be wrong.
 
