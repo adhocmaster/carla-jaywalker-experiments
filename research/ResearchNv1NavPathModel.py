@@ -165,11 +165,8 @@ class ResearchNv1NavPathModel(ResearchNv1):
         #         relativeLaneId += 1
 
     
-    def resetWalker(self, sameOrigin=True):
-        super().resetWalker(sameOrigin=True) # must always be same origin for nav points
-        
-        self.walkerAgent.setEgoVehicle(self.vehicle)
-        self.walkerAgent.setNavPath(self.navPath)
+    def resetWalkers(self):
+        self.createWalkers()
         pass
 
     

@@ -142,6 +142,8 @@ class ResearchNv1(SettingBasedResearch):
         # self.vehicleFactory.reset()
         self.destoryActors()
 
+        self.walkerActors: List[WalkerActor] = []
+
         super().reset(seed)
 
         self.episodeNumber += 1
@@ -187,7 +189,7 @@ class ResearchNv1(SettingBasedResearch):
         self.vehicle, self.vehicleAgent = super().createVehicle(self.getVehicleSetting(), maxSpeed=maxSpeed, randomizeSpawnPoint=randomizeSpawnPoint)
 
 
-    def recreateVehicle(self):
+    def resetVehicle(self):
         # destroy current one
         # self.simulator.removeOnTicker()
         self.logger.warn(f"Recreating vehicle")
@@ -199,19 +201,6 @@ class ResearchNv1(SettingBasedResearch):
     def resetWalker(self, sameOrigin=True):
         self.logger.warn(f"Resetting Walker")
         raise NotImplementedError("Use resetWalkers instead")
-        self.walkerAgent.setEgoVehicle(self.vehicle)
-
-        if sameOrigin == True:
-            
-            self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
-            self.walkerAgent.setDestination(self.walkerSetting.destination)
-
-        elif self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
-            self.walkerAgent.reset()
-            self.walkerAgent.setDestination(self.walkerSetting.destination)
-        else:
-            self.walkerAgent.reset()
-            self.walkerAgent.setDestination(self.walkerSetting.source)
 
 
     
