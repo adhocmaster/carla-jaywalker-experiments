@@ -187,10 +187,11 @@ class NavPathModel():
         if not self.__canStart():
             return
 
+        self.logger.warn("NavPathModel will adjust the source and the destination to match the endpoints of the path")
 
         self.rePlaceNavpointsFromIdx(0)
         self.setWalkersInitialPosition()
-        # self.setWalkerFinalDestination() # has issues
+        self.setWalkerFinalDestination() # has issues
         self.initialized = True
 
     
@@ -324,7 +325,7 @@ class NavPathModel():
             return
         
         vehicle = self.agent.egoVehicle
-        lastNavPoint = self.navPath.path[-1]
+        lastNavPoint = self.navPath.path[-2] # before the final destination
 
         if lastNavPoint.distanceToEgo < 0:
             V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
@@ -333,28 +334,24 @@ class NavPathModel():
             V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
             vehicleConflictWp = V_Ref_Front_Wp.next(lastNavPoint.distanceToInitialEgo + self.vehicleLag)[0]
 
-        lastLoc = self.intermediatePoints[-2]
-        print(lastLoc, self.intermediatePoints[0])
-        lastLocWp = self.agent.map.get_waypoint(lastLoc)
+        # lastLoc = self.intermediatePoints[-2]
+        # print(lastLoc, self.intermediatePoints[0])
+        # lastLocWp = self.agent.map.get_waypoint(lastLoc)
 
-        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, lastLocWp)
+        print("vehicleConflictWp", vehicleConflictWp)
 
-        sidewalk = leftSideWalk
-        if Utils.wayPointsSameDirection(lastLocWp, vehicleConflictWp):
-            if self.navPath.direction == Direction.LR:
-                sidewalk = leftSideWalk
-            else:
-                sidewalk = rightSidewalk
-        else: # opposite direction
-            if self.navPath.direction == Direction.LR:
-                sidewalk = rightSidewalk
-            else:
-                sidewalk = leftSideWalk
+        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, vehicleConflictWp)
+        print(leftSideWalk, rightSidewalk)
 
-        self.intermediatePoints[-1] = sidewalk.location
-        self.setFinalDestination(sidewalk.location)
-        self.agent.setDestination(sidewalk.location)
-        self.agent.walker.set_location(sidewalk.location)
+        destination = leftSideWalk.location
+        if self.navPath.direction == Direction.LR:
+            destination = rightSidewalk.location
+     
+
+        self.intermediatePoints[-1] = destination
+        self.setFinalDestination(destination)
+        self.agent.setDestination(destination)
+        # TODO some initial estimations may be wrong.
 
 
     # endregion

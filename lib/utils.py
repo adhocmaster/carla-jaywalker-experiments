@@ -535,6 +535,7 @@ class Utils:
         nearestLeftSidewalk = Utils.getNearestSidewalk(sourceLocation, leftSidewalks)
         nearestRightSidewalk = Utils.getNearestSidewalk(sourceLocation, rightSidewalks)
 
+
         return nearestLeftSidewalk, nearestRightSidewalk
 
 
