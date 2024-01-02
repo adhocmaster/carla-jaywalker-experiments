@@ -119,6 +119,7 @@ python r1v1-default.py --max_ticks=500
     cd scripts
     python r1v1vl.py --scenario psi-0002
     python r4v4vl.py --scenario psi-0002
+    python rNv1vl.py --scenario psi-0048
 
 ## Streaming
 You can use the streamer.py file to stream from the spectator in a remote server. Issue this command in the terminal:

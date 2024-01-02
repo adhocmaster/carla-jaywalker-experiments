@@ -94,6 +94,8 @@ class ResearchNv1NavPathModel(ResearchNv1):
         adjustedPedWp = self.getLaneWpWrtVehicle(futureVWP, pedRequiredLaneId)
 
         ## TODO section adjustment
+
+        ## Source and destination estimation
         leftSidewalk, rightSidewalk = Utils.getSideWalks(self.world, futureVWP) # with respect to the vehicle
         
         destination = leftSidewalk.location
@@ -102,20 +104,35 @@ class ResearchNv1NavPathModel(ResearchNv1):
         
         source = adjustedPedWp.transform.location
 
+
+
         # add some randomness in the source further from destination
         destToSource = (source - destination).make_unit_vector()
         source = source + destToSource * np.random.uniform(0.5, 1.0)
 
 
         return SourceDestinationPair(
-            source=source,
-            destination=destination
+            source=carla.Location(source.x, source.y, z=0.5),
+            destination=carla.Location(destination.x, destination.y, z=0.1),
         )
         
         
 
     
     def getLaneWpWrtVehicle(self, vehicleWp: carla.Waypoint, relativeLaneId: int) -> carla.Waypoint:
+        """finds a waypoint at the relativeLaneId offset from the vehicle in lateral axis
+
+        Args:
+            vehicleWp (carla.Waypoint): _description_
+            relativeLaneId (int): _description_
+
+        Raises:
+            Exception: _description_
+            Exception: _description_
+
+        Returns:
+            carla.Waypoint: _description_
+        """
         
         currWp = vehicleWp
         while(relativeLaneId > 0):
