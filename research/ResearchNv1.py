@@ -343,9 +343,9 @@ class ResearchNv1(SettingBasedResearch):
 
         self.collectStats()
 
-        self.walkerAgent.onTickStart(world_snapshot)
 
         for walkerActor in self.walkerActors:
+            walkerActor.agent.onTickStart(world_snapshot)
             self.updateWalker(world_snapshot, walkerActor.agent, walkerActor.carlaActor)
 
         self.updateVehicle(world_snapshot, self.vehicleAgent, self.vehicle)
