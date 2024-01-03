@@ -5,6 +5,7 @@ import click
 
 from research import ResearchFactory
 from lib import MapNames, SimulationMode
+import time
 
 
 @click.command()
@@ -66,8 +67,14 @@ def rNv1Default(max_ticks, stats, record, scenario, episodes, seed):
     research.maxStepsPerCrossing = max_ticks
     # research.run(maxTicks=max_ticks)
     for i in range(episodes):
-        research.reset(seed + i)
+        try:
+            research.reset(seed + i)
+        except Exception as e:
+            print(f"Failed to reset episode {i} with seed {seed + i}")
+            print(e)
+            continue
         research.simulator.loop(maxTicks=max_ticks)
+    time.sleep(10)
     research.onEnd() # make sure to call this to save stats
 
 

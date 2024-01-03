@@ -383,3 +383,10 @@ class BaseResearch(ClientUser):
 
     
     #endregion
+
+    
+    def onEnd(self):
+        settings = self.world.get_settings()
+        settings.synchronous_mode = False # Enables asynchronous mode
+        print("applying settings on end", settings)
+        self.world.apply_settings(settings)

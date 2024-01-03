@@ -322,6 +322,7 @@ class ResearchNv1(SettingBasedResearch):
     
     
     def onEnd(self):
+        super().onEnd()
         self.logger.warn(f"ending simulation")
         self.destoryActors()
         self.saveStats()

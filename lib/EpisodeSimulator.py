@@ -62,6 +62,7 @@ class EpisodeSimulator(Simulator):
                 
         except Exception as e:
             # traceback.print_exc()
+            self.logger.warn(f"EpisodeSimulator: {e}  current episode ended unexpectedly")
             self.logger.exception(e)
         finally:
             self.onEnd()

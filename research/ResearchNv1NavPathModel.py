@@ -80,22 +80,25 @@ class ResearchNv1NavPathModel(ResearchNv1):
             self.createWalker(navPath)
         pass
 
+    # region walker settings
 
     def createWalkerSettings(self, navPath: NavPath) -> SourceDestinationPair:
+        # TODO, it needs to remember which navPaths already has been placed to make sure there is no collision with each other.
+
+        navPoint = navPath.path[0]
+        pedRequiredLaneId = navPoint.laneId
+
+
         vehicleSettings = self.getVehicleSetting()
         vehicleWp = self.map.get_waypoint(vehicleSettings.source, project_to_road=True, lane_type=carla.LaneType.Driving)
-        futureVWPs = vehicleWp.next(navPath.path[0].distanceToInitialEgo + self.vehicleLagForInitialization)
+        futureVWPs = vehicleWp.next(navPoint.distanceToInitialEgo + self.vehicleLagForInitialization)
         if len(futureVWPs) > 1:
             raise Exception("More than one possible waypoint for pedestrian spawn point")
         
         futureVWP = futureVWPs[0]
         self.logger.warn(f"futureVWP.lane_id: {futureVWP.lane_id}")
-        navPoint = navPath.path[0]
-        pedRequiredLaneId = navPoint.laneId
 
         adjustedPedWp = self.getLaneWpWrtVehicle(futureVWP, pedRequiredLaneId)
-
-        ## TODO section adjustment
 
         ## Source and destination estimation
         leftSidewalk, rightSidewalk = Utils.getSideWalks(self.world, futureVWP) # with respect to the vehicle
@@ -106,15 +109,23 @@ class ResearchNv1NavPathModel(ResearchNv1):
         
         source = adjustedPedWp.transform.location
 
+        
+        ## TODO section adjustment
+
 
 
         # add some randomness in the source further from destination
         destToSource = (source - destination).make_unit_vector()
         source = source + destToSource * np.random.uniform(0.5, 1.0)
 
+        source2 = self.adjustedLocationForLaneSection(vehicleWp, adjustedPedWp, navPoint, destination)
+
+        print("Two sources", source, source2)
+
+        # raise Exception("stop here")
 
         return SourceDestinationPair(
-            source=carla.Location(source.x, source.y, z=0.5),
+            source=carla.Location(source2.x, source2.y, z=0.9),
             destination=carla.Location(destination.x, destination.y, z=0.1),
         )
         
@@ -166,6 +177,38 @@ class ResearchNv1NavPathModel(ResearchNv1):
         #         currWp = vehicleWp.get_right_lane()
         #         relativeLaneId += 1
 
+    def adjustedLocationForLaneSection(self, vehicleWP: carla.Waypoint, conflictWp: carla.Waypoint, navPoint: NavPoint, destination: carla.Location) -> carla.Location:
+        """Adjusts the conflictWp for relative lane section 
+
+        Args:
+            vehicleWP (carla.Waypoint): as lane section is relattive to the vehicle travel axis, we need to place pedestrians on the right lane section.
+            conflictWp (carla.Waypoint): The waypoint on vehicle travel axis where the pedestrian should be. 
+            navPoint (NavPoint): _description_
+
+        Returns:
+            carla.Waypoint: _description_
+        """
+
+        source = conflictWp.transform.location
+        destToSourceDirection = (source - destination).make_unit_vector() 
+        vehicleRightVec = vehicleWP.transform.get_right_vector()
+        vehicleLeftVec = -1 * vehicleRightVec
+
+        laneWidth = conflictWp.lane_width
+
+        print("laneWidth: ", laneWidth)
+        print("navPoint: ", navPoint)
+
+        # raise Exception("not implemented")
+        if navPoint.laneSection == LaneSection.LEFT:
+            source += vehicleLeftVec * np.random.uniform(laneWidth / 6, laneWidth / 2)
+        elif navPoint.laneSection == LaneSection.RIGHT:
+            source += vehicleRightVec * np.random.uniform(laneWidth / 6, laneWidth / 2)
+        else:
+            source += destToSourceDirection * np.random.uniform(0, laneWidth / 6)
+
+        return source
+    # endregion
     
     def resetWalkers(self):
         self.createWalkers()

@@ -162,7 +162,7 @@ class NavPathModel():
           
             navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint, prevNavLoc)
 
-            print("navLoc", navLoc)
+            # print("navLoc", navLoc)
             self.intermediatePoints.append(navLoc)
             self.intermediatePointsToNavPointMap[navLoc] = navPoint
             prevNavPoint = navPoint
@@ -192,10 +192,14 @@ class NavPathModel():
             return
 
 
-        self.rePlaceNavpointsFromIdx(0)
+        self.rePlaceNavpointsFromIdx(0) # creates the plan
+
         if self.startFromSidewalk:
             self.logger.warn("NavPathModel will adjust the source to match the endpoints of the path")
-            self.setWalkersInitialPosition()
+            self.setWalkersInitialPositionOnSidewalk()
+        else:
+            self.setWalkersInitialPositionAtFirstNavPoint()
+
         if self.endInSidewalk:
             self.logger.warn("NavPathModel will adjust the destination to match the endpoints of the path")
             self.setWalkerFinalDestination() # has issues
@@ -293,7 +297,7 @@ class NavPathModel():
             return navLoc
 
 
-    def setWalkersInitialPosition(self):
+    def setWalkersInitialPositionOnSidewalk(self):
         if len(self.intermediatePoints) == 0:
             return
         
@@ -327,6 +331,12 @@ class NavPathModel():
 
         self.agent.walker.set_location(sidewalk.location)
 
+    def setWalkersInitialPositionAtFirstNavPoint(self):
+        if len(self.intermediatePoints) == 0:
+            return
+        
+        self.agent.walker.set_location(self.intermediatePoints[0])
+
     def setWalkerFinalDestination(self):
         if len(self.intermediatePoints) < 2: # last one is the final destination which we need to fix
             return
@@ -345,10 +355,10 @@ class NavPathModel():
         # print(lastLoc, self.intermediatePoints[0])
         # lastLocWp = self.agent.map.get_waypoint(lastLoc)
 
-        print("vehicleConflictWp", vehicleConflictWp)
+        # print("vehicleConflictWp", vehicleConflictWp)
 
         leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, vehicleConflictWp)
-        print(leftSideWalk, rightSidewalk)
+        # print(leftSideWalk, rightSidewalk)
 
         destination = leftSideWalk.location
         if self.navPath.direction == Direction.LR:
@@ -426,6 +436,7 @@ class NavPathModel():
         
         destinationVec = nextDest - prevDest
         if destinationVec.length() < 0.1:
+            print("NavPathModel:")
             print("destinationVec", destinationVec.length())
             print("prevDest", prevDest)
             print("nextDest", nextDest)

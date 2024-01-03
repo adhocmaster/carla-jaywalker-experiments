@@ -94,3 +94,7 @@ class SettingBasedResearch(BaseResearch):
         spectatorSettings = self.settingsManager.getSpectatorSettings()
         if spectatorSettings is not None:
             self.mapManager.setSpectator(spectatorSettings)
+
+            
+    def onEnd(self):
+        super().onEnd()
