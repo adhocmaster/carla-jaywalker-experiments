@@ -79,7 +79,7 @@
                     {
                         "location": {
                             "laneId": 0,
-                            "laneSection": "MIDDLE",
+                            "laneSection": "LEFT",
                             "distanceToEgo": 30.0,
                             "distanceToInitialEgo": 30.0
                         },
