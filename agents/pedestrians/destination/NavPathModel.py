@@ -342,7 +342,10 @@ class NavPathModel():
             return
         
         vehicle = self.agent.egoVehicle
-        lastNavPoint = self.navPath.path[-2] # before the final destination
+        lastNavPointLoc = self.intermediatePoints[-2] # before the final destination
+        lastNavPoint = self.intermediatePointsToNavPointMap[lastNavPointLoc] 
+        pedClosestWp = self.agent.map.get_waypoint(lastNavPointLoc)
+        
 
         if lastNavPoint.distanceToEgo < 0:
             V_Ref_Back_Wp = VehicleUtils.getVehicleBackWp(vehicle)
@@ -351,19 +354,25 @@ class NavPathModel():
             V_Ref_Front_Wp = VehicleUtils.getVehicleFrontWp(vehicle)
             vehicleConflictWp = V_Ref_Front_Wp.next(lastNavPoint.distanceToInitialEgo + self.vehicleLag)[0]
 
-        # lastLoc = self.intermediatePoints[-2]
-        # print(lastLoc, self.intermediatePoints[0])
-        # lastLocWp = self.agent.map.get_waypoint(lastLoc)
 
-        # print("vehicleConflictWp", vehicleConflictWp)
 
-        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, vehicleConflictWp)
+        leftSideWalk, rightSidewalk = Utils.getSideWalks(self.agent.world, pedClosestWp)
+
+        # switch sidewalks if pedClosestWp and vehicleConflictWp are in opposite direction
+        if not Utils.wayPointsSameDirection(pedClosestWp, vehicleConflictWp):
+            leftSideWalk, rightSidewalk = rightSidewalk, leftSideWalk
+
         # print(leftSideWalk, rightSidewalk)
 
         destination = leftSideWalk.location
         if self.navPath.direction == Direction.LR:
             destination = rightSidewalk.location
      
+        destination.z = 0.1
+        # print("old destination", self.intermediatePoints[-1])
+        # print("new destination", destination)
+
+        # raise Exception("stop here")
 
         self.intermediatePoints[-1] = destination
         # self.setFinalDestination(destination) # the agent should take care of setting it.

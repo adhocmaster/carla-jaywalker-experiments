@@ -462,7 +462,7 @@ class Utils:
     # region waypoints
     @staticmethod
     def wayPointsSameDirection(waypoint1: carla.Waypoint, waypoint2: carla.Waypoint):
-        """This only works if map has strict opendrive structure
+        """This only works if map has strict opendrive structure. works with lane id signs
 
         Args:
             waypoint1 (carla.Waypoint): _description_
@@ -471,7 +471,12 @@ class Utils:
         Returns:
             _type_: _description_
         """
+        assert waypoint1.road_id == waypoint2.road_id
+        assert waypoint1.section_id == waypoint2.section_id
         return waypoint1.lane_id * waypoint2.lane_id > 0
+        # wp1forward = waypoint1.transform.get_forward_vector()
+        # wp2forward = waypoint2.transform.get_forward_vector()
+
     
     #endregion
 
