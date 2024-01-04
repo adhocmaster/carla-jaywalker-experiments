@@ -126,9 +126,9 @@ class BaseResearch(ClientUser):
         settings.synchronous_mode = True # Enables synchronous mode
         settings.fixed_delta_seconds = self.time_delta # Sets fixed time step
         
-        # settings.substepping = False # set it to true for faster execution. It has no effect on synchronous mode
+        # settings.substepping = False # set it to true for faster execution. It has no effect on synchronous mode. but it has. without substepping actors shoot
         settings.substepping = True # https://carla.readthedocs.io/en/latest/adv_synchrony_timestep/#physics-substepping
-        settings.max_substeps = 2
+        settings.max_substeps = 20
         settings.max_substep_delta_time = self.time_delta / settings.max_substeps
         # print("applying settings", settings)
         self.world.apply_settings(settings)

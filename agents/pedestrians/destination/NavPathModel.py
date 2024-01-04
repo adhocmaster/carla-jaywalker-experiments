@@ -162,6 +162,7 @@ class NavPathModel():
           
             navLoc = self.getNavPointLocation(navPoint, vehicleConflictWp, prevNavPoint, prevNavLoc)
 
+            # print("distanceToInitialEgo", navPoint.distanceToInitialEgo)
             # print("navLoc", navLoc)
             self.intermediatePoints.append(navLoc)
             self.intermediatePointsToNavPointMap[navLoc] = navPoint
@@ -252,6 +253,8 @@ class NavPathModel():
             if navWP is None:
                 raise Exception(f"nearestWP is None for navPoint {navPoint}")
             
+            # print("vehicleConflictWp", vehicleConflictWp)
+            # print("navWP", navWP)
             
             if prevNavPoint is not None:
                 if navPoint.isAtTheSameLocation(prevNavPoint):
@@ -263,14 +266,17 @@ class NavPathModel():
                         navLoc = prevLoc + vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
                     # print(prevLoc, navLoc)
                     # exit(0)
+                    # print("prevLoc", prevLoc)
                     return navLoc
             
             # print("navPoint.overlapOffset", navPoint.overlapOffset)
             # this is also broken
             noise = np.random.uniform(0.8, 1.2) # added for variability
             midLoc = navWP.transform.location
+            # print("midLoc", midLoc)
+            
             navLoc = midLoc
-            sectionWidth = 0.33
+            sectionWidth = 0.33 # total lane width is 1. this is relative
 
             if navPoint.laneSection == LaneSection.LEFT:
                 navLoc = midLoc + vehicleLeftVector * navWP.lane_width * sectionWidth * noise
@@ -290,9 +296,6 @@ class NavPathModel():
             #     else:
             #         navLoc += vehicleLeftVector * navWP.lane_width * navPoint.overlapOffset
 
-            # print("vehicleConflictWp", vehicleConflictWp)
-            # print("navWP", navWP)
-            # print("navLoc", navLoc)
 
             return navLoc
 
@@ -498,7 +501,7 @@ class NavPathModel():
 
         # if very close to the next destination, invert the force
         
-        force = requiredChangeInVelocity / 0.05 #instant change
+        force = requiredChangeInVelocity / 0.1 #instant change
 
         # if self.distanceToNextDestination() < 0.5:
         #     force = -1 * force

@@ -21,8 +21,8 @@ relaxation_speed_model_coeff: 1
 
 # set this to 0 for no change
 oncoming_vehicle_speed_force: 5
-acceleration_positive_max: 100
-acceleration_negative_min: -100
+acceleration_positive_max: 9.5
+acceleration_negative_min: -9.5
 
 # GAP params
 gap_model: "AlwaysGoModel"

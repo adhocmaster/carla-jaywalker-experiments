@@ -292,6 +292,7 @@ class PedestrianPlanner:
             self.logger.info(f"Clipping {resultantForce.length()} to {self.minAcceleration}")
             resultantForce = resultantForce.make_unit_vector() *  self.minAcceleration
 
+        # self.logger.warn(f"resultantForce {resultantForce.length()}")
         return resultantForce
 
     def setFactorModelDestinationParams(self):

@@ -74,7 +74,7 @@ def rNv1Default(max_ticks, stats, record, scenario, episodes, seed):
             print(e)
             continue
         research.simulator.loop(maxTicks=max_ticks)
-    time.sleep(10)
+    # time.sleep(10)
     research.onEnd() # make sure to call this to save stats
 
 

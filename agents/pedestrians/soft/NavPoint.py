@@ -198,6 +198,9 @@ class NavPoint:
         Returns:
             bool: _description_
         """
+        if abs(self.distanceToInitialEgo - other.distanceToInitialEgo) > 0.5: # y distance is far
+            return False
+            
         if self.laneId == other.laneId:
             if self.laneSection == other.laneSection:
                 return True

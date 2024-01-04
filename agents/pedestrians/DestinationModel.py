@@ -225,8 +225,11 @@ class DestinationModel(ForceModel):
                 
                 force = self.navPathModel.calculateForce()
                 if force is not None:
+                    force = self.clipForce(force)
+                    # if force.length() > 9:
+                    #     print(f"Calculated force for agent {self.agent.name} from navPathModel is {force.length()}")
+                    #     raise Exception(f"Calculated force for agent {self.agent.name} from navPathModel is {force.length()}")
                     return force
-                    # return self.clipForce(force)
 
 
         # self.agent.logger.warn(f"Collecting state from {self.name}")

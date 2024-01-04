@@ -57,6 +57,12 @@ class ResearchNv1NavPathModel(ResearchNv1):
         return self._navPaths
     
     def createWalker(self, navPath: NavPath):
+        """navPaths must be ordered from left to right at the initial location.
+        
+
+        Args:
+            navPath (NavPath): _description_
+        """
         
         walkerSettings = self.createWalkerSettings(navPath)
         self.logger.warn(f"walkerSettings: {walkerSettings}")
