@@ -53,3 +53,9 @@ Based on whether the NavPoint is relatively located in front of the vehicle or b
 <img src='./images/navpoint-realization-infront.PNG' width=600/>
 
 <img src='./images/navpoint-realization-behind.PNG' width=600/>
+
+
+# Group Representation
+To present groups, we need to only store the relative ordering in the lateral axis of the ego vehicle at each time step. Group formation and breaking can be automatically decided based on the position of the pedestrians and their next destinations. 
+
+In case of a group, the forces act on a group as a single body. As the NavPathModel calculates the intermediate destination force, before we calculate the resultant force for each pedestrian, we need another pass through a group to ensure that the group resultant force is consistent and no internal collision happens.

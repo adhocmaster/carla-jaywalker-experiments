@@ -29,7 +29,7 @@ class NavPath:
     def __init__(
             self, 
             id: any,
-            groupId: any,
+            scenarioId: any,
             roadConfiguration: NavPathRoadConfiguration,
             egoConfiguration: NavPathEgoConfiguration,
             pedConfiguration: NavPathPedestrianConfiguration,
@@ -37,7 +37,7 @@ class NavPath:
             ):
         
         self.id = id
-        self.groupId = groupId
+        self.scenarioId = scenarioId
         self.roadConfiguration = roadConfiguration
         self.egoConfiguration = egoConfiguration
         self.pedConfiguration = pedConfiguration
@@ -48,7 +48,7 @@ class NavPath:
     
     def __str__(self) -> str:
         return f"""NavPath: {self.id}
-            groupId: {self.groupId}
+            scenarioId: {self.scenarioId}
             roadConfiguration: {self.roadConfiguration}
             egoConfiguration: {self.egoConfiguration}
             pedConfiguration: {self.pedConfiguration}

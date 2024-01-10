@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, Optional
 from agents.pedestrians.BehaviorType import BehaviorType
 from agents.pedestrians.soft.Direction import Direction
 from agents.pedestrians.soft.LaneSection import LaneSection
@@ -28,6 +28,7 @@ class NavPoint:
     """
     def __init__(
             self, 
+            step: Optional[int],
             location: NavPointLocation,
             behavior: NavPointBehavior
             ):
