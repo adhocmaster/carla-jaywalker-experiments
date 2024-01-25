@@ -1,14 +1,19 @@
+import math
 from random import random
+from agents.pedestrians.factors.InternalFactors import InternalFactors
 import numpy as np
 import time
 import carla
 import logging
+from agents.pedestrians.BehaviorType import BehaviorType
+
+from agents.pedestrians.soft.NavPath import NavPath
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
 from .planner.PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
-from typing import Dict
+from typing import Dict, List, Optional, Set
 from .PedUtils import PedUtils
 from lib import Geometry, Utils
 
@@ -52,8 +57,13 @@ class PedestrianAgent(InfoAgent):
         if config is not None:
             if "visualizationInfoLocation" in config:
                 self.visualizationInfoLocation = config["visualizationInfoLocation"]
+
+        
                 
         # config parameters
+        self.navPath: NavPath = None
+        self.currentBehaviors: Set[BehaviorType] = set([])
+        # self.dynamicBehaviorModelFactory = None
 
     @property
     def world(self):
@@ -69,6 +79,27 @@ class PedestrianAgent(InfoAgent):
     @property
     def obstacleManager(self):
         return self._localPlanner.obstacleManager
+    
+    @property
+    def internalFactors(self) -> InternalFactors:
+        return self._localPlanner.internalFactors
+    
+    @property
+    def egoVehicle(self) -> carla.Vehicle:
+        return self.actorManager.egoVehicle
+    
+    def setEgoVehicle(self, vehicle: carla.Vehicle):
+        self.actorManager.setEgoVehicle(vehicle)
+
+    
+    def setNavPath(self, navPath: NavPath, startFromSidewalk:bool = True, endInSidewalk: bool=True, vehicleLagForInitialization: float = 10):
+        self.navPath = navPath
+        self._localPlanner.getDestinationModel().addNavPathModel(
+            self.navPath, 
+            startFromSidewalk=startFromSidewalk, 
+            endInSidewalk=endInSidewalk, 
+            vehicleLagForInitialization=vehicleLagForInitialization
+            )
   
     def getAvailableTimeGapWithClosestVehicle(self):
         # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
@@ -90,6 +121,35 @@ class PedestrianAgent(InfoAgent):
         self.logger.info(f"Perceived TG (Time gap) = {TG} seconds")
 
         return TG
+    
+    def getAvailableTimeGapWithEgo(self):
+        # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
+        # TODO assuming vehicle driving in agent's nearest lane 
+        # TODO Assuming pedestrian will cross at desired speed.
+        # TTC = self.actorManager.pedPredictedTTCNearestEgo()
+        TG = self.actorManager.pedTGNearestEgo()
+        
+        # self.logger.info(f"Ego predicted TTC = {TTC} seconds")
+        self.logger.info(f"Ego absolute TG (ignoring conflict point) = {TG} seconds")
+
+        if TG is None: # Vehicle already crossed
+            return None
+
+
+
+        TG = self._addErrorToTimeEstimtion(TG)
+
+        self.logger.info(f"EGO Perceived TG (Time gap) = {TG} seconds")
+
+        return TG
+    
+
+    def ttcWithEgo(self):
+        return self.actorManager.pedPredictedTTCNearestEgo()
+    
+    def distanceFromEgo(self):
+        return self.actorManager.distanceFromEgo()
+
 
     def _addErrorToTimeEstimtion(self, T):
         # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
@@ -143,7 +203,9 @@ class PedestrianAgent(InfoAgent):
         conflictPoint = self._localPlanner.getPredictedConflictPoint()
         if conflictPoint is None:
             return
-        self.visualizer.drawPoint(conflictPoint, size=0.2, color=(255, 0, 0), life_time = 0.1)
+        conflictPointLocation = carla.Location(x=conflictPoint.x, y=conflictPoint.y, z=1.0)
+
+        self.visualizer.drawPoint(conflictPointLocation, size=0.2, color=(100, 0, 0), life_time = 0.1)
 
     
 
@@ -157,7 +219,7 @@ class PedestrianAgent(InfoAgent):
         visualizationInfoLocation = self.location + carla.Location(x=10)
         if self.visualizationInfoLocation is not None:
             visualizationInfoLocation = self.visualizationInfoLocation
-
+            
         self.visualizer.visualizeForces(
             self.name, 
             forces = forces, 
@@ -184,6 +246,7 @@ class PedestrianAgent(InfoAgent):
 
     def reset(self, newStartPoint:carla.Location=None):
         self.logger.info(f"Resetting")
+        super().reset()
         
         self._localPlanner.reset()
 
@@ -200,16 +263,22 @@ class PedestrianAgent(InfoAgent):
         print("Collision location", self.collisionSensor.get_location())
         print("Obstacle detector location", self.obstacleDetector.get_location())
 
+    def getStopControl(self):
+        return self._localPlanner.getStopControl()
+
     def calculateControl(self):
         if self.destination is None:
             raise Exception("Destination is none")
 
-        self.visualiseState()
-
-        if self.isInitializing():
-            self.logger.info(f"Pedestrian is initializing.")
+        if self.debug:
             self.visualiseState()
-            return self._localPlanner.getStopControl()
+
+        
+        if  self.isInitializing():
+            if self.debug:
+                self.logger.info(f"Pedestrian is {self.state}.")
+                self.visualiseState()
+            return self.getStopControl()
 
         # if self.isFinished():
         #     self.visualiseState()
@@ -228,10 +297,13 @@ class PedestrianAgent(InfoAgent):
         direction = control.direction
         self.visualizer.drawDirection(location, direction, life_time=0.1)
 
-        self.visualizeConflictPoint()
-        self.visualiseState()
-        self.visualiseForces()
+        if self.debug:
+            self.visualizeConflictPoint()
+            self.visualiseState()
+            self.visualiseForces()
         
+        self.visualiseForces()
+        self.visualiseState()
 
         return control
 
@@ -255,23 +327,26 @@ class PedestrianAgent(InfoAgent):
 
         if self.timeSinceLastJumpMS() < 1000:
             return False
+        
+        if self.onSideWalk():
+            return False
 
-        distance = self.distanceToNextSideWalk() 
+        distance = self.getDistanceToSidewalkAhead(rayLength=1) 
         if distance is None:
-            self.logger.warn(f"Distance to sidewalk is none!")
+            self.logger.info(f"Distance to sidewalk is none!")
 
             return False
 
-        self.logger.info(f"current distance to sidewalk is {distance}")
+        self.logger.debug(f"current distance to sidewalk is {distance}")
         distance -= self.getOldSpeed() * self.time_delta
-        self.logger.info(f"after tick distance to sidewalk is {distance}")
+        self.logger.debug(f"after tick distance to sidewalk is {distance}")
 
         # walkerSpeed = self.getOldSpeed()
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
         # if distance < 0.2 and distance > 0.1:
-        if distance < 0.2:
-            self.logger.info(f"after tick distance to sidewalk is {distance}. Can jump")
+        if distance < 0.7:
+            self.logger.debug(f"after tick distance to sidewalk is {distance}. Can jump")
             return True
         return False
 
@@ -288,7 +363,8 @@ class PedestrianAgent(InfoAgent):
 
         if self.canClimbSideWalk():
             self.updateJumped()
-            self.logger.info(f"{self.name} climbing up a sidewalk.")
+            # print((f"{self.name} climbing up a sidewalk."))
+            self.logger.warn(f"{self.name} climbing up a sidewalk.")
             # self._walker.add_force(carla.Vector3D(0, 0, 10))
             # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
             
@@ -304,9 +380,13 @@ class PedestrianAgent(InfoAgent):
 
             # issue with velocity is when it's close to 0 nothing works.
             
-            desiredDirection = self._localPlanner.desiredDirection
+            # desiredDirection = self._localPlanner.desiredDirection
+            
+            StateTransitionManager.changeAgentState(self.name, self, PedState.CLIMBING_SIDEWALK)
 
-            translation = desiredDirection * 1.5
+            sidewalkDirection = self.getDirectionToSidewalkAhead()
+
+            translation = sidewalkDirection * 1.5
 
             self._walker.set_location(
                 carla.Location(
@@ -316,47 +396,102 @@ class PedestrianAgent(InfoAgent):
             ))
             return True
         return False
+    
 
-    def getObstaclesToDistance(self):
+    def onSideWalk(self) -> bool:
+        # cast a vertical direction ray
         actorLocation = self._walker.get_location()
-        actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
-        destinationXYLocation = carla.Location(x = self.destination.x, y = self.destination.y, z=0.05)
-        labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
+        destinationXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=-1)
+        labeledObjects = self._world.cast_ray(actorLocation, destinationXYLocation)
         # for lb in labeledObjects:
         #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
-        return labeledObjects
-    
-    def distanceToNextSideWalk(self):
-        actorLocation = self._walker.get_location()
-        # actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
-        labeledObjects = self.getObstaclesToDistance()
+        
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
-                if self.visualizer is not None:
-                    self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
-                # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
-                # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
-                distance = actorLocation.distance_2d(lb.location)
-                self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
-                return distance
+                return True
+        return False
+
+
+    def getDistanceToSidewalkAhead(self, rayLength=3) -> Optional[float]:
+        sidewalk = self.getSidewalkAhead(rayLength=rayLength)
+        if sidewalk is None:
+            return None
+        
+        actorLocation = self._walker.get_location()
+        distance = actorLocation.distance_2d(sidewalk.location)
+        self.logger.info(f"Sidewalk location {sidewalk.location} and semantic {sidewalk.label} XY distance {distance}")
+        return distance
+    
+    def getDirectionToSidewalkAhead(self, rayLength=3) -> Optional[carla.Vector3D]:
+        sidewalk = self.getSidewalkAhead(rayLength=rayLength)
+        if sidewalk is None:
+            return None
+        
+        actorLocation = self._walker.get_location()
+        return (sidewalk.location - actorLocation).make_unit_vector()
+
+
+    def getSidewalkAhead(self, rayLength=3) -> Optional[carla.LabelledPoint]:
+        actorLocation = self._walker.get_location()
+        actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
+        actorVelocity = self.getOldVelocity()
+        actorSpeed = actorVelocity.length()
+        if actorSpeed == 0:
+            return None
+                # based on forward vector of the old contorl
+        oldControl = self.getOldControl()
+        forwardVector = oldControl.direction * rayLength
+        destinationXYLocation = carla.Location(x = actorLocation.x + forwardVector.x, y = actorLocation.y + forwardVector.y, z=0.05)
+        labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
+        # print(labeledObjects)
+        for lb in labeledObjects:
+            if lb.label == carla.CityObjectLabel.Sidewalks:
+                return lb
+
         return None
+
+    # def getObstaclesToDestination(self):
+    #     actorLocation = self._walker.get_location()
+    #     actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.05)
+    #     destinationXYLocation = carla.Location(x = self.destination.x, y = self.destination.y, z=0.05)
+    #     labeledObjects = self._world.cast_ray(actorXYLocation, destinationXYLocation)
+    #     # for lb in labeledObjects:
+    #     #     print(f"Labeled point location {lb.location} and semantic {lb.label} distance {actorLocation.distance(lb.location)}")
+    #     return labeledObjects
+    
+    # def distanceToNextSideWalk(self):
+    #     actorLocation = self._walker.get_location()
+    #     # actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
+    #     labeledObjects = self.getObstaclesToDestination()
+    #     for lb in labeledObjects:
+    #         if lb.label == carla.CityObjectLabel.Sidewalks:
+    #             # if self.visualizer is not None and self.debug:
+    #             #     self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
+    #             # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
+    #             # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
+    #             distance = actorLocation.distance_2d(lb.location)
+    #             self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
+    #             return distance
+    #     return None
 
     
     def hasReachedDestinationAlongLocalY(self, destination: carla.Location, tolerance: float):
         
-        localYToDest = abs(Utils.projectAonB2D(destination, self.localYDirection))
-        localYToCurrentLoc = abs(Utils.projectAonB2D(self.location, self.localYDirection))
-        # self.logger.warn(f"localYToDest {localYToDest} and localYToCurrentLoc {localYToCurrentLoc}")
 
-        if localYToDest < localYToCurrentLoc: # overshooting
+        desVector = destination - self.location
+        desVector.z = 0
+
+        # print("destination", destination)
+        # print("distance to next destination", desVector.length())
+
+        if desVector.length() < tolerance:
             return True
-
-        d =  abs(localYToDest - localYToCurrentLoc)
-        # d =  agentLocation.distance_2d(nextDest)
-        self.logger.info(f"distance to destination is {d} meters")
-        if d < tolerance: # maybe a random value?
+        
+        # overshoot check. If destination vector is in the opposite direction of the local Y direction, then we have overshooted. This is causing problems.
+        if abs(Utils.angleBetweenVectors(desVector, self.localYDirection)) > math.pi / 2:
             return True
         return False
+
 
 
     #endregion

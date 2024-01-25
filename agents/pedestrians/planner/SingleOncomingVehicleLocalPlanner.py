@@ -71,11 +71,12 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
             newState = model.getNewState()
             if newState is not None:
                 newStates.add(newState)
+                # print(f"New state from {model.name} is {newState}")
         
         if len(newStates) > 1:
             states = [state.value for state in newStates]
             self.logger.error(states)
-            raise TooManyNewStates("Models returned different states")
+            raise TooManyNewStates(f"Models returned different states in {self.agent.state}")
         
         if len(newStates) > 0:
             return newStates.pop()
@@ -86,7 +87,7 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
     def transitionStateIfNeeded(self):
         self.logger.debug(f"transitionStateIfNeeded")
         if self.done():
-            self.logger.info(f"Planner is done. changing agent state to finished")
+            self.logger.warn(f"Planner is done. changing agent state to finished")
             StateTransitionManager.changeAgentState(self.name, self.agent, PedState.FINISHED)
             return
 
@@ -107,6 +108,11 @@ class SingleOncomingVehicleLocalPlanner(PedestrianPlanner):
         # if self.stopGoModel.canCross():
         #     StateTransitionManager.changeAgentState(self.name, self.agent, PedState.CROSSING)
         #     control = self.getNewControl()
+
+        if self.agent.isFrozen():
+            self.logger.debug(f"Pedestrian is frozen.")
+            # return self.getStopControl()
+            return self.getNewControl()
 
         if self.agent.isFinished():
             self.logger.warn(f"Finished. no new control")

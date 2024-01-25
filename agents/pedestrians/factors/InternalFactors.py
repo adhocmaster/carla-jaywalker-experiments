@@ -1,4 +1,4 @@
-from lib import UndefinedProperty
+from lib.exceptions import UndefinedProperty
 from typing import Dict
 import yaml
 

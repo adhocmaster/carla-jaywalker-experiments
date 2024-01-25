@@ -92,6 +92,10 @@ class Environment(gym.Env):
     @abstractmethod
     def state(self):
         raise NotImplementedInterface("state")
+    
+    @abstractmethod
+    def saveStats(self):
+        raise NotImplementedInterface("saveStats")
 
     
     @abstractmethod

@@ -27,7 +27,7 @@ class DrunkenWalkModel(ForceModel):
         self.max_vector = random.randint(5, 15)
 
     def calculateForce(self):
-        print("CALCULATING FORCE OF STUFFn\n\n\n\n\n\n", self.curr_tick)
+        # print("CALCULATING FORCE OF STUFFn\n\n\n\n\n\n", self.curr_tick)
         if not self.agent.isCrossing():
             return None
         if self.curr_tick >= self.max_period:

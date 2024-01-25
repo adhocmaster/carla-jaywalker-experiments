@@ -4,8 +4,8 @@ risk_level: "risky"
 relaxation_time: 0.5
 desired_speed: 2
 desired_distance_gap: 2
-use_crosswalk_area_model: True
-use_random_destination_without_intermediates: False
+use_crosswalk_area_model: False
+crosswalk_area_model_intermediates: True
 # desired_time_gap: 1
 
 # speed model
@@ -21,10 +21,11 @@ relaxation_speed_model_coeff: 1
 
 # set this to 0 for no change
 oncoming_vehicle_speed_force: 5
-acceleration_positive_max: 100
-acceleration_negative_min: -100
+acceleration_positive_max: 9.5
+acceleration_negative_min: -9.5
 
 # GAP params
+gap_model: "AlwaysGoModel"
 # for TG_multiplier underestimate TG if less than 1 and overestimate TG if > 1
 TG_multiplier: 1
 brewer_beta0: 6.2064

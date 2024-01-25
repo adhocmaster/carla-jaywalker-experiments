@@ -3,6 +3,7 @@ from collections import deque
 from abc import abstractmethod
 from agents.pedestrians.ForceModel import ForceModel
 from agents.pedestrians.StateTransitionModel import StateTransitionModel
+from agents.pedestrians.planner.ConfiguredModels import ConfiguredModels
 from lib import ActorManager, ObstacleManager, Utils, NotImplementedInterface, InvalidParameter
 from agents.pedestrians.factors import InternalFactors
 from agents.pedestrians.factors.CrossingFactorModel import CrossingFactorModel
@@ -27,11 +28,14 @@ class PedestrianPlanner:
         # self._destination = None
         self.internalFactors = internalFactors
 
-        self.models: List[ForceModel] = []
-        self.stateTransitionModels: List[StateTransitionModel] = []
-        self.crossingFactorModels: List[CrossingFactorModel] = []
-        self.survivalModels: List[SurvivalModel] = []
-        self.freezingModels: List[SurvivalModel] = []
+
+        self.configuredModels: ConfiguredModels = ConfiguredModels()
+
+        # self.models: List[ForceModel] = []
+        # self.stateTransitionModels: List[StateTransitionModel] = [] # state transition models are allowed to change the state of the agent
+        # self.crossingFactorModels: List[CrossingFactorModel] = [] # crossing factor models get destination state
+        # self.survivalModels: List[SurvivalModel] = []
+        # self.freezingModels: List[SurvivalModel] = []
 
         self.modelCoeff: Dict[str, float] = {}
 
@@ -45,6 +49,30 @@ class PedestrianPlanner:
 
 
         pass
+
+    @property
+    def modelMap(self):
+        return self.configuredModels.modelMap
+    
+    @property
+    def models(self):
+        return self.configuredModels.models
+    
+    @property
+    def stateTransitionModels(self):
+        return self.configuredModels.stateTransitionModels
+    
+    @property
+    def crossingFactorModels(self):
+        return self.configuredModels.crossingFactorModels
+    
+    @property
+    def survivalModels(self):
+        return self.configuredModels.survivalModels
+    
+    @property
+    def freezingModels(self):
+        return self.configuredModels.freezingModels
 
     @property
     def agent(self):
@@ -102,6 +130,14 @@ class PedestrianPlanner:
     def reset(self):
         for name in self.modelCoeff:
             self.modelCoeff[name] = 1.0
+
+    def removeModel(self, name: any):
+        """_summary_
+
+        Args:
+            name (any): class type
+        """
+        self.configuredModels.remove(name)
         
     def updateModelCoeff(self, name, val):
         self.modelCoeff[name] = val
@@ -144,8 +180,10 @@ class PedestrianPlanner:
     
     def done(self):
         if self.agent.isFinished():
+            # print("returing done as pedestrian is finished")
             return True
 
+        # print(f"returing done if pedestrian is at destination {self.destination}")
         return self.agent.hasReachedDestinationAlongLocalY(self.destination, 0.2)
 
         # if self.getDistanceToDestination() < 0.2:
@@ -236,6 +274,9 @@ class PedestrianPlanner:
         for model in self.models:
             force = model.calculateForce()
             self.logger.debug(f"Force from {model.name} {force}")
+            # if self.agent.isFrozen():
+            #     self.logger.warn(f"Force from {model.name} {force}")
+
             
             if force is not None:
                 self.modelForces[model.name] = force
@@ -251,6 +292,7 @@ class PedestrianPlanner:
             self.logger.info(f"Clipping {resultantForce.length()} to {self.minAcceleration}")
             resultantForce = resultantForce.make_unit_vector() *  self.minAcceleration
 
+        # self.logger.warn(f"resultantForce {resultantForce.length()}")
         return resultantForce
 
     def setFactorModelDestinationParams(self):
@@ -288,6 +330,13 @@ class PedestrianPlanner:
         
         velocity = self.getDestinationModel().getDesiredVelocity()
         return self.actorManager.getPredictedConflictPoint(self.actorManager.nearestOncomingVehicle, velocity)
+    
+
+    # region dynamic behavior activation 
+
+    
+
+    # endregion
 
 
     @abstractmethod

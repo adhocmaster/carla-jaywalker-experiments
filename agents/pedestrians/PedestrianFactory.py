@@ -63,8 +63,13 @@ class PedestrianFactory(ClientUser):
     
     def spawn(self, spawnPoint):
         walkerBp = self.create()
+        print("Pedestrian spawnPoint", spawnPoint)
         # walkerBp.set_attribute('is_invincible', 'true')  
-        walker = self.world.spawn_actor(walkerBp, spawnPoint)
+        # walker = self.world.spawn_actor(walkerBp, spawnPoint)
+        walker = self.world.try_spawn_actor(walkerBp, spawnPoint)
+        if walker is None:
+            self.logger.error(f"Cannot spawn walker at {spawnPoint.location}")
+            raise Exception(f"Cannot spawn walker at {spawnPoint.location}")
 
         self.walkers.append(walker)
         return walker
@@ -116,7 +121,13 @@ class PedestrianFactory(ClientUser):
         
         return agent
 
-    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None, logLevel=logging.INFO):
+    def addPlanners(
+            self, 
+            agent: PedestrianAgent, 
+            internalFactorsPath = None, 
+            optionalFactors: List[Factors] = None, 
+            logLevel=logging.INFO
+        ):
         
         actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
         obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)

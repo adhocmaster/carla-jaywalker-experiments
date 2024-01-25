@@ -2,10 +2,11 @@ import carla
 import math
 import random
 from shapely.geometry import LineString, Point
-from typing import List, Dict
+from typing import List, Dict, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
+
 
 red = carla.Color(255, 0, 0)
 green = carla.Color(0, 255, 0)
@@ -22,7 +23,7 @@ class Utils:
 
     #region simulation setup
     @staticmethod
-    def createClient(logger, host, port, timeout=5.0):
+    def createClient(logger, host, port, timeout=15.0):
         client = carla.Client(host, port)
         client.set_timeout(timeout)
 
@@ -35,7 +36,7 @@ class Utils:
         return client
 
     @staticmethod
-    def getTimeDelta(world):
+    def getTimeDelta(world: carla.World):
         settings = world.get_settings()
         # print("Utils->getTimeDelta:", settings)
         return settings.fixed_delta_seconds 
@@ -63,7 +64,7 @@ class Utils:
             diff.z = 0
         
         return Utils.getMagnitude(diff)
-
+    
         
     @staticmethod
     def getMagnitude(vector: carla.Vector3D):
@@ -109,11 +110,21 @@ class Utils:
     def angleBetweenVectors(v1: carla.Vector3D, v2: carla.Vector3D):
         d1 = v1.make_unit_vector()
         d2 = v2.make_unit_vector()
+        d1 = (d1.x, d1.y, d1.z)
+        d2 = (d2.x, d2.y, d2.z)
         return np.arccos(np.clip(np.dot(d1, d2), -1.0, 1.0))
 
     @staticmethod
-    def projectAonB2D(a: carla.Vector3D, b: carla.Vector3D) -> float:
+    def projectAonB2DScalar(a: carla.Vector3D, b: carla.Vector3D) -> float:
+        b = carla.Vector3D(x=b.x, y=b.y, z=0) # otherwise the length will be wrong
         return (a.dot_2d(b) / b.length())
+
+    @staticmethod
+    def projectAonB2D(a: carla.Vector3D, b: carla.Vector3D) -> float:
+        scalar = Utils.projectAonB2DScalar(a, b)
+        bDirection = carla.Vector3D(x=b.x, y=b.y, z=0).make_unit_vector() # otherwise the length will be wrong
+        return bDirection * scalar
+
 
 
     @staticmethod
@@ -125,7 +136,7 @@ class Utils:
             start1 (carla.Location): head location of actor 1
             vel2 (carla.Vector3D): [description]
             start2 (carla.Location): head location of actor 2
-            seconds (int, optional): [description]. Defaults to 10.
+            seconds (int, optional): [description]. calculation horizon. Beyond this horizon, we assume they will not collide. Defaults to 15.
 
         Returns:
             [type]: [description]
@@ -171,6 +182,8 @@ class Utils:
 
 
         # Find conflict point. In some rare cases it will give us no conflict, but there will still be a conflict.
+
+        # print(f"Utils->getCollisionPointAndTTC: vel1 {vel1} vel2 {vel2} start1 {start1} start2 {start2} seconds {seconds}")
 
         if vel1.length() == 0 or vel2.length() == 0:
             return None, None
@@ -340,31 +353,31 @@ class Utils:
             thickness=0.1, color=color, life_time=lt, persistent_lines=False)
         debug.draw_point(w1.transform.location + carla.Location(z=0.25), 0.1, color, lt, False)
     
-    @staticmethod
-    def draw_waypoints(debug, waypoints, z=0.5, color=(255,0,0), life_time=1.0):
-        """
-        Draw a list of waypoints at a certain height given in z.
+    # @staticmethod
+    # def draw_waypoints(debug, waypoints, z=0.5, color=(255,0,0), life_time=1.0):
+    #     """
+    #     Draw a list of waypoints at a certain height given in z.
 
-            :param world: carla.world object
-            :param waypoints: list or iterable container with the waypoints to draw
-            :param z: height in meters
-        """
-        for wpt in waypoints:
-            wpt_t = wpt.transform
-            begin = wpt_t.location + carla.Location(z=z)
-            angle = math.radians(wpt_t.rotation.yaw)
-            end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
-            debug.draw_arrow(begin, end, arrow_size=0.3, color=carla.Color(*color), life_time=life_time)
+    #         :param world: carla.world object
+    #         :param waypoints: list or iterable container with the waypoints to draw
+    #         :param z: height in meters
+    #     """
+    #     for wpt in waypoints:
+    #         wpt_t = wpt.transform
+    #         begin = wpt_t.location + carla.Location(z=z)
+    #         angle = math.radians(wpt_t.rotation.yaw)
+    #         end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
+    #         debug.draw_arrow(begin, end, arrow_size=0.3, color=carla.Color(*color), life_time=life_time)
 
-    @staticmethod
-    def draw_trace_route(debug, route, color=(150, 150, 0), life_time=10):
+    # @staticmethod
+    # def draw_trace_route(debug, route, color=(150, 150, 0), life_time=10):
         
-        # print(f"Utils->draw_trace_route: length of trace route {len(route)}")
-        wps = []
-        for (wp, ro) in route:
-            wps.append(wp)
+    #     # print(f"Utils->draw_trace_route: length of trace route {len(route)}")
+    #     wps = []
+    #     for (wp, ro) in route:
+    #         wps.append(wp)
         
-        Utils.draw_waypoints(debug, wps, color=color, life_time=life_time)
+    #     Utils.draw_waypoints(debug, wps, color=color, life_time=life_time)
 
     @staticmethod
     def log_route(logger, route):
@@ -445,3 +458,93 @@ class Utils:
 
 
     #endregion
+
+    # region waypoints
+    @staticmethod
+    def wayPointsSameDirection(waypoint1: carla.Waypoint, waypoint2: carla.Waypoint):
+        """This only works if map has strict opendrive structure. works with lane id signs
+
+        Args:
+            waypoint1 (carla.Waypoint): _description_
+            waypoint2 (carla.Waypoint): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        assert waypoint1.road_id == waypoint2.road_id
+        assert waypoint1.section_id == waypoint2.section_id
+        return waypoint1.lane_id * waypoint2.lane_id > 0
+        # wp1forward = waypoint1.transform.get_forward_vector()
+        # wp2forward = waypoint2.transform.get_forward_vector()
+
+    
+    #endregion
+
+    #region sidewalks
+
+    def getNearestSidewalk(source: carla.Location, sidewalks: List[carla.LabelledPoint]) -> Optional[carla.LabelledPoint]:
+        if len(sidewalks) == 0:
+            return None
+
+        nearestSidewalk = sidewalks[0]
+        nearestDistance = source.distance_2d(nearestSidewalk.location)
+
+        for sidewalk in sidewalks:
+            distance = source.distance_2d(sidewalk.location)
+            if distance < nearestDistance:
+                nearestDistance = distance
+                nearestSidewalk = sidewalk
+        
+        return nearestSidewalk
+
+    def getSideWalksOnRay(world: carla.World, source: carla.Location, dest: carla.Location, adjustZ=True) -> List[carla.LabelledPoint]:
+        if adjustZ:
+            source.z = 0.05
+            dest.z = 0.05
+
+        labeledObjects = world.cast_ray(source, dest)
+        # print(labeledObjects)
+        sidewalks = []
+        for lb in labeledObjects:
+            if lb.label == carla.CityObjectLabel.Sidewalks:
+                sidewalks.append(lb)
+        
+        return sidewalks
+
+    
+    @staticmethod
+    def getSideWalks(world: carla.World, waypoint: carla.Waypoint, rayLength: float=20) -> Tuple[carla.LabelledPoint, carla.LabelledPoint]:
+        """Returns left and right sidewalk locations if the waypoint. left and rigt are relative to the direction of the waypoint. 
+
+        Args:
+            waypoint (carla.Waypoint): _description_
+            rayLength (float): length of rays to cast on the sides. 
+
+        Returns:
+            Tuple[carla.Location, carla.Location]: left and right sidewalk locations
+        """
+
+        sourceLocation = carla.Location(x = waypoint.transform.location.x, y = waypoint.transform.location.y, z=0.05)
+        rightVector = waypoint.transform.get_right_vector() * rayLength
+        leftVector = -1 * rightVector * rayLength
+        
+        # rightLocation = carla.Location(x = rightVector.x, y = rightVector.y, z=0.05)
+        # leftLocation = carla.Location(x = leftVector.x, y = leftVector.y, z=0.05)
+
+        rightLocation = sourceLocation + rightVector
+        leftLocation = sourceLocation + leftVector
+        
+        rightSidewalks = Utils.getSideWalksOnRay(world, sourceLocation, rightLocation)
+        leftSidewalks = Utils.getSideWalksOnRay(world, sourceLocation, leftLocation)
+
+        nearestLeftSidewalk = Utils.getNearestSidewalk(sourceLocation, leftSidewalks)
+        nearestRightSidewalk = Utils.getNearestSidewalk(sourceLocation, rightSidewalks)
+
+
+        return nearestLeftSidewalk, nearestRightSidewalk
+
+
+        # cast ray on the left and the right
+
+    
+    # endregion

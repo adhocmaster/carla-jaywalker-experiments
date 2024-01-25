@@ -1,5 +1,5 @@
 
-from ast import Pass
+import importlib
 from typing import List
 from .PedestrianPlanner import PedestrianPlanner
 from ..PedestrianAgent import PedestrianAgent
@@ -57,12 +57,8 @@ class ModelFactory:
                 self.planner.destinationModel.applySpeedModel(speedModel)
                 self._logger.info(f"{self.internalFactors['speed_model']} SpeedModel applied")
             
+        pedGapModel = self.getGapModel()
 
-        pedGapModel = BrewerGapModel(
-                                    self.agent, 
-                                    actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
-                                    internalFactors=self.internalFactors
-                                    )
         self.planner.stopGoModel = StopGoModel(         
                                     pedGapModel,
                                     self.agent, 
@@ -72,12 +68,31 @@ class ModelFactory:
         # factor models
 
 
-        self.planner.models = [
+        self.planner.models.extend([
                         self.planner.destinationModel, 
                         self.planner.stopGoModel
-                      ]
-        self.planner.stateTransitionModels = [self.planner.stopGoModel]
+                      ])
+        self.planner.stateTransitionModels.append(self.planner.stopGoModel)
 
+
+    def getGapModel(self):
+
+        if 'gap_model' in self.internalFactors:
+            module = importlib.import_module("agents.pedestrians.gap_models")
+            class_ = getattr(module, self.internalFactors['gap_model'])
+            pedGapModel = class_(
+                                self.agent, 
+                                actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                internalFactors=self.internalFactors
+                            )
+        else:
+        
+            pedGapModel = BrewerGapModel(
+                                        self.agent, 
+                                        actorManager=self.actorManager, obstacleManager=self.obstacleManager, 
+                                        internalFactors=self.internalFactors
+                                        )
+        return pedGapModel
 
     def createOptionalModels(self, optionalFactors: List[Factors]):
 
@@ -105,11 +120,11 @@ class ModelFactory:
                                     internalFactors=self.internalFactors
                                     )
 
-            self.planner.models = [
-                            self.planner.destinationModel, 
-                            self.planner.stopGoModel
-                        ]
-            self.planner.stateTransitionModels = [self.planner.stopGoModel]
+            # self.planner.models = [
+            #                 self.planner.destinationModel, 
+            #                 self.planner.stopGoModel
+            #             ]
+            # self.planner.stateTransitionModels = [self.planner.stopGoModel]
 
     #region crossing models
     def createCrossingModels(self, optionalFactors: List[Factors]):
@@ -134,23 +149,10 @@ class ModelFactory:
         self.planner.crossingFactorModels.append(self.planner.crossingOncomingVehicleModel)
         self.planner.stateTransitionModels.append(self.planner.crossingOncomingVehicleModel)
 
-    
-    # def attachCrossWalkModelToDestinationModel(self):
-    #     crosswalkModel = CrosswalkModel(
-    #         source = self.agent.location,
-    #         idealDestination = None,
-    #         areaPolygon = None,
-    #         goalLine = None
-    #     )
-    #     self.planner.destinationModel.addModel(crosswalkModel)
 
-    #endregion
-
-    #region survival models
-    
 
     def createSurvivalModels(self, optionalFactors: List[Factors]):
-        if Factors.SURVIVAL_DESTINATION in optionalFactors:
+        if Factors.EVASIVE_RETREAT in optionalFactors:
             self.createSurvivalDestinationModel(optionalFactors)
 
     def createSurvivalDestinationModel(self, optionalFactors: List[Factors]):
@@ -187,3 +189,4 @@ class ModelFactory:
             self.planner.freezingModels.append(freezingModel)
             self.planner.stateTransitionModels.append(freezingModel)
 
+    #endregion

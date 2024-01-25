@@ -305,6 +305,7 @@ class LocalPlanner(object):
         else:
             self.target_waypoint, self.target_road_option = self._waypoints_queue[0]
             self.logger.debug(f"Vehicle target_waypoint: {self.target_waypoint}")
+            # print(f"vehicle is planning with normal behavior with target speed {self._target_speed}")
             control = self._vehicle_controller.run_step(self._target_speed, self.target_waypoint)
 
         if debug:

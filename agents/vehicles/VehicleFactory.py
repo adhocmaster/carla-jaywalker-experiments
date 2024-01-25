@@ -4,7 +4,8 @@ import logging
 
 
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
-from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
+from agents.navigation.basic_agent import BasicAgent
+from agents.vehicles.SpeedControlledBehaviorAgent import SpeedControlledBehaviorAgent  # pylint: disable=import-error
 from lib import LoggerFactory, ClientUser
 
 from agents.vehicles.qnactr.CogMod import CogModAgent  # cogmod agent 
@@ -29,7 +30,8 @@ class VehicleFactory(ClientUser):
         self.time_delta = time_delta
         
         self.bpLib = self.world.get_blueprint_library()
-        self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
+        # self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
+        self.vehicleBps = self.bpLib.filter('vehicle.ford.mustang')
 
         
     def getVehicles(self):
@@ -53,7 +55,10 @@ class VehicleFactory(ClientUser):
     
     def spawn(self, spawnPoint):
         vehicleBp = self.create()
-        vehicle = self.world.spawn_actor(vehicleBp, spawnPoint)
+        vehicle = self.world.try_spawn_actor(vehicleBp, spawnPoint)
+        if vehicle is None:
+            self.logger.error(f"Cannot spawn vehicle at {spawnPoint.location}")
+            raise Exception(f"Cannot spawn vehicle at {spawnPoint.location}")
         self.vehicles.append(vehicle)
         return vehicle
 
@@ -64,6 +69,10 @@ class VehicleFactory(ClientUser):
 
     def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
         agent = BehaviorAgent(vehicle, behavior=behavior)
+        return agent
+    
+    def createSpeedControlledBehaviorAgent(self, vehicle: carla.Vehicle, max_speed: float, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
+        agent = SpeedControlledBehaviorAgent(vehicle, behavior=behavior, max_speed=max_speed)
         return agent
 
 

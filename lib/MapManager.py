@@ -9,6 +9,8 @@ class MapNames(Enum):
     circle_t_junctions = 'circle_t_junctions'
     t_junction = 't_junction'
     straight_road_with_parking = 'straight'
+    varied_width_lanes = 'varied_width_lanes'
+    roundabout1 = 'roundabout1'
     # Town01 = 'Town01'
     # Town02 = 'Town02'
     # Town03 = 'Town03'
@@ -99,7 +101,7 @@ class MapManager(ClientUser):
         if self.currentMapName == MapNames.Town01_Opt:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
         if self.currentMapName == MapNames.Town02_Opt:
-            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
+            transform = carla.Transform(carla.Location(x=x-15, y=y-8, z=z * 0.15), carla.Rotation(pitch=-88, yaw=2)) 
             # transform = carla.Transform(carla.Location(x=x-20, y=y-10, z=10), carla.Rotation(pitch=-30, yaw=190)) 
         if self.currentMapName == MapNames.Town03_Opt:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.3), carla.Rotation(pitch=-90)) 
@@ -112,10 +114,12 @@ class MapManager(ClientUser):
         if self.currentMapName == MapNames.Town10HD_Opt:
             transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.5), carla.Rotation(pitch=-90)) 
             
-        
+        self.setSpectator(transform)
+
+    
+    def setSpectator(self, transform: carla.Transform):
         spectator = self.world.get_spectator()
         spectator.set_transform(transform)
-        # spectator.set_transform(carla.Transform(carla.Location(x=-120, y=0, z=100), carla.Rotation(pitch=-90)))
 
     
     def getSpectatorPos(self):

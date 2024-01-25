@@ -1,5 +1,7 @@
 import carla
 import numpy as np
+from agents.pedestrians.destination.NavPathModel import NavPathModel
+from agents.pedestrians.soft.NavPath import NavPath
 from lib import ActorManager, ObstacleManager, Utils
 from .ForceModel import ForceModel
 from .PedestrianAgent import PedestrianAgent
@@ -40,6 +42,7 @@ class DestinationModel(ForceModel):
 
         self.speedModel: SpeedModel = None
         self.crosswalkModel: CrosswalkModel = None
+        self.navPathModel: NavPathModel = None
 
         pass
 
@@ -66,13 +69,38 @@ class DestinationModel(ForceModel):
         if self._nextDestination.distance_2d(self.agent.location) < 0.1:
             self._nextDestination = self._finalDestination
 
-        if self.crosswalkModel is not None:
+        elif self.crosswalkModel is not None:
             self._nextDestination = self.crosswalkModel.getNextDestinationPoint()
+
+        elif self.navPathModel is not None:
+            self._nextDestination = self.navPathModel.getNextDestinationPoint()
 
         return self._nextDestination
     
+    def addNavPathModel(self, navPath: NavPath, startFromSidewalk:bool = True, endInSidewalk: bool=True, vehicleLagForInitialization: float = 10):
+        # may have issues if already have a navPathModel
+        if self.navPathModel is not None:
+            raise Error(f"navPathModel already exists for {self.name}")
+        # print("addNavPathModel")
+        self.navPathModel = NavPathModel(
+            agent = self.agent,
+            internalFactors=self.internalFactors,
+            source = self.agent.location,
+            idealDestination = self._finalDestination,
+            navPath=navPath,
+            areaPolygon = None,
+            goalLine = None,
+            debug=self.debug,
+            startFromSidewalk=startFromSidewalk,
+            endInSidewalk=endInSidewalk,
+            vehicleLagForInitialization=vehicleLagForInitialization
+        )
+
+        self.crosswalkModel = None
 
     def addCrossWalkAreaModel(self):
+
+        # print("addCrossWalkAreaModel")
         self.crosswalkModel = CrosswalkModel(
             agent = self.agent,
             internalFactors=self.internalFactors,
@@ -132,12 +160,19 @@ class DestinationModel(ForceModel):
         if self.internalFactors["use_crosswalk_area_model"]:
             if self.crosswalkModel is None:
                 self.addCrossWalkAreaModel()
+        elif self.navPathModel is not None:
+            self.navPathModel.setFinalDestination(destination)
+        
         
             
     def getFinalDestination(self):
-        if self.crosswalkModel is None:
-            return self._finalDestination
-        return self.crosswalkModel.getFinalDestination()
+        if self.crosswalkModel is not None:
+            return self.crosswalkModel.getFinalDestination()
+        elif self.navPathModel is not None:
+            return self.navPathModel.getFinalDestination()
+        
+        return self._finalDestination
+    
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:
@@ -163,7 +198,7 @@ class DestinationModel(ForceModel):
         
         self.agent.logger.debug(f"next destination is {self.nextDestination}")
         if self.debug:
-            self.agent.visualizer.drawPoint(self.nextDestination, color=(100, 100, 200, 100), life_time=1.0)
+            self.agent.visualizer.drawPoint(self.nextDestination, color=(0, 0, 255, 100), life_time=0.5)
         return Utils.getDirection(self.agent.feetLocation, self.nextDestination, ignoreZ=True)
         
         
@@ -175,8 +210,26 @@ class DestinationModel(ForceModel):
     def calculateForce(self):
 
         # return None
-        if self.agent.isCrossing() == False:
+        if not self.agent.isCrossing():
             return None
+        
+        
+        if self.navPathModel is not None:
+            if self.navPathModel.isDone():
+                print("NavPath model is done")
+                self.navPathModel = None
+            else:
+                self.navPathModel.initNavigation()
+                if not self.navPathModel.initialized:
+                    return None
+                
+                force = self.navPathModel.calculateForce()
+                if force is not None:
+                    force = self.clipForce(force)
+                    # if force.length() > 9:
+                    #     print(f"Calculated force for agent {self.agent.name} from navPathModel is {force.length()}")
+                    #     raise Exception(f"Calculated force for agent {self.agent.name} from navPathModel is {force.length()}")
+                    return force
 
 
         # self.agent.logger.warn(f"Collecting state from {self.name}")
@@ -187,11 +240,13 @@ class DestinationModel(ForceModel):
         # self.calculateNextDestination()
         self.nextDestination # updates if required. Do not comment it out
 
+        self.agent.logger.debug(f"no force calculating old destination force towads {self.nextDestination}")
+        self.agent.visualizer.drawPoint(self.nextDestination, color=(0, 255, 0), life_time=5)
         force = self.calculateForceForDesiredVelocity()
 
         # now clip force.
         
-        return self.clipForce(force)
+        return self.clipForce(force) # if we clip, it's dangerous, if we don't clip, it's also dangerous.
 
 
     

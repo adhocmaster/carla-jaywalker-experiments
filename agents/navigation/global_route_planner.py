@@ -140,6 +140,7 @@ class GlobalRoutePlanner(object):
             self._topology.append(seg_dict)
 
     def _build_topology_singleRoad(self):
+        # print("_build_topology_singleRoad: no existing topology, building a single road topology")
         # assuming first waypoint is at index 0, and last waypoint is in index -1
         wps = self._wmap.generate_waypoints(10)
         first = wps[0]
@@ -152,8 +153,9 @@ class GlobalRoutePlanner(object):
         seg_dict['entryxyz'], seg_dict['exitxyz'] = (x1, y1, z1), (x2, y2, z2)
         seg_dict['path'] = []
 
-        for wp in wps:
-            print("_build_topology_singleRoad: wp", wp)
+        # for wp in wps:
+        #     print("_build_topology_singleRoad: wp", wp)
+            
 
         
         endloc = last.transform.location
@@ -168,6 +170,8 @@ class GlobalRoutePlanner(object):
         else:
             seg_dict['path'].append(first.next(self._sampling_resolution)[0])
         self._topology.append(seg_dict)
+
+        # print(self._topology)
 
 
 
@@ -320,6 +324,7 @@ class GlobalRoutePlanner(object):
         is part of, returning the edge it belongs to
         """
         waypoint = self._wmap.get_waypoint(location)
+        # print(f"[{waypoint.road_id}][{waypoint.section_id}][{waypoint.lane_id}]")
         edge = None
         try:
             edge = self._road_id_to_edge[waypoint.road_id][waypoint.section_id][waypoint.lane_id]
@@ -346,6 +351,10 @@ class GlobalRoutePlanner(object):
         connecting origin and destination
         """
         start, end = self._localize(origin), self._localize(destination)
+        # print(origin, destination)
+        # print(start, end)
+        
+        # raise Exception("stop")
 
         route = nx.astar_path(
             self._graph, source=start[0], target=end[0],

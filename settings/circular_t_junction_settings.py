@@ -10,7 +10,13 @@ circular_t_junction_settings = {
             (-113.0, -3.0, -110.0, -15),
             (-113.0, -3.0, -115.0, -14),
             (-113.0, -3.0, -119.0, -14),
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
     "setting2": {
         "ego_settings": (-132.0, 3.0),
@@ -19,7 +25,13 @@ circular_t_junction_settings = {
             (-113.0, 21.0),
             (-126.0, 8.0),
             (-108.0, 19.0)
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
     
     "setting4": {
@@ -28,7 +40,13 @@ circular_t_junction_settings = {
             (-126.0, 8.0),
             (-121.0, -4.0)
 
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
     
     "setting3": {
@@ -39,7 +57,13 @@ circular_t_junction_settings = {
             (-160.0, -24.0, -147.0, -24.0),
             (-150.0, -4.0, -147.0, -13.5),
             (-147.0, -4.0, -147.0, -13.5)
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
     
     
@@ -49,7 +73,13 @@ circular_t_junction_settings = {
             (-142.0, -33.0),
             (-118.0, -37.0),
             (-110.0, -35.0),
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
     
     "setting6": {
@@ -59,7 +89,13 @@ circular_t_junction_settings = {
             (-94.0, 1.0),
             (-94.0, -11.0),
             (-106.0, 5.0),
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
     
     "setting7": {
@@ -67,6 +103,12 @@ circular_t_junction_settings = {
         "walker_settings": [
             (-118.0, -37.0),
             (-110.0, -35.0),
-        ]
+        ],
+        "visualization_force_location": {
+            
+            "x": -150.0,
+            "y": 2,
+            "z": 1.5,
+        }
     },
 }

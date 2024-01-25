@@ -113,25 +113,26 @@ class R1V1Env1(Environment):
     #region state
 
     def state(self):
-        walkerAgent = self.research.getWalkerAgent()
-        vehicleAgent = self.research.getVehicleAgent()
+        return None
+        # walkerAgent = self.research.getWalkerAgent()
+        # vehicleAgent = self.research.getVehicleAgent()
 
-        state = {
-            "pedestrian": {
+        # state = {
+        #     "pedestrian": {
                 
-                'position': np.array([0.0, 0.0]),
-                'source': np.array([self.research.walkerSpawnPoint.location.x, self.research.walkerSpawnPoint.location.y]),
-                'dest': np.array([self.research.walkerDestination.x, self.research.walkerDestination.y]),
-                'relaxation_time': walkerAgent.getInternalFactor('relaxation_time'),
-                'risk_level': walkerAgent.getInternalFactor('risk_level'),
-                'velocity': np.array([walkerAgent.velocity.x, walkerAgent.velocity.y]),
-                # "lane": spaces.Discrete(nLanes, start=1)
-            },
-            "vehicle": self.vehicleState(),
-            "road": self.roadState()
-        }
+        #         'position': np.array([0.0, 0.0]),
+        #         'source': np.array([self.research.walkerSpawnPoint.location.x, self.research.walkerSpawnPoint.location.y]),
+        #         'dest': np.array([self.research.walkerDestination.x, self.research.walkerDestination.y]),
+        #         'relaxation_time': walkerAgent.getInternalFactor('relaxation_time'),
+        #         'risk_level': walkerAgent.getInternalFactor('risk_level'),
+        #         'velocity': np.array([walkerAgent.velocity.x, walkerAgent.velocity.y]),
+        #         # "lane": spaces.Discrete(nLanes, start=1)
+        #     },
+        #     "vehicle": self.vehicleState(),
+        #     "road": self.roadState()
+        # }
 
-        return state
+        # return state
 
     def getCenter(self):
         if self.coordinateSystem == "ped":

@@ -50,6 +50,7 @@ class EpisodeSimulator(Simulator):
             bool: True if episode successfully ends, False otherwise.
 
         """
+        self.logger.warn(f"simulator id: {id(self)}")
 
         try:
             for i in range(maxTicks):
@@ -61,6 +62,7 @@ class EpisodeSimulator(Simulator):
                 
         except Exception as e:
             # traceback.print_exc()
+            self.logger.warn(f"EpisodeSimulator: {e}  current episode ended unexpectedly")
             self.logger.exception(e)
         finally:
             self.onEnd()

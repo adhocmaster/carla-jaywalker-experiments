@@ -37,7 +37,7 @@ class CrosswalkModel:
         if self.areaPolygon == None:
             self.createPolygon()
 
-        if ("use_random_destination_without_intermediates" in self.internalFactors) and (not self.internalFactors["use_random_destination_without_intermediates"]):
+        if ("crosswalk_area_model_intermediates" in self.internalFactors) and (self.internalFactors["crosswalk_area_model_intermediates"]):
             self.__initGeomery()
         else:
             self.__setRandomDestination()
@@ -58,7 +58,8 @@ class CrosswalkModel:
         self.finalDestination = self.intermediatePoints[-1]
 
         if self.debug:
-            self.visualizer.drawPoints(self.intermediatePoints, life_time=20.0)
+            # self.visualizer.drawPoints(self.intermediatePoints, life_time=5.0)
+            self.visualizer.drawWalkerNavigationPoints(self.intermediatePoints, size=0.1, z=1.0, color=(0, 255, 255), coords=False, life_time=15.0)
     
     def __setRandomDestination(self):
 
@@ -70,6 +71,9 @@ class CrosswalkModel:
         if self.debug:
             self.visualizer.drawPoints(self.intermediatePoints, life_time=20.0)
 
+    def setFinalDestination(self, destination):
+        self.finalDestination = destination
+        
     def getFinalDestination(self):
         return self.finalDestination
 
@@ -77,7 +81,7 @@ class CrosswalkModel:
     def createPolygon(self):
         
         centerScanLine = Geometry.makeCenterScanLine(self.source, self.idealDestination)
-        # visualizer.drawShapelyLine(centerScanLine)
+        # self.visualizer.drawShapelyLine(centerScanLine)
         scanLines, sideWalkPoints = Geometry.getScanLinesAndSidewalkPoints(self.agent.world, centerScanLine)
 
         if len(sideWalkPoints) < 2:
@@ -102,18 +106,19 @@ class CrosswalkModel:
         count = 0
         for scanLine in scanLines: 
             count += 1
-            self.visualizer.drawShapelyLine(scanLine, life_time=2.0, color=(50, count * 5, count * 5))
+            # self.visualizer.drawShapelyLine(scanLine, color=(count * 2, count * 2, count * 2), life_time=2.0)
+            self.visualizer.drawShapelyLine(scanLine, color=(0, 0, 0, 255), life_time=10.0)
 
         pass
 
 
     def visualizeSideWalkPoints(self, sideWalkPoints):
         for sidewalkPoint in sideWalkPoints:
-            self.visualizer.drawShaplyPoint(sidewalkPoint, color=(0, 100, 200), life_time=5.0)
+            self.visualizer.drawShaplyPoint(sidewalkPoint, color=(1, 1, 1), size=0.05, life_time=10.0)
 
     
     def visualizeArea(self):
-        self.visualizer.drawShapelyPolygon(self.areaPolygon, color=(0, 100, 100, 100), life_time=10.0)
+        self.visualizer.drawShapelyPolygon(self.areaPolygon, color=(0, 0, 0, 255), life_time=10.0)
 
     
     def getNextDestinationPoint(self):

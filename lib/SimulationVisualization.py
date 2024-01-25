@@ -7,7 +7,7 @@ from shapely.geometry import LineString, Point, Polygon
 from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
 from .MapManager import MapManager
-from typing import Dict, List
+from typing import Dict, List, Union
 # import agents.pedestrians.PedState as PedState
 
 class SimulationVisualization(ClientUser):
@@ -170,12 +170,16 @@ class SimulationVisualization(ClientUser):
 
     # some positional information
 
-    def drawWalkerNavigationPoints(self, navPoints):
+    def drawWalkerNavigationPoints(self, navPoints: Union[List[carla.Transform], List[carla.Location]], size=0.05, z=0.5, color=(0, 255, 0), coords=True, life_time=10.0):
         for point in navPoints:
-            location = point.location
+            location = point
+            if isinstance(point, carla.Transform):
+                location = point.location
+            location = carla.Location(location.x, location.y, z)
             self.logger.debug(f"walker spawn position ({location.x}, {location.y})")
-            self.drawPoint(location=location, size=0.05, color=(0, 255, 0))
-            self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
+            self.drawPoint(location=location, size=size, color=color, life_time=life_time)
+            if coords:
+                self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})", life_time=life_time)
 
     def drawSpawnPoints(self, dropout=0.5, life_time=0.0):
         """
@@ -211,7 +215,7 @@ class SimulationVisualization(ClientUser):
         """
         self.drawWaypoints(self.mapManager.waypoints, life_time=life_time, position=position)
 
-    def drawWaypoints(self, waypoints, color=(25, 25, 25), z=0.5, life_time=1.0, position=False):
+    def drawWaypoints(self, waypoints, color=(10,10,10, 50), z=0.1, life_time=1.0, position=False, yaw=False):
         """
         Draw a list of waypoints at a certain height given in z.
 
@@ -227,18 +231,32 @@ class SimulationVisualization(ClientUser):
             self.world.debug.draw_arrow(
                 begin, 
                 end, 
-                arrow_size=0.3, 
+                thickness=0.05,
+                arrow_size=0.2, 
                 color=carla.Color(*color), 
                 life_time=life_time
                 )
             
             if position:
-                textLoc = carla.Location(wpt_t.location.x, wpt_t.location.y, 1.0)
-                if wpt_t.rotation.yaw > 0:
-                    # textLoc.x += 3
-                    textLoc.y -= 12
+                textLoc = carla.Location(wpt_t.location.x, wpt_t.location.y, 0.5)
+                # if wpt_t.rotation.yaw > 0:
+                #     # textLoc.x += 3
+                #     textLoc.y -= 12
                 # print(textLoc)
-                self.drawTextOnMap(location=textLoc, text=f"({wpt_t.location.x:.1f}, {wpt_t.location.y:.1f}, {wpt_t.rotation.yaw:.1f})")
+                if yaw:
+                    self.drawTextOnMap(location=textLoc, text=f"({wpt_t.location.x:.1f}, {wpt_t.location.y:.1f}, {wpt_t.rotation.yaw:.1f})")
+                else:
+                    self.drawTextOnMap(location=textLoc, text=f"({wpt_t.location.x:.1f}, {wpt_t.location.y:.1f})")
+
+                
+    def drawTraceRoute(self, route, color=(50, 50, 0), life_time=10):
+        
+        # print(f"Utils->draw_trace_route: length of trace route {len(route)}")
+        wps = []
+        for (wp, ro) in route:
+            wps.append(wp)
+        
+        self.drawWaypoints(wps, color=color, life_time=life_time)
 
 
 
@@ -291,11 +309,11 @@ class SimulationVisualization(ClientUser):
 
 
 
-    def drawDestinationPoint(self, location, life_time=20.0):
+    def drawDestinationPoint(self, location, color=(0, 255, 0), life_time=20.0):
         self.logger.debug(f"destinationSpawnPoint position ({location.x}, {location.y})")
         overlayLocation = carla.Location(location.x, location.y, 0.5)
-        self.drawPoint(location=overlayLocation, size=0.13, color=(0, 255, 0), life_time=life_time)
-        self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D ({location.x},{location.y})", life_time=life_time/2)
+        self.drawPoint(location=overlayLocation, size=0.2, color=color, life_time=life_time)
+        self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D ({location.x},{location.y})", color=(10, 10, 10, 255), life_time=life_time/2)
 
     
     def drawPedState(self, state, walker, life_time=0.1, location=None):
@@ -330,7 +348,7 @@ class SimulationVisualization(ClientUser):
         x = infoCenter.x
         y = infoCenter.y
         # z = infoCenter.z
-        z = 0
+        z = 1
         overlayLocation = carla.Location(
                 x = x,
                 y = y,
@@ -355,6 +373,8 @@ class SimulationVisualization(ClientUser):
                 length = 0
             else:
                 length = force.length()
+
+            # print(f"{name} force = {length} at {nameLocation}")
 
             self.drawTextOnMap(location=nameLocation, text=f"{name} force = {length}", color=color, life_time=life_time)
             if force is not None and force.length() > 0:

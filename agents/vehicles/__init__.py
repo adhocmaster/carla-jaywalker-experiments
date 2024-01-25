@@ -1,1 +1,2 @@
+from .SpeedControlledBehaviorAgent import SpeedControlledBehaviorAgent
 from .VehicleFactory import VehicleFactory

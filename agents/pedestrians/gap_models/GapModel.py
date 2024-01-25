@@ -5,8 +5,10 @@ from lib import NotImplementedInterface
 class GapModel(ForceModel):
 
     @abstractmethod
-    def canCross(self):
+    def canCross(self) -> bool:
         raise NotImplementedInterface("canCross")
 
 
+    def calculateForce(self):
+        return None
 
