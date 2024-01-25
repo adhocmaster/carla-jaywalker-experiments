@@ -2,7 +2,6 @@ from shapely.affinity import rotate
 from shapely.geometry import LineString, Point, Polygon
 import math
 import random
-
 class CrosswalkGeometry:
     '''
     Geometric information of CrosswalkModel, including source, idealDestination, areaPolygon, and goalLine.
@@ -18,12 +17,14 @@ class CrosswalkGeometry:
     INTER_POINTS_NUM = 3
     INTER_POINTS_DISTANCE_MOD = 1.5
 
-    def __init__(self, source: Point, idealDestination: Point, areaPolygon: Polygon=None, goalLine: LineString=None):
+    def __init__(self, source: Point, idealDestination: Point=None, areaPolygon: Polygon=None, goalLine: LineString=None, directionChangeProb=0.5):
         self.source = source
         self.idealDestination = idealDestination
         self.areaPolygon = areaPolygon
         self.goalLine = goalLine
         self.intermediatePoints = []
+        self.directionChangeProb = directionChangeProb
+        self._currentDirection = random.choice([-1, 1]) #lateral direction 
         self.finalDestination = None
         self.nextIntermediatePointIdx = None
         if self.areaPolygon == None:
@@ -54,6 +55,10 @@ class CrosswalkGeometry:
         goalLine_x1, goalLine_y1 = goalLine.coords[0][0], goalLine.coords[0][1] 
         goalLine_x2, goalLine_y2 = goalLine.coords[1][0], goalLine.coords[1][1]
         # Generate base as perpendicular to the vertical line
+        
+        if end is None:
+            end = self.closestEnd(start, goalLine)
+            
         verticalLine = LineString([start, end])
         baseRight = rotate(verticalLine, -90, origin=start)
         baseLeft = rotate(verticalLine, 90, origin=start)
@@ -87,7 +92,7 @@ class CrosswalkGeometry:
         return areaPolygon
 
 
-    def generateIntermediatePoints(self, maxAbsDegree=MAX_ABSOLUTE_DEGREE, maxDeltaDegree=MAX_RELATIVE_DEGREE, nInterPoints=INTER_POINTS_NUM, maxInterPointsDistance=INTER_POINTS_DISTANCE_MOD):
+    def generateIntermediatePoints(self, maxAbsDegree=MAX_ABSOLUTE_DEGREE, maxDeltaDegree=MAX_RELATIVE_DEGREE, nInterPoints=INTER_POINTS_NUM, maxInterPointsDistance=INTER_POINTS_DISTANCE_MOD, sampleIdealDestination=False):
         '''
         Generate intermediate points inside the crosswalk area to form pedestrian crossing trajectories. 
 
@@ -100,92 +105,133 @@ class CrosswalkGeometry:
         Returns:
             None
         '''
+        if sampleIdealDestination:
+            self.idealDestination = self.sampleDestinationOnGoalLine()
+            
         start = self.source
-        end = self.idealDestination
+        if self.idealDestination is None:
+            # Find vertical line
+            D_final = self.closestEnd(start, self.goalLine)
+        else:
+            D_final = self.idealDestination
         crosswalk = self.areaPolygon
-        goalLine = self.goalLine
-        new_points = [start]
-        pointsOL = self.pointsOnLine(start, end, nInterPoints)
-        for i in range(len(pointsOL) - 2):
-            start = pointsOL[1]
-            end = pointsOL[2]
+        waypoints = [start]
+        
+        for i in range(nInterPoints):
+            W_pre1 = waypoints[-1]
+            W_pre2 = waypoints[-2] if len(waypoints) > 1 else None
+            
+            pointsOL = self.pointsOnLine(W_pre1, D_final, nInterPoints-i)
+            A = pointsOL[1]
+            B = pointsOL[2]
+            
+            # print("W_pre1", W_pre1, "A", A, "B", B)
             done = False
-            while not done:
-                chance = random.choice([0, 1])
-                pointToRot = self.pointBetween(start, end, d=random.uniform(0, 1)) # modify d if needed
-                if chance == 0:
-                    new_point = self.pointRotate(pointToRot, start, degree=90)
-                    
-                else:
-                    new_point = self.pointRotate(pointToRot, start, degree=-90)
+            
+            maxTries = 100 * nInterPoints
+            while (not done and maxTries > 0):
+                maxTries -= 1
+                C = self.pointBetween(A, B, d=random.uniform(0, 1)) # modify d if needed
+                C = self.pointRotate(C, A, degree=self.getNextRotation())    
                 # Check constraints
-                if crosswalk.contains(new_point):
-                    segment = LineString([start, end])
-                    new_line = LineString([new_points[-1], new_point])
-                    prev_line = None
+                if crosswalk.contains(C):
+                    # print(f"C, {C} inside the area")
+                    lineAB = LineString([A, B])
+                    line_W_pre1_C = LineString([W_pre1, C])
+                    line_W_pre1_W_pre2 = None
                     if i > 0:
-                        prev_line = LineString([new_points[-2], new_points[-1]])
-                    if new_line.length <= segment.length*maxInterPointsDistance:
-                        if prev_line == None:
+                        line_W_pre1_W_pre2 = LineString([W_pre2, W_pre1])
+                    if line_W_pre1_C.length <= lineAB.length*maxInterPointsDistance:
+                        # print(f"line_W_pre1_C.length, {line_W_pre1_C.length} is good")
+                        if line_W_pre1_W_pre2 == None:
                             done = True
                         else:
-                            # Find vertical line
-                            vert_start = new_points[-1]
-                            vert_end = self.closestEnd(vert_start, goalLine)
-                            vert_line = LineString([vert_start, vert_end])
+                            # if the ideal destination is None, we are free to explore
+                            
+                            if self.idealDestination is None:
+                                # Find vertical line
+                                D_final = self.closestEnd(W_pre1, self.goalLine)
+                                # print(f"ideal destination is None, D_final is {D_final}")
+                            else:
+                                D_final = self.idealDestination
+                                
+                            destinationLine = LineString([W_pre1, D_final])
+                            
+                            
                             # Calculate the angle between the new line and the vertical line
-                            a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
+                            a_theta = self.degreeFromX(destinationLine) - self.degreeFromX(line_W_pre1_C)
                             # Calculate the angle between the new line and the extended previous line
-                            d_theta = self.degreeFromX(prev_line) - self.degreeFromX(new_line)
+                            d_theta = self.degreeFromX(line_W_pre1_W_pre2) - self.degreeFromX(line_W_pre1_C)
+                        
 
                             if maxAbsDegree*(-1) <= a_theta <= maxAbsDegree and maxDeltaDegree*(-1) <= d_theta <= maxDeltaDegree:
                                 done = True
+                            # else:
+                            #     print("a_theta", math.degrees(a_theta), "b_theta", math.degrees(d_theta))
+                            #     waypoints.append(C)
+                            #     print("returning to debug")
+                            #     return waypoints
+                    # else:
+                    #     print(f"line_W_pre1_C.length, {line_W_pre1_C.length} is bad")
+                    #     waypoints.append(C)
+                    #     print("returning to debug")
+                    #     return waypoints
+                        
             
-            new_points.append(new_point)
-            new_start = new_point
-            extend_end = new_line.interpolate(10, normalized=True)
-            new_end = self.closestEnd(extend_end, goalLine)
-            
-            pointsOL = self.pointsOnLine(new_start, new_end, nInterPoints-(i+1))
+            # print(f"iteration-{i}, C, {C} satisfies the constraints")
+            if done:
+                waypoints.append(C)
 
         # final rotate to find end point is different
-        final_start = new_end
-        final_end = new_start
-        done = False
-        while not done:
-            pointToRot = self.pointBetween(final_start, final_end, d=random.uniform(0, 1))
-            chance = random.random()
-            if chance > 0.5:
-                final_rot = self.pointRotate(pointToRot, final_start, degree=90)
-            else:
-                final_rot = self.pointRotate(pointToRot, final_start, degree=-90)
-            
-            segment = LineString([final_start, final_end])
-            new_line = LineString([new_points[-1], final_rot])
-            prev_line = LineString([new_points[-2], new_points[-1]])
-            if new_line.length <= segment.length*maxInterPointsDistance:
-                # Find vertical line
-                vert_start = new_points[-1]
-                vert_end = self.closestEnd(vert_start, goalLine)
-                vert_line = LineString([vert_start, vert_end])
-                # Calculate the angle between the new line and the vertical line
-                a_theta = self.degreeFromX(vert_line) - self.degreeFromX(new_line)
-                # Calculate the angle between the new line and the extended previous line
-                d_theta = self.degreeFromX(prev_line) - self.degreeFromX(new_line)
-                if maxAbsDegree*(-1) <= a_theta <= maxAbsDegree and maxDeltaDegree*(-1) <= d_theta <= maxDeltaDegree:
-                    done = True    
+    
+        if self.idealDestination is not None:
+            # Find vertical line
+            waypoints.append(self.idealDestination)
+        else:
         
-        if goalLine.contains(final_rot) == False:
-            final_rot = self.closestEnd(final_rot, goalLine)
-        new_points.append(final_rot)
-        # 1. set intermediatePoints[] to the generated new_points[]
-        self.intermediatePoints = new_points[1:]
+            D_final = self.closestEnd(W_pre1, self.goalLine)
+
+            # Final destination point works in the reversed direction. We get the D_final and ...
+
+            final_start = D_final
+            final_end = waypoints[-1]
+            done = False
+            maxTries = 100 * nInterPoints
+            while (not done and maxTries > 0):
+                maxTries -= 1
+                
+                C = self.pointBetween(final_start, final_end, d=random.uniform(0, 1))
+                
+                C = self.pointRotate(C, final_start, degree=self.getNextRotation())
+
+                segment = LineString([final_start, final_end])
+                line_W_pre1_C = LineString([waypoints[-1], C])
+                line_W_pre1_W_pre2 = LineString([waypoints[-2], waypoints[-1]])
+                if line_W_pre1_C.length <= segment.length*maxInterPointsDistance:
+                    # Find vertical line
+                    vert_start = waypoints[-1]
+                    vert_end = self.closestEnd(vert_start, self.goalLine)
+                    destinationLine = LineString([vert_start, vert_end])
+                    # Calculate the angle between the new line and the vertical line
+                    a_theta = self.degreeFromX(destinationLine) - self.degreeFromX(line_W_pre1_C)
+                    # Calculate the angle between the new line and the extended previous line
+                    d_theta = self.degreeFromX(line_W_pre1_W_pre2) - self.degreeFromX(line_W_pre1_C)
+
+                    if abs(a_theta) <= maxAbsDegree and abs(d_theta) <= maxDeltaDegree:
+                        done = True
+
+            if self.goalLine.contains(C) == False:
+                C = self.closestEnd(C, self.goalLine)
+            waypoints.append(C)
+            
+        # 1. set intermediatePoints[] to the generated waypoints[]
+        self.intermediatePoints = waypoints[1:]
 
         # 2. set nextIntermediatePointIdx to index 0
         self.nextIntermediatePointIdx = 0
 
-        # 3. set self.finalDestination to the last item in new_points[]
-        self.finalDestination = new_points[-1]
+        # 3. set self.finalDestination to the last item in waypoints[]
+        self.finalDestination = waypoints[-1]
 
         return self.intermediatePoints
 
@@ -258,7 +304,7 @@ class CrosswalkGeometry:
         rotated_point = rotate(point, degree, origin=origin)
         return rotated_point
 
-    def pointsOnLine(self, start: Point, end: Point, n: int):
+    def pointsOnLine(self, start: Point, end: Point, n: int, excludeEnds=False):
         """
         Given a start point A and an end point B, generate n number of evenly spaced points between the line AB.
 
@@ -272,12 +318,33 @@ class CrosswalkGeometry:
         """
         pointsOL = [start]
         line = LineString([start, end])
-        gap = 1 / (n + 1)
+        gap = 1 / (n+1)
         d = gap
         for i in range(n):
             point = line.interpolate(d, normalized=True)
             d = d + gap
             pointsOL.append(point)
         pointsOL.append(end)
+        
+        # print("pointsOL", pointsOL)
+        
+        if excludeEnds:
+            # print("pointsOL", pointsOL)
+            # for p in pointsOL:
+            #     print(p)
+            return pointsOL[1:len(pointsOL)-1]
         return pointsOL
+    
+    def getNextRotation(self) -> int:
+        
+        changeDirection = np.random.choice([True, False], p=[self.directionChangeProb, 1-self.directionChangeProb])
+        if changeDirection:
+            self._currentDirection *= -1
+        return self._currentDirection * 90
+    
+    def sampleDestinationOnGoalLine(self) -> Point:
+        gap = random.uniform(0, 1)
+        return self.goalLine.interpolate(gap, normalized=True)
+        
+        
     # endregion
