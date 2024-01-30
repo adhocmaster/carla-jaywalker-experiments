@@ -194,4 +194,5 @@ dependencies:
     - pydot==1.4.2
     - simple-watchdog-timer==0.1.1
     - pygame==1.9.6
+    - tti-dataset-tools==0.1.9
 prefix: C:\Users\adhocmaster\anaconda3\envs\carla37
