@@ -196,5 +196,5 @@ dependencies:
     - simple-watchdog-timer==0.1.1
     - pygame==1.9.6
     - dacaite==1.8.1
-    - tti-dataset-tools==0.1.9
+    - tti-dataset-tools==0.1.10
 prefix: C:\Users\adhocmaster\anaconda3\envs\carla37
