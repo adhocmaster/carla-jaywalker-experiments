@@ -95,5 +95,5 @@ dependencies:
   - pip:
     - carla==0.9.13
     - pygame==1.9.6
-    - tti-dataset-tools==0.1.10
+    - tti-dataset-tools==0.1.11
 prefix: /home/muktadir/anaconda3/envs/carla37
