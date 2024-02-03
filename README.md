@@ -14,13 +14,21 @@ This reseach focuses on realistic adversarial pedestrian behavior modeling for s
 Currently writing a paper a novel hybrid modeling approach to generatively model pedestrian behavior which can make use of both social-force-based models and machine learning-based models to compensate for each other’s limitations. Social-force-based models are highly interactive and adaptive to unseen situations, and ML-based models can capture high variance. Together, they can effectively produce rich generative behavioral models robust to unseen situations. Please cite our papers which is relevant to your research:
 
 ```
+@inproceedings{inproceedings,
+author = {Muktadir, Golam Md and Whitehead, Jim},
+journal={2024 IEEE International Conference on Robotics and Automation (ICRA)},
+year = {2024},
+month = {05},
+pages = {},
+title = {Adaptive Pedestrian Agent Modeling for Scenario-based Testing of Autonomous Vehicles through Behavior Retargeting}
+}
+
 @article{Muktadir2022AdversarialJM,
   title={Adversarial jaywalker modeling for simulation-based testing of Autonomous Vehicle Systems},
   author={Golam Md Muktadir and E. James Whitehead},
   journal={2022 IEEE Intelligent Vehicles Symposium (IV)},
   year={2022},
   pages={1697-1702},
-  url={https://api.semanticscholar.org/CorpusID:250705702}
 }
 ```
 
@@ -120,6 +128,9 @@ python r1v1-default.py --max_ticks=500
     python r1v1vl.py --scenario psi-0002
     python r4v4vl.py --scenario psi-0002
     python rNv1vl.py --scenario psi-0048
+
+
+## Running Hybrid Procedural Model
 
 ## Streaming
 You can use the streamer.py file to stream from the spectator in a remote server. Issue this command in the terminal:

@@ -17,14 +17,14 @@ class CrosswalkGeometry:
     INTER_POINTS_NUM = 3
     INTER_POINTS_DISTANCE_MOD = 1.5
 
-    def __init__(self, source: Point, idealDestination: Point=None, areaPolygon: Polygon=None, goalLine: LineString=None, directionChangeProb=0.5):
+    def __init__(self, source: Point, idealDestination: Point=None, areaPolygon: Polygon=None, goalLine: LineString=None, latDirectionChangeProb=0.5):
         self.source = source
         self.idealDestination = idealDestination
         self.areaPolygon = areaPolygon
         self.goalLine = goalLine
         self.intermediatePoints = []
-        self.directionChangeProb = directionChangeProb
-        self._currentDirection = random.choice([-1, 1]) #lateral direction 
+        self.latDirectionChangeProb = latDirectionChangeProb
+        self._lastWaypointLatDirection = random.choice([-1, 1]) #lateral direction 
         self.finalDestination = None
         self.nextIntermediatePointIdx = None
         if self.areaPolygon == None:
@@ -114,6 +114,17 @@ class CrosswalkGeometry:
             D_final = self.closestEnd(start, self.goalLine)
         else:
             D_final = self.idealDestination
+            
+        # set last direction towards the destination
+        xDiff = (D_final.x - start.x)
+        if xDiff == 0:
+            xDiff = 0.001
+        slope = (D_final.y - start.y) / xDiff
+        if slope > 0:
+            self._lastWaypointLatDirection = 1
+        else:
+            self._lastWaypointLatDirection = -1
+            
         crosswalk = self.areaPolygon
         waypoints = [start]
         
@@ -132,45 +143,49 @@ class CrosswalkGeometry:
             while (not done and maxTries > 0):
                 maxTries -= 1
                 C = self.pointBetween(A, B, d=random.uniform(0, 1)) # modify d if needed
-                C = self.pointRotate(C, A, degree=self.getNextRotation())    
+                CRotAngle, CDirection = self.getNextRotation()
+                C = self.pointRotate(C, A, degree=CRotAngle)    
                 # Check constraints
                 if crosswalk.contains(C):
+                    if i == 0:
+                        done = True
+                        break
                     # print(f"C, {C} inside the area")
                     lineAB = LineString([A, B])
                     line_W_pre1_C = LineString([W_pre1, C])
                     line_W_pre1_W_pre2 = None
-                    if i > 0:
+                    if W_pre2 is not None:
                         line_W_pre1_W_pre2 = LineString([W_pre2, W_pre1])
                     if line_W_pre1_C.length <= lineAB.length*maxInterPointsDistance:
                         # print(f"line_W_pre1_C.length, {line_W_pre1_C.length} is good")
-                        if line_W_pre1_W_pre2 == None:
-                            done = True
-                        else:
-                            # if the ideal destination is None, we are free to explore
-                            
-                            if self.idealDestination is None:
-                                # Find vertical line
-                                D_final = self.closestEnd(W_pre1, self.goalLine)
-                                # print(f"ideal destination is None, D_final is {D_final}")
-                            else:
-                                D_final = self.idealDestination
-                                
-                            destinationLine = LineString([W_pre1, D_final])
-                            
-                            
-                            # Calculate the angle between the new line and the vertical line
-                            a_theta = self.degreeFromX(destinationLine) - self.degreeFromX(line_W_pre1_C)
-                            # Calculate the angle between the new line and the extended previous line
-                            d_theta = self.degreeFromX(line_W_pre1_W_pre2) - self.degreeFromX(line_W_pre1_C)
-                        
+                        # if the ideal destination is None, we are free to explore
 
-                            if maxAbsDegree*(-1) <= a_theta <= maxAbsDegree and maxDeltaDegree*(-1) <= d_theta <= maxDeltaDegree:
-                                done = True
-                            # else:
-                            #     print("a_theta", math.degrees(a_theta), "b_theta", math.degrees(d_theta))
-                            #     waypoints.append(C)
-                            #     print("returning to debug")
-                            #     return waypoints
+                        if self.idealDestination is None:
+                            # Find vertical line
+                            D_final = self.closestEnd(W_pre1, self.goalLine)
+                            # print(f"ideal destination is None, D_final is {D_final}")
+                        else:
+                            D_final = self.idealDestination
+
+                        destinationLine = LineString([W_pre1, D_final])
+
+
+                        # Calculate the angle between the new line and the vertical line
+                        a_theta = self.degreeFromX(destinationLine) - self.degreeFromX(line_W_pre1_C)
+                        # Calculate the angle between the new line and the extended previous line
+                        if line_W_pre1_W_pre2 is None:
+                            d_theta = 0
+                        else:
+                            d_theta = self.degreeFromX(line_W_pre1_W_pre2) - self.degreeFromX(line_W_pre1_C)
+
+
+                        if maxAbsDegree*(-1) <= a_theta <= maxAbsDegree and maxDeltaDegree*(-1) <= d_theta <= maxDeltaDegree:
+                            done = True
+                        # else:
+                        #     print("a_theta", math.degrees(a_theta), "b_theta", math.degrees(d_theta))
+                        #     waypoints.append(C)
+                        #     print("returning to debug")
+                        #     return waypoints
                     # else:
                     #     print(f"line_W_pre1_C.length, {line_W_pre1_C.length} is bad")
                     #     waypoints.append(C)
@@ -180,9 +195,10 @@ class CrosswalkGeometry:
             
             # print(f"iteration-{i}, C, {C} satisfies the constraints")
             if done:
+                self._lastWaypointLatDirection = CDirection
                 waypoints.append(C)
 
-        # final rotate to find end point is different
+        # fiCDirection rotate to find end point is different
     
         if self.idealDestination is not None:
             # Find vertical line
@@ -202,7 +218,8 @@ class CrosswalkGeometry:
                 
                 C = self.pointBetween(final_start, final_end, d=random.uniform(0, 1))
                 
-                C = self.pointRotate(C, final_start, degree=self.getNextRotation())
+                CRotAngle, CDirection = self.getNextRotation()
+                C = self.pointRotate(C, final_start, degree=-CRotAngle) # in case of the final, we are rotating around B. So, RotAngle will be reversed.
 
                 segment = LineString([final_start, final_end])
                 line_W_pre1_C = LineString([waypoints[-1], C])
@@ -335,12 +352,14 @@ class CrosswalkGeometry:
             return pointsOL[1:len(pointsOL)-1]
         return pointsOL
     
-    def getNextRotation(self) -> int:
+    def getNextRotation(self) -> Tuple[int, int]:
+        """degree and lateral direction"""
         
-        changeDirection = np.random.choice([True, False], p=[self.directionChangeProb, 1-self.directionChangeProb])
+        changeDirection = np.random.choice([True, False], p=[self.latDirectionChangeProb, 1-self.latDirectionChangeProb])
+        nextDirection = self._lastWaypointLatDirection
         if changeDirection:
-            self._currentDirection *= -1
-        return self._currentDirection * 90
+            nextDirection *= -1
+        return nextDirection * 90, nextDirection
     
     def sampleDestinationOnGoalLine(self) -> Point:
         gap = random.uniform(0, 1)
