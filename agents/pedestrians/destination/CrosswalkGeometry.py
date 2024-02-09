@@ -2,6 +2,7 @@ from shapely.affinity import rotate
 from shapely.geometry import LineString, Point, Polygon
 import math
 import random
+from typing import *
 class CrosswalkGeometry:
     '''
     Geometric information of CrosswalkModel, including source, idealDestination, areaPolygon, and goalLine.
