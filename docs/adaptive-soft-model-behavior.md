@@ -1,6 +1,6 @@
 
-![NavPoint Realization](./images/stop-speed-up-slow-down.PNG)
-![NavPoint Realization](./images/flinch-retreat.PNG)
+![NavPoint Realization](./images/adaptive/stop-speed-up-slow-down.PNG)
+![NavPoint Realization](./images/adaptive/flinch-retreat.PNG)
 ## Behavior Primitives
 1. **Evasive Stop**: It represents a complete stop inside a road while crossing. %This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. Refer to [Evasive Stop](./evasive-stop.md) for current model.
 

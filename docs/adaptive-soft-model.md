@@ -7,7 +7,7 @@ Given a pedestrian crossing video, we want to generate scenarios that shows simi
 4. Ego vehicle’s speed profile
 
 
-<img src="./images/psi-0002-events.JPG" width="600">
+<img src="./images/adaptive/psi-0002-events.JPG" width="600">
 <br>
 In this video, the pedestrian walks along the left lane for a while, and starts crossing the road. When it sees an approaching vehicle, it makes a stop on the left lane. We can retarget this behavior by expressing the behavior as a relative navigation path with respect to the ego vehicle.
 
@@ -21,7 +21,7 @@ In this video, the pedestrian walks along the left lane for a while, and starts 
 
 This section discusses the simulation process. For detailed information of microscopic behavior maneuvers, Check [Behavior Models](./adaptive-soft-model-behavior.md) for more information.
 
-![soft-model-architecture](./images/soft-model-architecture.PNG)
+![soft-model-architecture](./images/adaptive/soft-model-architecture.PNG)
 
 ## Demo
 
@@ -30,7 +30,7 @@ In the following video, PSI-0002 Scenario Reconstructed and Retargeted using Sof
 
 
 
-[![Watch the video](./images/psi-0002-reconstructed.JPG)](https://youtube.com/shorts/ygUYhyuXlPE?feature=share)
+[![Watch the video](./images/adaptive/psi-0002-reconstructed.JPG)](https://youtube.com/shorts/ygUYhyuXlPE?feature=share)
 
 
 

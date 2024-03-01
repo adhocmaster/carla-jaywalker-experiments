@@ -1,6 +1,6 @@
 
 ## NavPath Representation
-<img src='./images/navpath.PNG' width=500/>
+<img src='./images/adaptive/navpath.PNG' width=500/>
 
 A NavPath, comprised of NavPoints, is a sparse pedestrian trajectory in the ego vehicle's coordinate system. Each pedestrian in a scenario is described as a NavPath. A Navpath highlights path structure and behavioral shifts. NavPaths can originate from dense trajectories or video-based crafting, focusing on behaviorally significant points, like abrupt stops. They highlight path structure and behavioral shifts. NavPaths can originate from dense trajectories or video-based crafting, focusing on behaviorally significant points, like abrupt stops. 
 
@@ -30,7 +30,7 @@ NavPoint properties serve *three objectives*:
 3. Application of fuzzing techniques without losing the behavioral connection to the ego vehicle.
 
 
-<img src='./images/navpoint.PNG' width=500/>
+<img src='./images/adaptive/navpoint.PNG' width=500/>
 
 NavPoint Example. This is a three-lane road, with one lane to the right and left of the ego vehicle. Each lane is divided into (L)eft, (M)iddle, and (R)ight sections with respect to the ego's travel direction, not the driving direction of the lane. Lane Ids are assigned relative to the ego vehicle (lane 0). Distance is measured on the vehicle's travel axis. NavPoint P has Lane Id: -1, Lane Section: R, and distance: d.
 
@@ -44,15 +44,15 @@ NavPoint Example. This is a three-lane road, with one lane to the right and left
 
 Here goes the technical solution
 
-<img src='./images/navpoint-realization.PNG' width=600/>
+<img src='./images/adaptive/navpoint-realization.PNG' width=600/>
 
 Based on whether the NavPoint is relatively located in front of the vehicle or behind the vehicle, the calculations change a little bit.
 
 
 
-<img src='./images/navpoint-realization-infront.PNG' width=600/>
+<img src='./images/adaptive/navpoint-realization-infront.PNG' width=600/>
 
-<img src='./images/navpoint-realization-behind.PNG' width=600/>
+<img src='./images/adaptive/navpoint-realization-behind.PNG' width=600/>
 
 
 # Group Representation
