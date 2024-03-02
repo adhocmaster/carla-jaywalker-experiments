@@ -1,7 +1,10 @@
 
 ![NavPoint Realization](./images/adaptive/stop-speed-up-slow-down.PNG)
 ![NavPoint Realization](./images/adaptive/flinch-retreat.PNG)
+In the figures, P, C, and N are previous, current, and next pedestrian locations respectively., 
 ## Behavior Primitives
+A behavior primitive is a microscopic manuever which happens almost involuntarily as a response to a situation (e.g., avoiding collisions). Such manuevers can be learned from different datasets and extracted from different research works and used in simulation models with a high level planner.
+
 1. **Evasive Stop**: It represents a complete stop inside a road while crossing. %This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. This can happen due to different factors such as a vehicle passing fast in front, occlusions, or sudden blindness due to headlights. Evasive stop lasts until the conflict is resolved. Refer to [Evasive Stop](./evasive-stop.md) for current model.
 
 2. **Evasive Flinch**: It is similar to an Evasive Stop with an additional backward movement pattern that happens involuntarily and within a fraction of a second. %In this case, the pedestrian moves back a little bit into another lane as a physical instinct. This behavior creates a dangerous situation in the lane the pedestrian enters. In this case, the pedestrian moves back a little bit into another lane as a physical instinct. This behavior creates a dangerous situation in the lane the pedestrian enters.
