@@ -2,6 +2,7 @@ exec(open("sys_path_hack.py").read())
 
 import click
 from research import ResearchFactory
+from lib import MapNames
 
 @click.command()
 @click.option(
@@ -12,7 +13,7 @@ from research import ResearchFactory
     help='Number of ticks the simulator will run'
     )
 def r1v1Default(max_ticks):
-    research = ResearchFactory.createResearch1v1()
+    research = ResearchFactory.createResearch1v1(map=MapNames.Town02_Opt)
     research.run(maxTicks=max_ticks)
 
 

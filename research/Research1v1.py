@@ -316,7 +316,7 @@ class Research1v1(SettingBasedResearch):
     #endregion
 
 
-    def restart(self):
+    def restart(self, worldSnapshot):
         """Used by non-episodic simulator only
         """
 
